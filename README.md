@@ -6,7 +6,8 @@
 <!-- badges: start -->
 <!-- badges: end -->
 
-The goal of MetaRVM is to …
+This is a compartmental model simulation code for generic respiratory
+virus diseases.
 
 ## Installation
 
@@ -115,8 +116,14 @@ out <- meta_sim(N_pop = N_pop,
 #> gcc -I"/usr/share/R/include" -DNDEBUG      -fpic  -g -O2 -ffile-prefix-map=/build/r-base-4A2Reg/r-base-4.1.2=. -fstack-protector-strong -Wformat -Werror=format-security -Wdate-time -D_FORTIFY_SOURCE=2 -g  -UNDEBUG -Wall -pedantic -g -O0 -c odin.c -o odin.o
 #> gcc -I"/usr/share/R/include" -DNDEBUG      -fpic  -g -O2 -ffile-prefix-map=/build/r-base-4A2Reg/r-base-4.1.2=. -fstack-protector-strong -Wformat -Werror=format-security -Wdate-time -D_FORTIFY_SOURCE=2 -g  -UNDEBUG -Wall -pedantic -g -O0 -c registration.c -o registration.o
 #> gcc -shared -L/usr/lib/R/lib -Wl,-Bsymbolic-functions -flto=auto -ffat-lto-objects -flto=auto -Wl,-z,relro -o odin0d0f68f3.so odin.o registration.o -L/usr/lib/R/lib -lR
-#> installing to /tmp/RtmpOvThtK/devtools_install_3d47f64447ad0/00LOCK-file3d47f2349f1ab/00new/odin0d0f68f3/libs
+#> installing to /tmp/RtmpehBgwE/devtools_install_3e35627f92ffa/00LOCK-file3e3565aedb775/00new/odin0d0f68f3/libs
 #> ** checking absolute paths in shared objects and dynamic libraries
 #> * DONE (odin0d0f68f3)
 #> ℹ Loading odin0d0f68f3
+```
+
+To run this simulation interactively, use the provided shiny app
+
+``` r
+run_app()
 ```

@@ -18,7 +18,9 @@ knitr::opts_chunk$set(
 <!-- badges: start -->
 <!-- badges: end -->
 
-The goal of MetaRVM is to ...
+This is a compartmental model simulation code for generic respiratory virus diseases.
+
+
 
 ## Installation
 
@@ -121,4 +123,8 @@ out <- meta_sim(N_pop = N_pop,
 
 ```
 
+To run this simulation interactively, use the provided shiny app
 
+```{r eval=FALSE}
+run_app()
+```
