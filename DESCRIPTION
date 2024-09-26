@@ -24,6 +24,7 @@ Imports:
     RColorBrewer,
     sf,
     shiny,
+    shinydashboard,
     tidyr
 Suggests: 
     knitr,

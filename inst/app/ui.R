@@ -170,7 +170,7 @@ ui <- fluidPage(
                        br(),
                        br(),
                        column(12,
-                              box(
+                              shinydashboard::box(
                                 title = "Disease Compartments Over Time",
                                 status = "primary",
                                 solidHeader = TRUE,
@@ -180,7 +180,7 @@ ui <- fluidPage(
                                 plotly::plotlyOutput("seir_plot", height = "500px"))
                               ),
                        column(6,
-                              box(
+                              shinydashboard::box(
                                 title = "",
                                 status = "primary",
                                 solidHeader = TRUE,
@@ -190,7 +190,7 @@ ui <- fluidPage(
                                 plotly::plotlyOutput("new_infection_plot", height = "500px"))
                        ),
                        column(6,
-                              box(
+                              shinydashboard::box(
                                 title = "",
                                 status = "primary",
                                 solidHeader = TRUE,
@@ -200,7 +200,7 @@ ui <- fluidPage(
                                 plotly::plotlyOutput("new_hosp_plot", height = "500px"))
                        ),
                        column(6,
-                              box(
+                              shinydashboard::box(
                                 title = "",
                                 status = "primary",
                                 solidHeader = TRUE,
@@ -227,7 +227,7 @@ ui <- fluidPage(
                          br(),
                          br(),
                          column(12,
-                                box(
+                                shinydashboard::box(
                                   title = "Disease Compartments Over Time",
                                   status = "primary",
                                   solidHeader = TRUE,

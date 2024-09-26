@@ -287,7 +287,7 @@ server <- function(input, output, session) {
       plotly::ggplotly(
         ggplot2::ggplot(df_combined,
                         aes(x = step, y = E_rate, group = rep)) +
-          ggplot2::geom_line(size = 0.5, alpha = 0.5, color = "orangered2") +
+          ggplot2::geom_line(linewidth = 0.5, alpha = 0.5, color = "orangered2") +
           # scale_color_manual(values = compartment_colors) +
           ggplot2::labs(
             title = "New infection rate",
@@ -321,7 +321,7 @@ server <- function(input, output, session) {
       plotly::ggplotly(
         ggplot2::ggplot(df_combined,
                         aes(x = step, y = H_rate, group = rep)) +
-          ggplot2::geom_line(size = 0.5, alpha = 0.5, color = "mediumpurple") +
+          ggplot2::geom_line(linewidth = 0.5, alpha = 0.5, color = "mediumpurple") +
           # scale_color_manual(values = compartment_colors) +
           ggplot2::labs(
             title = "New hospitalization rate",
@@ -355,7 +355,7 @@ server <- function(input, output, session) {
       plotly::ggplotly(
         ggplot2::ggplot(df_combined,
                         aes(x = step, y = D_rate, group = rep)) +
-          ggplot2::geom_line(size = 0.5, alpha = 0.5, color = "grey") +
+          ggplot2::geom_line(linewidth = 0.5, alpha = 0.5, color = "grey") +
           # scale_color_manual(values = compartment_colors) +
           ggplot2::labs(
             title = "New deaths rate",
@@ -465,7 +465,7 @@ server <- function(input, output, session) {
                           dplyr::group_by(step, disease_state, rep) %>%
                           dplyr::summarize(total_value = value, .groups = "drop"),
                         aes(x = step, y = total_value, color = disease_state, group = rep)) +
-          ggplot2::geom_line(size = 0.5, alpha = 0.5) +
+          ggplot2::geom_line(linewidth = 0.5, alpha = 0.5) +
           ggplot2::scale_color_manual(values = compartment_colors) +
           ggplot2::labs(
             title = selected_zone(),
