@@ -98,33 +98,3 @@ A data frame of model output
 \description{
 The main simulator which compiles and run an ODIN model in the background
 }
-\examples{
-out <- meta_sim(N_pop = nrow(pop_zones),
-                beta_i = 0.7,
-                beta_v = 0.2,
-                S0 = pop_zones$S0,
-                I0 = pop_zones$I0,
-                P0 = pop_zones$N,
-                V0 = pop_zones$V0,
-                m_weekday_day = m_weekday_day,
-                m_weekend_day = m_weekend_day,
-                m_weekday_night = m_weekday_night,
-                m_weekend_night = m_weekend_night,
-                delta_t = 0.5,
-                tvac = vac_zones[, 1],
-                vac_mat = as.matrix(vac_zones[, 2:7]),
-                VtoS = 0.02,
-                EtoIpresymp = 0.33,
-                etopa = 0.5,
-                pretoIsymp = 0.5,
-                IasymptoR = 0.2,
-                IsymptoRH = 0.5,
-                istohr = 0.5,
-                HtoRD = 0.33,
-                htor = 0.5,
-                RtoS = 0.02,
-                vac_eff = 0.5,
-                nsteps = 100,
-                is.stoch = 0,
-                seed = NULL)
-}

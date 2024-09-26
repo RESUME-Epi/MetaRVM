@@ -1,26 +1,46 @@
 ---
-title: "HCZ-model"
-output: rmarkdown::html_vignette
-vignette: >
-  %\VignetteIndexEntry{HCZ-model}
-  %\VignetteEngine{knitr::rmarkdown}
-  %\VignetteEncoding{UTF-8}
+output: github_document
 ---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
 
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
-  comment = "#>"
+  comment = "#>",
+  fig.path = "man/figures/README-",
+  out.width = "100%"
 )
 ```
 
-```{r setup}
-library(MetaRVM)
+# MetaRVM
+
+<!-- badges: start -->
+<!-- badges: end -->
+
+The goal of MetaRVM is to ...
+
+## Installation
+
+You can install the development version of MetaRVM from [GitHub](https://github.com/) with:
+
+``` r
+# install.packages("devtools")
+devtools::install_github("NSF-RESUME/MetaRVM")
 ```
 
-We will create some sample input for this model run
+## Example
 
-```{r}
+This is a basic example which shows you how to solve a common problem:
+
+```{r example}
+library(MetaRVM)
+## basic example code
+```
+
+
+
+```{r data}
 ## Model initialization
 N_pop <- 6
 pop_init <- data.frame(N = rep(NA, N_pop),
@@ -67,8 +87,9 @@ m_weekend_day <- m3
 m_weekend_night <- m4
 ```
 
+Then run the simulation:
 
-```{r}
+```{r sim}
 out <- meta_sim(N_pop = N_pop,
                 beta_i = 0.7,
                 beta_v = 0.2,
@@ -98,5 +119,6 @@ out <- meta_sim(N_pop = N_pop,
                  is.stoch = 0,
                  seed = NULL)
 
-out
 ```
+
+

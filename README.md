@@ -1,26 +1,33 @@
----
-title: "HCZ-model"
-output: rmarkdown::html_vignette
-vignette: >
-  %\VignetteIndexEntry{HCZ-model}
-  %\VignetteEngine{knitr::rmarkdown}
-  %\VignetteEncoding{UTF-8}
----
 
-```{r, include = FALSE}
-knitr::opts_chunk$set(
-  collapse = TRUE,
-  comment = "#>"
-)
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+# MetaRVM
+
+<!-- badges: start -->
+<!-- badges: end -->
+
+The goal of MetaRVM is to …
+
+## Installation
+
+You can install the development version of MetaRVM from
+[GitHub](https://github.com/) with:
+
+``` r
+# install.packages("devtools")
+devtools::install_github("NSF-RESUME/MetaRVM")
 ```
 
-```{r setup}
+## Example
+
+This is a basic example which shows you how to solve a common problem:
+
+``` r
 library(MetaRVM)
+## basic example code
 ```
 
-We will create some sample input for this model run
-
-```{r}
+``` r
 ## Model initialization
 N_pop <- 6
 pop_init <- data.frame(N = rep(NA, N_pop),
@@ -67,8 +74,9 @@ m_weekend_day <- m3
 m_weekend_night <- m4
 ```
 
+Then run the simulation:
 
-```{r}
+``` r
 out <- meta_sim(N_pop = N_pop,
                 beta_i = 0.7,
                 beta_v = 0.2,
@@ -97,6 +105,18 @@ out <- meta_sim(N_pop = N_pop,
                  nsteps = 100,
                  is.stoch = 0,
                  seed = NULL)
-
-out
+#> Loading required namespace: pkgbuild
+#> Generating model in c
+#> ℹ Re-compiling odin0d0f68f3 (debug build)
+#> ── R CMD INSTALL ───────────────────────────────────────────────────────────────
+#> * installing *source* package ‘odin0d0f68f3’ ...
+#> ** using staged installation
+#> ** libs
+#> gcc -I"/usr/share/R/include" -DNDEBUG      -fpic  -g -O2 -ffile-prefix-map=/build/r-base-4A2Reg/r-base-4.1.2=. -fstack-protector-strong -Wformat -Werror=format-security -Wdate-time -D_FORTIFY_SOURCE=2 -g  -UNDEBUG -Wall -pedantic -g -O0 -c odin.c -o odin.o
+#> gcc -I"/usr/share/R/include" -DNDEBUG      -fpic  -g -O2 -ffile-prefix-map=/build/r-base-4A2Reg/r-base-4.1.2=. -fstack-protector-strong -Wformat -Werror=format-security -Wdate-time -D_FORTIFY_SOURCE=2 -g  -UNDEBUG -Wall -pedantic -g -O0 -c registration.c -o registration.o
+#> gcc -shared -L/usr/lib/R/lib -Wl,-Bsymbolic-functions -flto=auto -ffat-lto-objects -flto=auto -Wl,-z,relro -o odin0d0f68f3.so odin.o registration.o -L/usr/lib/R/lib -lR
+#> installing to /tmp/RtmpOvThtK/devtools_install_3d47f64447ad0/00LOCK-file3d47f2349f1ab/00new/odin0d0f68f3/libs
+#> ** checking absolute paths in shared objects and dynamic libraries
+#> * DONE (odin0d0f68f3)
+#> ℹ Loading odin0d0f68f3
 ```
