@@ -4,7 +4,7 @@ library(shinydashboard)
 # library(plotly)
 # library(DT)
 # library(leaflet)
-# library(shinythemes)
+library(shinythemes)
 library(bslib)
 
 ui <- tagList(
