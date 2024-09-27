@@ -1,9 +1,9 @@
 library(shiny)
-# library(shinydashboard)
-# library(DiagrammeR)
-# library(plotly)
-# library(DT)
-# library(leaflet)
+library(shinydashboard)
+library(DiagrammeR)
+library(plotly)
+library(DT)
+library(leaflet)
 
 ui <- fluidPage(
 
@@ -71,7 +71,7 @@ ui <- fluidPage(
       br(),
       h3("Graphical Description of the compartmental model"),
       br(),
-      grVizOutput("compartment_plot"),
+      DiagrammeR::grVizOutput("compartment_plot"),
 
       br(),
       br(),
