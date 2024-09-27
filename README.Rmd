@@ -33,40 +33,56 @@ devtools::install_github("NSF-RESUME/MetaRVM")
 
 ## Example
 
-This is a basic example which shows you how to solve a common problem:
+This is a basic example which shows how to run the simulation from R command line.
 
 ```{r example}
 library(MetaRVM)
-## basic example code
 ```
 
+We will create some data sets that will be used for this demonstration. This is a meta-population model, i.e., the total population is divided in several sub-populations (based on some common attributes such as zones, age-groups, races etc.). The mixing pattern within and between these sub-populations are dictated by a mixing matrix, which will be explained later. In summary, to run the meta-population simulation, we need 
+1. population sizes and model initialization information,
+2. vaccination information,
+3. mixing matrices.
 
+#### Population
+
+For this example, we define our sub-populations by the 6 HCZ (Healthy Chicago Zone) in Chicago, IL. For each sub-population we need to provide the model the total population size (N), number of susceptible (S), infectious (I) and vaccinated (v) people at the start of the simulation.
 
 ```{r data}
 ## Model initialization
 N_pop <- 6
-pop_init <- data.frame(N = rep(NA, N_pop),
-                       S0 = rep(NA, N_pop),
-                       I0 = rep(NA, N_pop),
-                       V0 = rep(NA, N_pop))
+pop_zones <- data.frame(N = rep(NA, N_pop),
+                        S0 = rep(NA, N_pop),
+                        I0 = rep(NA, N_pop),
+                        V0 = rep(NA, N_pop))
 
-pop_init$N <- sample(1000:1500, N_pop)
-pop_init$I0 <- sample(10:100, N_pop)
-pop_init$V0 <- sample(1:10, N_pop)
-pop_init$S0 <- pop_init$N - pop_init$I0 - pop_init$V0
+pop_zones$N <- sample(1000:1500, N_pop)
+pop_zones$I0 <- sample(10:100, N_pop)
+pop_zones$V0 <- sample(1:10, N_pop)
+pop_zones$S0 <- pop_zones$N - pop_zones$I0 - pop_zones$V0
 
-pop_zones <- pop_init
+pop_zones
+```
 
+#### Vaccination
+
+The vaccination data has the time indices when the vaccination occured in the first column with the column name `t` and the other columns contain the number vaccinations in each sub-populations ordered from left to right. 
+
+```{r}
 ## Vaccine profile
 tt <- seq(0, 100, by = 14)
 nt <- length(tt)
 vol <- sample(1:10, (nt-1)*N_pop, replace = TRUE)
 
-vac_df <- cbind(tt, rbind(pop_init$V0, matrix(vol, nrow = nt-1)))
-colnames(vac_df) <- c("t", paste0("v", 1:N_pop))
+vac_zones <- cbind(tt, rbind(pop_zones$V0, matrix(vol, nrow = nt-1)))
+colnames(vac_zones) <- c("t", paste0("v", 1:N_pop))
 
-vac_zones <- vac_df
+vac_zones
+```
 
+
+
+```{r}
 ## mixing matrix
 
 m1 <- m2 <- m3 <- m4 <- matrix(NA, nrow = N_pop, ncol = N_pop)

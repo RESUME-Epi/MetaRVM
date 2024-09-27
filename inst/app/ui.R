@@ -245,7 +245,7 @@ ui <- tagList(
            column(12,
                   card(
                     div(class = "custom-card",
-                        div(class = "custom-card-header", card_header("Disease compartments over time")),
+                        div(class = "custom-card-header", card_header(strong("Disease compartments over time"))),
                         div(class = "custom-card-body", plotly::plotlyOutput("seir_plot", height = "500px"))
                     )
                   )
