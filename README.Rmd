@@ -4,6 +4,9 @@ output: github_document
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
+# MetaRVM <img src="inst/logo.png" width="240px" align="right" /> 
+
+
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
@@ -12,6 +15,8 @@ knitr::opts_chunk$set(
   out.width = "100%"
 )
 ```
+
+# CamaraBR <img src="inst/figures/CamaraBR-logo.png" width="240px" align="right" /> 
 
 # MetaRVM
 
@@ -143,5 +148,5 @@ out <- meta_sim(N_pop = N_pop,
 To run this simulation interactively, use the provided shiny app
 
 ```{r eval=FALSE}
-run_app()
+MetaRVM::run_app()
 ```
