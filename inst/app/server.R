@@ -270,7 +270,7 @@ server <- function(input, output, session) {
             y = "Counts",
             color = "Compartment",
           ) +
-          ggplot2::theme_gray() +
+          ggplot2::theme_bw() +
           ggplot2::theme(
             plot.title = element_text(hjust = 0.5),
             legend.position = "right"
@@ -304,7 +304,7 @@ server <- function(input, output, session) {
           ggplot2::geom_line(linewidth = 0.5, alpha = 0.5, color = "orangered2") +
           # scale_color_manual(values = compartment_colors) +
           ggplot2::labs(
-            title = "New infection rate",
+            # title = "New infection rate",
             x = "Time",
             y = "proportions") +
           ggplot2::theme_minimal() +
@@ -338,7 +338,7 @@ server <- function(input, output, session) {
           ggplot2::geom_line(linewidth = 0.5, alpha = 0.5, color = "mediumpurple") +
           # scale_color_manual(values = compartment_colors) +
           ggplot2::labs(
-            title = "New hospitalization rate",
+            # title = "New hospitalization rate",
             x = "Time",
             y = "proportions") +
           ggplot2::theme_minimal() +
@@ -372,7 +372,7 @@ server <- function(input, output, session) {
           ggplot2::geom_line(linewidth = 0.5, alpha = 0.5, color = "grey") +
           # scale_color_manual(values = compartment_colors) +
           ggplot2::labs(
-            title = "New deaths rate",
+            # title = "New deaths rate",
             x = "Time",
             y = "proportions") +
           ggplot2::theme_minimal() +
@@ -407,7 +407,7 @@ server <- function(input, output, session) {
           ggplot2::geom_col(alpha = 0.5, color = "darkgreen") +
           # scale_color_manual(values = compartment_colors) +
           ggplot2::labs(
-            title = "New vaccination",
+            # title = "New vaccination",
             x = "Time",
             y = "proportions") +
           ggplot2::theme_minimal() +

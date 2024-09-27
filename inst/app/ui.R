@@ -13,7 +13,7 @@ ui <- tagList(
   tags$head(
     tags$style(HTML("
       .title-background {
-        background-color: #472336; /* Green background */
+        background-color: #6d5f57;
         color: white; /* White text */
         padding: 10px; /* Padding around the text */
         text-align: center; /* Center the text */
@@ -61,6 +61,34 @@ ui <- tagList(
 
       .custom-button:hover {
         background-color: #45a049; /* Darker green on hover */
+      }
+    "))
+  ),
+
+  # Add custom CSS for styling the card
+  tags$head(
+    tags$style(HTML("
+      .custom-card {
+        padding: 10px;
+        box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);  /* Slight shadow */
+        border-radius: 5px;                          /* Rounded corners */
+        border: 1px solid #ddd;                      /* Light border */
+      }
+
+      .custom-card-header {
+        background-color: #a59892;                   /* Solid blue background */
+        color: white;                                /* White font */
+        text-align: center;                          /* Center the header text */
+        padding: 5px;                               /* Padding for header */
+        font-size: 25px;                             /* Font size */
+        border-bottom: 1px solid #ddd;               /* Border below the header */
+        border-top-left-radius: 5px;                 /* Rounded corners for the top */
+        border-top-right-radius: 5px;
+      }
+
+      .custom-card-body {
+        padding: 20px;                               /* Padding for card body */
+        background-color: #f0f4ef;
       }
     "))
   ),
@@ -204,56 +232,100 @@ ui <- tagList(
            br(),
             br(),
             br(),
-            column(12,
-                   shinydashboard::box(
-                     title = "Disease Compartments Over Time",
-                     status = "primary",
-                     solidHeader = TRUE,
-                     collapsible = TRUE,
-                     width = 12,  # Full width
-                     class = "custom-box",
-                     plotly::plotlyOutput("seir_plot", height = "500px"))
-                   ),
+            # column(12,
+            #        shinydashboard::box(
+            #          title = "Disease Compartments Over Time",
+            #          status = "primary",
+            #          solidHeader = TRUE,
+            #          collapsible = TRUE,
+            #          width = 12,  # Full width
+            #          class = "custom-box",
+            #          plotly::plotlyOutput("seir_plot", height = "500px"))
+            #        ),
+           column(12,
+                  card(
+                    div(class = "custom-card",
+                        div(class = "custom-card-header", card_header("Disease compartments over time")),
+                        div(class = "custom-card-body", plotly::plotlyOutput("seir_plot", height = "500px"))
+                    )
+                  )
+           ),
+           br(),
+           br(),
+           br(),
+           br(),
+           # column(6,
+           #          shinydashboard::box(
+           #            title = "",
+           #            status = "primary",
+           #            solidHeader = TRUE,
+           #            collapsible = TRUE,
+           #            width = 12,  # Full width
+           #            # class = "custom-box",
+           #            plotly::plotlyOutput("new_infection_plot", height = "500px"))
+           #   ),
            column(6,
-                    shinydashboard::box(
-                      title = "",
-                      status = "primary",
-                      solidHeader = TRUE,
-                      collapsible = TRUE,
-                      width = 12,  # Full width
-                      # class = "custom-box",
-                      plotly::plotlyOutput("new_infection_plot", height = "500px"))
-             ),
-             column(6,
-                    shinydashboard::box(
-                      title = "",
-                      status = "primary",
-                      solidHeader = TRUE,
-                      collapsible = TRUE,
-                      width = 12,  # Full width
-                      # class = "custom-box",
-                      plotly::plotlyOutput("new_hosp_plot", height = "500px"))
-             ),
-             column(6,
-                    shinydashboard::box(
-                      title = "",
-                      status = "primary",
-                      solidHeader = TRUE,
-                      collapsible = TRUE,
-                      width = 12,  # Full width
-                      # class = "custom-box",
-                      plotly::plotlyOutput("new_death_plot", height = "500px"))
-             ),
-             column(6,
-                    shinydashboard::box(
-                      title = "",
-                      status = "primary",
-                      solidHeader = TRUE,
-                      collapsible = TRUE,
-                      width = 12,  # Full width
-                      # class = "custom-box",
-                      plotly::plotlyOutput("new_vac_plot", height = "500px"))
-             ),
+                  card(
+                    div(class = "custom-card",
+                        div(class = "custom-card-header", card_header("New Incidence")),
+                        div(class = "custom-card-body", plotly::plotlyOutput("new_infection_plot", height = "300px"))
+                    )
+                  )
+           ),
+             # column(6,
+             #        shinydashboard::box(
+             #          title = "",
+             #          status = "primary",
+             #          solidHeader = TRUE,
+             #          collapsible = TRUE,
+             #          width = 12,  # Full width
+             #          # class = "custom-box",
+             #          plotly::plotlyOutput("new_hosp_plot", height = "500px"))
+             # ),
+           column(6,
+                  card(
+                    div(class = "custom-card",
+                        div(class = "custom-card-header", card_header("New Hospitalizations")),
+                        div(class = "custom-card-body", plotly::plotlyOutput("new_hosp_plot", height = "300px"))
+                    )
+                  )
+           ),
+             # column(6,
+             #        shinydashboard::box(
+             #          title = "",
+             #          status = "primary",
+             #          solidHeader = TRUE,
+             #          collapsible = TRUE,
+             #          width = 12,  # Full width
+             #          # class = "custom-box",
+             #          plotly::plotlyOutput("new_death_plot", height = "500px"))
+             # ),
+           column(6,
+                  card(
+                    div(class = "custom-card",
+                        div(class = "custom-card-header", card_header("New Deaths")),
+                        div(class = "custom-card-body", plotly::plotlyOutput("new_death_plot", height = "300px"))
+                    )
+                  )
+           ),
+             # column(6,
+             #        shinydashboard::box(
+             #          title = "",
+             #          status = "primary",
+             #          solidHeader = TRUE,
+             #          collapsible = TRUE,
+             #          width = 12,  # Full width
+             #          # class = "custom-box",
+             #          plotly::plotlyOutput("new_vac_plot", height = "500px"))
+             # ),
+           column(6,
+                  card(
+                    div(class = "custom-card",
+                        div(class = "custom-card-header", card_header("New Vaccinations")),
+                        div(class = "custom-card-body", plotly::plotlyOutput("new_vac_plot", height = "300px"))
+                    )
+                  )
+           ),
           )
 
       ),
@@ -264,16 +336,24 @@ ui <- tagList(
                    column(12, leaflet::leafletOutput("map", height = "500px")),     # Choropleth map
                    br(),
                    br(),
-                   column(12,
-                          shinydashboard::box(
-                            title = "Disease Compartments Over Time",
-                            status = "primary",
-                            solidHeader = TRUE,
-                            collapsible = TRUE,
-                            width = 12,  # Full width
-                            class = "custom-box",
-                            plotly::plotlyOutput("zone_simout", height = "500px"))
-                   )
+                   # column(12,
+                   #        shinydashboard::box(
+                   #          title = "Disease Compartments Over Time",
+                   #          status = "primary",
+                   #          solidHeader = TRUE,
+                   #          collapsible = TRUE,
+                   #          width = 12,  # Full width
+                   #          class = "custom-box",
+                   #          plotly::plotlyOutput("zone_simout", height = "500px"))
+                   # ),
+                  column(12,
+                         card(
+                           div(class = "custom-card",
+                               div(class = "custom-card-header", card_header("Disease Compartments for a Zone")),
+                               div(class = "custom-card-body", plotly::plotlyOutput("zone_simout", height = "500px"))
+                           )
+                         )
+                  ),
                 )
       ),
 
