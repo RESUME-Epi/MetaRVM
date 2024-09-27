@@ -16,8 +16,6 @@ knitr::opts_chunk$set(
 )
 ```
 
-# MetaRVM
-
 <!-- badges: start -->
 [![R-CMD-check](https://github.com/NSF-RESUME/MetaRVM/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/NSF-RESUME/MetaRVM/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->

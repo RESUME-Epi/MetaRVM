@@ -3,8 +3,6 @@
 
 # MetaRVM <img src="inst/logo.png" width="240px" align="right" />
 
-# MetaRVM
-
 <!-- badges: start -->
 
 [![R-CMD-check](https://github.com/NSF-RESUME/MetaRVM/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/NSF-RESUME/MetaRVM/actions/workflows/R-CMD-check.yaml)
@@ -63,12 +61,12 @@ pop_zones$S0 <- pop_zones$N - pop_zones$I0 - pop_zones$V0
 
 pop_zones
 #>      N   S0 I0 V0
-#> 1 1249 1230 13  6
-#> 2 1081  982 90  9
-#> 3 1451 1368 82  1
-#> 4 1134 1084 40 10
-#> 5 1022  981 37  4
-#> 6 1351 1301 43  7
+#> 1 1442 1344 91  7
+#> 2 1112 1015 88  9
+#> 3 1102 1006 94  2
+#> 4 1110 1020 89  1
+#> 5 1244 1196 44  4
+#> 6 1350 1270 74  6
 ```
 
 #### Vaccination
@@ -89,14 +87,14 @@ colnames(vac_zones) <- c("t", paste0("v", 1:N_pop))
 
 vac_zones
 #>       t v1 v2 v3 v4 v5 v6
-#> [1,]  0  6  9  1 10  4  7
-#> [2,] 14  7  2  3  6  3  4
-#> [3,] 28  3  8  4 10  5  5
-#> [4,] 42 10  9 10 10  7  5
-#> [5,] 56  9 10  8  9  2 10
-#> [6,] 70  9  5 10  9  6  3
-#> [7,] 84  1  8  8  5  6  2
-#> [8,] 98 10 10  6 10  4  8
+#> [1,]  0  7  9  2  1  4  6
+#> [2,] 14  1  6  3  9  3  1
+#> [3,] 28  5  8  3  6  7  4
+#> [4,] 42  3 10  2  2  6  2
+#> [5,] 56  6  6  8  5  3  2
+#> [6,] 70  7  4  2  3  4  5
+#> [7,] 84  3  1  9 10  2  3
+#> [8,] 98  7  3  5  3 10  4
 ```
 
 ``` r
@@ -163,7 +161,7 @@ out <- meta_sim(N_pop = N_pop,
 #> gcc -I"/usr/share/R/include" -DNDEBUG      -fpic  -g -O2 -ffile-prefix-map=/build/r-base-4A2Reg/r-base-4.1.2=. -fstack-protector-strong -Wformat -Werror=format-security -Wdate-time -D_FORTIFY_SOURCE=2 -g  -UNDEBUG -Wall -pedantic -g -O0 -c odin.c -o odin.o
 #> gcc -I"/usr/share/R/include" -DNDEBUG      -fpic  -g -O2 -ffile-prefix-map=/build/r-base-4A2Reg/r-base-4.1.2=. -fstack-protector-strong -Wformat -Werror=format-security -Wdate-time -D_FORTIFY_SOURCE=2 -g  -UNDEBUG -Wall -pedantic -g -O0 -c registration.c -o registration.o
 #> gcc -shared -L/usr/lib/R/lib -Wl,-Bsymbolic-functions -flto=auto -ffat-lto-objects -flto=auto -Wl,-z,relro -o odin840d0a65.so odin.o registration.o -L/usr/lib/R/lib -lR
-#> installing to /tmp/RtmpBuI7va/devtools_install_55fbd2627ca4/00LOCK-file55fbd7878ab82/00new/odin840d0a65/libs
+#> installing to /tmp/RtmpS4qLfz/devtools_install_5632645083d08/00LOCK-file5632658fd49ae/00new/odin840d0a65/libs
 #> ** checking absolute paths in shared objects and dynamic libraries
 #> * DONE (odin840d0a65)
 #> ℹ Loading odin840d0a65
