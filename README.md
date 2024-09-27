@@ -4,6 +4,8 @@
 # MetaRVM
 
 <!-- badges: start -->
+
+[![R-CMD-check](https://github.com/NSF-RESUME/MetaRVM/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/NSF-RESUME/MetaRVM/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
 This is a compartmental model simulation code for generic respiratory
@@ -59,12 +61,12 @@ pop_zones$S0 <- pop_zones$N - pop_zones$I0 - pop_zones$V0
 
 pop_zones
 #>      N   S0 I0 V0
-#> 1 1169 1150 17  2
-#> 2 1073  990 74  9
-#> 3 1126 1060 56 10
-#> 4 1228 1137 84  7
-#> 5 1308 1209 98  1
-#> 6 1398 1322 71  5
+#> 1 1251 1164 84  3
+#> 2 1259 1170 83  6
+#> 3 1292 1272 10 10
+#> 4 1442 1350 85  7
+#> 5 1316 1284 31  1
+#> 6 1321 1257 55  9
 ```
 
 #### Vaccination
@@ -85,14 +87,14 @@ colnames(vac_zones) <- c("t", paste0("v", 1:N_pop))
 
 vac_zones
 #>       t v1 v2 v3 v4 v5 v6
-#> [1,]  0  2  9 10  7  1  5
-#> [2,] 14  2  2  7  9  2  6
-#> [3,] 28  9  2  7  6  1  8
-#> [4,] 42  1  9  9  7  8  8
-#> [5,] 56  5  8  8  4  2  6
-#> [6,] 70  9  7  9 10 10 10
-#> [7,] 84  3  8  7  7  2  5
-#> [8,] 98  2  8  4  3  2  7
+#> [1,]  0  3  6 10  7  1  9
+#> [2,] 14  1  7  2  5  1  3
+#> [3,] 28  8  7  8  3  5  7
+#> [4,] 42  2  4  4  2  9  4
+#> [5,] 56  2  9  4  3  6  2
+#> [6,] 70  7  9  4  4  6  3
+#> [7,] 84 10  9 10  1  7  7
+#> [8,] 98  5 10 10  2  5  2
 ```
 
 ``` r
@@ -159,7 +161,7 @@ out <- meta_sim(N_pop = N_pop,
 #> gcc -I"/usr/share/R/include" -DNDEBUG      -fpic  -g -O2 -ffile-prefix-map=/build/r-base-4A2Reg/r-base-4.1.2=. -fstack-protector-strong -Wformat -Werror=format-security -Wdate-time -D_FORTIFY_SOURCE=2 -g  -UNDEBUG -Wall -pedantic -g -O0 -c odin.c -o odin.o
 #> gcc -I"/usr/share/R/include" -DNDEBUG      -fpic  -g -O2 -ffile-prefix-map=/build/r-base-4A2Reg/r-base-4.1.2=. -fstack-protector-strong -Wformat -Werror=format-security -Wdate-time -D_FORTIFY_SOURCE=2 -g  -UNDEBUG -Wall -pedantic -g -O0 -c registration.c -o registration.o
 #> gcc -shared -L/usr/lib/R/lib -Wl,-Bsymbolic-functions -flto=auto -ffat-lto-objects -flto=auto -Wl,-z,relro -o odin840d0a65.so odin.o registration.o -L/usr/lib/R/lib -lR
-#> installing to /tmp/RtmpAn6Jw5/devtools_install_4a4ec12b9accb/00LOCK-file4a4ec785117f2/00new/odin840d0a65/libs
+#> installing to /tmp/Rtmpu72q4w/devtools_install_511ad7ae63eca/00LOCK-file511ad449af492/00new/odin840d0a65/libs
 #> ** checking absolute paths in shared objects and dynamic libraries
 #> * DONE (odin840d0a65)
 #> ℹ Loading odin840d0a65
