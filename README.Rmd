@@ -16,8 +16,6 @@ knitr::opts_chunk$set(
 )
 ```
 
-# CamaraBR <img src="inst/figures/CamaraBR-logo.png" width="240px" align="right" /> 
-
 # MetaRVM
 
 <!-- badges: start -->
