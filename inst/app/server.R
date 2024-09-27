@@ -145,7 +145,7 @@ server <- function(input, output, session) {
 
 
     ## fill in the missing time in vac data
-    complete_time <- data.table(t = seq(0, input$days))
+    complete_time <- data.table::data.table(t = seq(0, input$days))
 
     ## merge
     vac_df <- merge(complete_time, vac_df, by = "t", all.x = TRUE)
