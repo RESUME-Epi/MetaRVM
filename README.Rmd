@@ -4,7 +4,7 @@ output: github_document
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# MetaRVM <img src="inst/logo.png" width="240px" align="right" /> 
+# MetaRVM <img src="inst/logo.png" width="200px" align="right" /> 
 
 
 ```{r, include = FALSE}

@@ -1,7 +1,7 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# MetaRVM <img src="inst/logo.png" width="240px" align="right" />
+# MetaRVM <img src="inst/logo.png" width="200px" align="right" />
 
 <!-- badges: start -->
 
@@ -61,12 +61,12 @@ pop_zones$S0 <- pop_zones$N - pop_zones$I0 - pop_zones$V0
 
 pop_zones
 #>      N   S0 I0 V0
-#> 1 1442 1344 91  7
-#> 2 1112 1015 88  9
-#> 3 1102 1006 94  2
-#> 4 1110 1020 89  1
-#> 5 1244 1196 44  4
-#> 6 1350 1270 74  6
+#> 1 1242 1167 68  7
+#> 2 1304 1276 26  2
+#> 3 1497 1397 91  9
+#> 4 1116 1069 43  4
+#> 5 1171 1080 88  3
+#> 6 1019  935 83  1
 ```
 
 #### Vaccination
@@ -87,14 +87,14 @@ colnames(vac_zones) <- c("t", paste0("v", 1:N_pop))
 
 vac_zones
 #>       t v1 v2 v3 v4 v5 v6
-#> [1,]  0  7  9  2  1  4  6
-#> [2,] 14  1  6  3  9  3  1
-#> [3,] 28  5  8  3  6  7  4
-#> [4,] 42  3 10  2  2  6  2
-#> [5,] 56  6  6  8  5  3  2
-#> [6,] 70  7  4  2  3  4  5
-#> [7,] 84  3  1  9 10  2  3
-#> [8,] 98  7  3  5  3 10  4
+#> [1,]  0  7  2  9  4  3  1
+#> [2,] 14  9 10  7  8  7  3
+#> [3,] 28  5  5  8  3 10  4
+#> [4,] 42  5  5  7  7  8  6
+#> [5,] 56  2  2 10  5  1  5
+#> [6,] 70  8  1  9  1  5  8
+#> [7,] 84  1  8  5  1  6  8
+#> [8,] 98  4  2  8  6 10  6
 ```
 
 ``` r
@@ -161,7 +161,7 @@ out <- meta_sim(N_pop = N_pop,
 #> gcc -I"/usr/share/R/include" -DNDEBUG      -fpic  -g -O2 -ffile-prefix-map=/build/r-base-4A2Reg/r-base-4.1.2=. -fstack-protector-strong -Wformat -Werror=format-security -Wdate-time -D_FORTIFY_SOURCE=2 -g  -UNDEBUG -Wall -pedantic -g -O0 -c odin.c -o odin.o
 #> gcc -I"/usr/share/R/include" -DNDEBUG      -fpic  -g -O2 -ffile-prefix-map=/build/r-base-4A2Reg/r-base-4.1.2=. -fstack-protector-strong -Wformat -Werror=format-security -Wdate-time -D_FORTIFY_SOURCE=2 -g  -UNDEBUG -Wall -pedantic -g -O0 -c registration.c -o registration.o
 #> gcc -shared -L/usr/lib/R/lib -Wl,-Bsymbolic-functions -flto=auto -ffat-lto-objects -flto=auto -Wl,-z,relro -o odin840d0a65.so odin.o registration.o -L/usr/lib/R/lib -lR
-#> installing to /tmp/RtmpS4qLfz/devtools_install_5632645083d08/00LOCK-file5632658fd49ae/00new/odin840d0a65/libs
+#> installing to /tmp/RtmpUrhFCw/devtools_install_565cf4295bf62/00LOCK-file565cf59cc04cd/00new/odin840d0a65/libs
 #> ** checking absolute paths in shared objects and dynamic libraries
 #> * DONE (odin840d0a65)
 #> ℹ Loading odin840d0a65
