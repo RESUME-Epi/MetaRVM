@@ -24,6 +24,7 @@ Imports:
     sf,
     shiny,
     shinydashboard,
+    shinythemes,
     tidyr
 Suggests: 
     knitr,

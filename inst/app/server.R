@@ -139,6 +139,15 @@ server <- function(input, output, session) {
     S_ini <- pop_df[, S0]
     I_symp_ini <- pop_df[, I0]
     V_ini <- pop_df[, V0]
+
+
+    ## fill in the missing time in vac data
+    complete_time <- data.table(t = seq(0, input$days))
+
+    ## merge
+    vac_df <- merge(complete_time, vac_df, by = "t", all.x = TRUE)
+    vac_df[is.na(vac_df)] <- 0
+
     tt <- vac_df[, t]
     vac <- as.matrix(vac_df[, -1])
 
@@ -235,7 +244,8 @@ server <- function(input, output, session) {
                               "I_symp" = "red4",
                               "H" = "mediumpurple",
                               "R" = "green",
-                              "D" = "grey")
+                              "D" = "grey",
+                              "V" = "darkgreen")
 
       plotly::ggplotly(
         ggplot2::ggplot(long_out %>%
@@ -257,7 +267,7 @@ server <- function(input, output, session) {
             y = "Counts",
             color = "Compartment",
           ) +
-          ggplot2::theme_minimal() +
+          ggplot2::theme_gray() +
           ggplot2::theme(
             plot.title = element_text(hjust = 0.5),
             legend.position = "right"
@@ -279,7 +289,7 @@ server <- function(input, output, session) {
       df_pop <- long_out %>%
         dplyr::filter(disease_state == "P") %>%    # Filter for P compartment (total population)
         dplyr::group_by(step, rep) %>%
-        dplyr::select(step, P = value) %>%
+        dplyr::select(step, rep, P = value) %>%
         dplyr::summarise(P_sum = sum(P), .groups = "drop") %>% ungroup()
       df_combined <- df_e %>%
         dplyr::left_join(df_pop, by = c("step", "rep")) %>%
@@ -313,7 +323,7 @@ server <- function(input, output, session) {
       df_pop <- long_out %>%
         dplyr::filter(disease_state == "P") %>%    # Filter for P compartment (total population)
         dplyr::group_by(step, rep) %>%
-        dplyr::select(step, P = value) %>%
+        dplyr::select(step, rep, P = value) %>%
         dplyr::summarise(P_sum = sum(P), .groups = "drop") %>% ungroup()
       df_combined <- df_h %>%
         dplyr::left_join(df_pop, by = c("step", "rep")) %>%
@@ -347,7 +357,7 @@ server <- function(input, output, session) {
       df_pop <- long_out %>%
         dplyr::filter(disease_state == "P") %>%    # Filter for P compartment (total population)
         dplyr::group_by(step, rep) %>%
-        dplyr::select(step, P = value) %>%
+        dplyr::select(step, rep, P = value) %>%
         dplyr::summarise(P_sum = sum(P), .groups = "drop") %>% ungroup()
       df_combined <- df_d %>%
         dplyr::left_join(df_pop, by = c("step", "rep")) %>%
@@ -360,6 +370,41 @@ server <- function(input, output, session) {
           # scale_color_manual(values = compartment_colors) +
           ggplot2::labs(
             title = "New deaths rate",
+            x = "Time",
+            y = "proportions") +
+          ggplot2::theme_minimal() +
+          ggplot2::theme(
+            plot.title = element_text(hjust = 0.5)
+          )
+      )
+    })
+
+
+    # new vaccinations
+    output$new_vac_plot <- plotly::renderPlotly({
+
+
+      # prepare the data
+      df_d <- long_out %>%
+        dplyr::filter(disease_state %in% c("n_SV")) %>%
+        dplyr::group_by(step, rep) %>%
+        dplyr::summarise(V_sum = sum(value), .groups = "drop") %>% ungroup()
+      df_pop <- long_out %>%
+        dplyr::filter(disease_state == "P") %>%    # Filter for P compartment (total population)
+        dplyr::group_by(step, rep) %>%
+        dplyr::select(step, rep, P = value) %>%
+        dplyr::summarise(P_sum = sum(P), .groups = "drop") %>% ungroup()
+      df_combined <- df_d %>%
+        dplyr::left_join(df_pop, by = c("step", "rep")) %>%
+        dplyr::mutate(V_rate = V_sum / P_sum)
+
+      plotly::ggplotly(
+        ggplot2::ggplot(df_combined,
+                        aes(x = step, y = V_rate, group = rep)) +
+          ggplot2::geom_col(alpha = 0.5, color = "darkgreen") +
+          # scale_color_manual(values = compartment_colors) +
+          ggplot2::labs(
+            title = "New vaccination",
             x = "Time",
             y = "proportions") +
           ggplot2::theme_minimal() +
@@ -474,7 +519,7 @@ server <- function(input, output, session) {
             y = "Counts",
             color = "Compartment",
           ) +
-          ggplot2::theme_minimal() +
+          ggplot2::theme_bw() +
           ggplot2::theme(
             plot.title = element_text(hjust = 0.5),
             legend.position = "right"

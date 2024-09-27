@@ -1,11 +1,17 @@
 library(shiny)
 library(shinydashboard)
-library(DiagrammeR)
-library(plotly)
-library(DT)
-library(leaflet)
+# library(DiagrammeR)
+# library(plotly)
+# library(DT)
+# library(leaflet)
+# library(shinythemes)
+library(bslib)
 
 ui <- fluidPage(
+
+  # Apply a theme
+  # theme = shinytheme("simplex"),
+  theme = bs_theme(version = 5, bootswatch = "cosmo"),
 
   # for math
   withMathJax(),
@@ -210,9 +216,14 @@ ui <- fluidPage(
                                 plotly::plotlyOutput("new_death_plot", height = "500px"))
                        ),
                        column(6,
-                              # h4("Simulation Results"),
-                              # tableOutput("population_table"),  # Show the uploaded population data as a table
-                              plotly::plotlyOutput("new_death_plot", height = "500px")
+                              shinydashboard::box(
+                                title = "",
+                                status = "primary",
+                                solidHeader = TRUE,
+                                collapsible = TRUE,
+                                width = 12,  # Full width
+                                # class = "custom-box",
+                                plotly::plotlyOutput("new_vac_plot", height = "500px"))
                        ),
 
                    )
@@ -248,9 +259,9 @@ ui <- fluidPage(
                          column(12, DT::dataTableOutput("population_table")),
                          br(),
                          column(12, tableOutput("out_table")),
-                         # br(),
-                         # h4("Vaccination"),
-                         # column(12, dataTableOutput("vac_table")),
+                         br(),
+                         h4("Vaccination"),
+                         column(12, DT::dataTableOutput("vac_table")),
                          # br(),
                          # br(),
                          # h4("Mixing day"),

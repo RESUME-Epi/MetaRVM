@@ -178,6 +178,7 @@ meta_sim <- function(N_pop, beta_i, beta_v,
     output(p_VE) <- TRUE
     output(I_eff) <- TRUE
     output(n_SE) <- TRUE
+    output(n_SV) <- TRUE
     output(n_VE) <- TRUE
     output(n_EI) <- TRUE
     output(n_EIpresymp) <- TRUE
