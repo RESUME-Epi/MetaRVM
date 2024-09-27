@@ -63,7 +63,7 @@ server <- function(input, output, session) {
 
     # Node numbers with labelled text
     node [shape = box,
-    width = 3,
+    width = 2,
     fontname = Helvetica]
 
     S [label = 'Susceptible', style = 'filled', fillcolor = 'palegreen4']
@@ -77,16 +77,19 @@ server <- function(input, output, session) {
     D [label = 'Dead', style = 'filled', fillcolor = 'grey']
 
     edge[color=darkgrey,arrowhead=vee]
-    S -> E -> Ia -> R;
-    S -> V;
-    V -> S;
-    V -> E;
-    E -> Ip;
-    Ip -> Is -> H;
+    S -> E ;
+    E -> Ia ;
+    Ia -> R ;
+    S -> V ;
+    V -> S ;
+    V -> E ;
+    E -> Ip ;
+    Ip -> Is ;
+    Is -> H ;
     Is -> R;
     H -> R;
     H -> D;
-    R -> S;
+    R -> S ;
 
     {rank = min; S; E; Ia; R}
     {rank = same; Ip; Is; H}
