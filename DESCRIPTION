@@ -1,9 +1,9 @@
 Package: MetaRVM
-Title: What the Package Does (One Line, Title Case)
-Version: 0.0.0.9000
+Title: Meta-population compartmental model for respiratory virus diseases
+Version: 0.0.1
 Authors@R: 
     person("Arindam", "Fadikar", , "afadikar@anl.gov", role = c("aut", "cre"))
-Description: What the package does (one paragraph).
+Description: Simulation of meta-population compartmental model
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
