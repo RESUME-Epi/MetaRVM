@@ -13,6 +13,7 @@ Depends:
 LazyData: true
 Imports: 
     data.table,
+    dde,
     DiagrammeR,
     dplyr,
     DT,
