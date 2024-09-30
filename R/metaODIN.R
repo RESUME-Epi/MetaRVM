@@ -36,7 +36,7 @@
 #' @param is.stoch 1 if the simulation is stochastic, 0 otherwise
 #' @param seed optional, for reproducibility, only application when is.stoch = 1
 #'
-#' @return A data frame of model output
+#' @return A matrix of model output
 #' @export
 #'
 

@@ -18,7 +18,8 @@ knitr::opts_chunk$set(
 library(MetaRVM)
 ```
 
-We will create some sample input for this model run
+We will create some sample input for this model run. (This data sets are also provided as part of the package).
+
 
 ```{r}
 ## Model initialization
@@ -98,5 +99,58 @@ out <- meta_sim(N_pop = N_pop,
                  is.stoch = 0,
                  seed = NULL)
 
-out
+# head(out)
+```
+
+There are some utility functions to extract a subset of disease states from the output data frame. For example, if we want to extract all infectious compartments, we can do this by the utility function `get_disease_state`.
+
+```{r}
+out_I <- get_disease_state(data.frame(out), disease_states = c("I_presymp", "I_asymp", "I_symp"))
+```
+
+## Vizualizations
+
+These are some easy way to create visualizations on the output of the simulation. These functionalities will be added later as functions to the package.
+
+#### Aggregate level plot
+
+```{r}
+library(ggplot2)
+library(dplyr)
+
+compartment_colors <- c("S" = "steelblue3",
+                              "E" = "tan1",
+                              "I_presymp" = "salmon3",
+                              "I_asymp" = "orangered2",
+                              "I_symp" = "red4",
+                              "H" = "mediumpurple",
+                              "R" = "green",
+                              "D" = "grey",
+                              "V" = "darkgreen")
+
+long_out <- get_disease_state(data.frame(out))
+
+ggplot(long_out %>% filter(disease_state %in% c("S", "E", "H", "D",
+                                                "I_presymp", "I_asymp",
+                                                "I_symp", "R", "V")) %>%
+                          mutate(disease_state = factor(disease_state,
+                                                        levels = c("S", "E", "H", "D",
+                                                                   "I_presymp", "I_asymp",
+                                                                   "I_symp", "R", "V"))) %>%
+                          group_by(step, disease_state) %>%
+                          summarize(total_value = sum(value), .groups = "drop"),
+       aes(x = step, y = total_value, color = disease_state)) +
+          geom_line(linewidth = 0.5, alpha = 0.5) +
+          scale_color_manual(values = compartment_colors) +
+          labs(
+            title = "Disease Compartments Over Time",
+            x = "steps",
+            y = "Counts",
+            color = "Compartment",
+          ) +
+          theme_bw() +
+          theme(
+            plot.title = element_text(hjust = 0.5),
+            legend.position = "right"
+          )
 ```

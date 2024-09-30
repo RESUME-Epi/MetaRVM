@@ -93,7 +93,7 @@ meta_sim(
 \item{seed}{optional, for reproducibility, only application when is.stoch = 1}
 }
 \value{
-A data frame of model output
+A matrix of model output
 }
 \description{
 The main simulator which compiles and run an ODIN model in the background

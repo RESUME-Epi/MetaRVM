@@ -74,7 +74,7 @@ server <- function(input, output, session) {
     Ip [label = 'Infectious \n Presymptomatic', style = 'filled', fillcolor = 'indianred1']
     Ia [label = 'Infectious \n Asymptomatic', style = 'filled', fillcolor = 'indianred3']
     Is [label = 'Infectious \n Symptomatic', style = 'filled', fillcolor = 'indianred3']
-    H [label = 'Hospitalized', style = 'filled', fillcolor = 'indianred4']
+    H [label = 'Hospitalized', style = 'filled', fillcolor = 'indianred4', fontcolor = 'white']
     R [label = 'Recoverd', style = 'filled', fillcolor = 'lightyellow']
     D [label = 'Dead', style = 'filled', fillcolor = 'grey']
 
@@ -130,6 +130,20 @@ server <- function(input, output, session) {
     } else {
       read.csv(system.file("extdata", "m_weekend_night.csv", package = "MetaRVM"), header = F)
     }
+  })
+
+  # Display the mixing matrices in the UI
+  output$m1 <- DT::renderDT({
+    read_m1()
+  })
+  output$m2 <- DT::renderDT({
+    read_m2()
+  })
+  output$m3 <- DT::renderDT({
+    read_m3()
+  })
+  output$m4 <- DT::renderDT({
+    read_m4()
   })
 
   ## ---------------------------------------------------------------------------
@@ -269,7 +283,7 @@ server <- function(input, output, session) {
           ggplot2::labs(
             # title = "Disease Compartments Over Time",
             x = "Time",
-            y = "Counts",
+            y = "# of people",
             color = "Compartment",
           ) +
           ggplot2::theme_bw() +
@@ -521,7 +535,7 @@ server <- function(input, output, session) {
           ggplot2::labs(
             title = selected_zone(),
             x = "Time",
-            y = "Counts",
+            y = "# of people",
             color = "Compartment",
           ) +
           ggplot2::theme_bw() +

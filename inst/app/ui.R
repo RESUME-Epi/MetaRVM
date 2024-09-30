@@ -153,16 +153,27 @@ ui <- tagList(
                    br(),
                    br(),
                    h3("Instructions"),
-                   p("The model depends on a set of disease parameters and population information to initialize the simulation. Majority of the parameters are scalar valued parameter which can be directly entered into the appropriate input boxes. Others need to supplied via CSV or text file. Below is a brief description of the list of inputs, their structure and acceptable ranges. The model can also be run in either deterministic or stochastic mode."),
+                   p("The model depends on a set of disease parameters and population information to initialize the simulation.
+                     Majority of the parameters are scalar valued parameter which can be directly entered into the appropriate
+                     input boxes. Others need to supplied via CSV or text file. Below is a brief description of the list of inputs,
+                     their structure and acceptable ranges. The model can also be run in either deterministic or stochastic mode.
+                     A set of sample datasets are already provided in the package which can be seen under the Input data tab.
+                     When no input data is provided by the users, the provided data sets will be used as default."),
                        tags$ul(
                          tags$li(strong("Population and initialization data:"), tags$br(),
-                                 HTML("&nbsp;&nbsp;&nbsp;&nbsp;"), "A CSV file with four columns where the number of rows is the same as the number of subpopulations, The columns are N: total population,
-                               S0: number of susceptible at the start of the simulation, I0: number of infected people at the start of the simulation, V0: number of vaccinated people at the start of the simulation"),
+                                 HTML("&nbsp;&nbsp;&nbsp;&nbsp;"), "A CSV file with four columns where the number of rows is the same
+                                 as the number of subpopulations, The columns are N: total population,
+                               S0: number of susceptible at the start of the simulation, I0: number of
+                                 infected people at the start of the simulation, V0: number of vaccinated
+                                 people at the start of the simulation"),
                          tags$li(strong("Vaccination data:"), tags$br(),
-                                 HTML("&nbsp;&nbsp;&nbsp;&nbsp;"), "A CSV file with number of (subpopulations + 1) many columns. The first column indicates the time indices and the remaining
+                                 HTML("&nbsp;&nbsp;&nbsp;&nbsp;"), "A CSV file with number of (subpopulations + 1) many columns.
+                                 The first column indicates the time indices and the remaining
                                columns hold the number of vaccinations in each of the subpopulations."),
                          tags$li(strong("Mixing matrix:"), tags$br(),
-                                 HTML("&nbsp;&nbsp;&nbsp;&nbsp;"), "A CSV file of mixing matrix"),
+                                 HTML("&nbsp;&nbsp;&nbsp;&nbsp;"), "A CSV file of mixing matrix. There are four sets of
+                                 mixing matrices required for the simulation, accounting for different mixing patterns in
+                                 weekdays vs weekends and in day time vs night time. The rows of a mixing matrix should add up to 1."),
                          tags$li(strong("delta_t:"), "positive real number, simulation time step"),
                          tags$li(strong("beta_e:"), "transmission rate for Susceptible to Exposed, a value between 0 and 1"),
                          tags$li(strong("beta_v:"), "transmission rate for Vaccinated to Exposed, a value between 0 and 1"),
@@ -182,7 +193,7 @@ ui <- tagList(
             )
           )
       ),
-      nav_panel("Simulation control",
+      nav_panel("Simulation Control",
           fluidRow(
             column(4, wellPanel(
                         h3("File inputs"),
@@ -267,7 +278,7 @@ ui <- tagList(
            column(6,
                   card(
                     div(class = "custom-card",
-                        div(class = "custom-card-header", card_header("New Incidence")),
+                        div(class = "custom-card-header", card_header("New Infections")),
                         div(class = "custom-card-body", plotly::plotlyOutput("new_infection_plot", height = "300px"))
                     )
                   )
@@ -329,7 +340,7 @@ ui <- tagList(
           )
 
       ),
-      nav_panel("Vizualizations",
+      nav_panel("HCEZ Figures",
                 fluidRow(
                   br(),
                    br(),
@@ -354,6 +365,35 @@ ui <- tagList(
                            )
                          )
                   ),
+                )
+      ),
+
+      nav_panel("Input Data",
+                fluidRow(
+                  br(),
+                  br(),
+                  h4("Population data"),
+                  column(12, DT::dataTableOutput("population_table")),
+                  br(),
+                  br(),
+                  h4("Vaccination data"),
+                  column(12, DT::dataTableOutput("vac_table")),
+                  br(),
+                  br(),
+                  h4("Mixing matrix - weekday day"),
+                  column(12, DT::dataTableOutput("m1")),
+                  br(),
+                  br(),
+                  h4("Mixing matrix - weekday night"),
+                  column(12, DT::dataTableOutput("m2")),
+                  br(),
+                  br(),
+                  h4("Mixing matrix - weekend day"),
+                  column(12, DT::dataTableOutput("m3")),
+                  br(),
+                  br(),
+                  h4("Mixing matrix - weekend night"),
+                  column(12, DT::dataTableOutput("m4")),
                 )
       ),
 

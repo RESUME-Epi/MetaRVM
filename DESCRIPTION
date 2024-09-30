@@ -19,6 +19,7 @@ Imports:
     DT,
     ggplot2,
     leaflet,
+    magrittr,
     odin,
     plotly,
     RColorBrewer,
