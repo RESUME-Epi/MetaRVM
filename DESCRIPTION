@@ -1,8 +1,12 @@
 Package: MetaRVM
 Title: Meta-population compartmental model for respiratory virus diseases
 Version: 0.0.1
-Authors@R: 
-    person("Arindam", "Fadikar", , "afadikar@anl.gov", role = c("aut", "cre"))
+Authors@R: c(
+    person("Arindam", "Fadikar", , "afadikar@anl.gov", role = c("aut", "cre")),
+    person("Charles", "Macal", role = "aut"),
+    person("Martinez Moyano", "Ignacio Javier", role = "ctb"),
+    person("Ozik", "Jonathan", role = "ctb")
+  )
 Description: Simulation of meta-population compartmental model
 License: MIT + file LICENSE
 Encoding: UTF-8

@@ -41,29 +41,7 @@ ui <- tagList(
     "))
   ),
 
-  # Add custom CSS for styling the button
-  tags$head(
-    tags$style(HTML("
-      .custom-button {
-        background-color: #4CAF50; /* Green background */
-        border: none; /* Remove border */
-        color: white; /* White text */
-        padding: 15px 32px; /* Padding */
-        text-align: center; /* Center text */
-        text-decoration: none; /* No underline */
-        display: inline-block; /* Inline-block */
-        font-size: 16px; /* Font size */
-        margin: 4px 2px; /* Margin */
-        cursor: pointer; /* Pointer cursor on hover */
-        border-radius: 8px; /* Rounded corners */
-        transition: background-color 0.3s; /* Transition effect */
-      }
 
-      .custom-button:hover {
-        background-color: #45a049; /* Darker green on hover */
-      }
-    "))
-  ),
 
   # Add custom CSS for styling the card
   tags$head(
@@ -126,6 +104,30 @@ ui <- tagList(
       # # for math
       # withMathJax(),
       #
+
+      # Add custom CSS for styling the button
+      tags$head(
+        tags$style(HTML("
+      .custom-button {
+        background-color: #4ac1f4; /* background */
+        border: none; /* Remove border */
+        color: white; /* White text */
+        padding: 15px 32px; /* Padding */
+        text-align: center; /* Center text */
+        text-decoration: none; /* No underline */
+        display: inline-block; /* Inline-block */
+        font-size: 16px; /* Font size */
+        margin: 4px 2px; /* Margin */
+        cursor: pointer; /* Pointer cursor on hover */
+        border-radius: 8px; /* Rounded corners */
+        transition: background-color 0.3s; /* Transition effect */
+      }
+
+      .custom-button:hover {
+        background-color: #45a049; /* Darker green on hover */
+      }
+    "))
+      ),
 
       #
       #
