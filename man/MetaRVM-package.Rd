@@ -11,5 +11,16 @@ Simulation of meta-population compartmental model
 \author{
 \strong{Maintainer}: Arindam Fadikar \email{afadikar@anl.gov}
 
+Authors:
+\itemize{
+  \item Charles Macal
+}
+
+Other contributors:
+\itemize{
+  \item Martinez Moyano Ignacio Javier [contributor]
+  \item Ozik Jonathan [contributor]
+}
+
 }
 \keyword{internal}

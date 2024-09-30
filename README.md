@@ -11,6 +11,11 @@
 This is a compartmental model simulation code for generic respiratory
 virus diseases.
 
+## Model
+
+<div class="grViz html-widget html-fill-item" id="htmlwidget-72ba327d9b9082e597d2" style="width:100%;height:480px;"></div>
+<script type="application/json" data-for="htmlwidget-72ba327d9b9082e597d2">{"x":{"diagram":"digraph {\n\n    graph[layout = dot,\n          fontsize = 15,\n          outputorder = edgesfirst,\n          ranksep = 1]\n\n    # Node numbers with labelled text\n    node [shape = box,\n    width = 2,\n    fontname = Helvetica]\n\n    S [label = \"Susceptible\", style = \"filled\", fillcolor = \"palegreen4\"]\n    E [label = \"Exposed\", style = \"filled\", fillcolor = \"yellow\"]\n    V [label = \"Vaccinated\", style = \"filled\", fillcolor = \"palegreen\"]\n    Ip [label = \"Infectious \n Presymptomatic\", style = \"filled\", fillcolor = \"indianred1\"]\n    Ia [label = \"Infectious \n Asymptomatic\", style = \"filled\", fillcolor = \"indianred3\"]\n    Is [label = \"Infectious \n Symptomatic\", style = \"filled\", fillcolor = \"indianred3\"]\n    H [label = \"Hospitalized\", style = \"filled\", fillcolor = \"indianred4\", fontcolor = \"white\"]\n    R [label = \"Recoverd\", style = \"filled\", fillcolor = \"lightyellow\"]\n    D [label = \"Dead\", style = \"filled\", fillcolor = \"grey\"]\n\n    edge[color=darkgrey,arrowhead=vee]\n    S -> E ;\n    E -> Ia ;\n    Ia -> R ;\n    S -> V ;\n    V -> S ;\n    V -> E ;\n    E -> Ip ;\n    Ip -> Is ;\n    Is -> H ;\n    Is -> R;\n    H -> R;\n    H -> D;\n    R -> S ;\n\n    {rank = min; S; E; Ia; R}\n    {rank = same; Ip; Is; H}\n    {rank = max; V; D}\n\n    }","config":{"engine":"dot","options":null}},"evals":[],"jsHooks":[]}</script>
+
 ## Installation
 
 You can install the development version of MetaRVM from
@@ -60,13 +65,13 @@ pop_zones$V0 <- sample(1:10, N_pop)
 pop_zones$S0 <- pop_zones$N - pop_zones$I0 - pop_zones$V0
 
 pop_zones
-#>      N   S0  I0 V0
-#> 1 1438 1354  83  1
-#> 2 1078  976  98  4
-#> 3 1263 1208  47  8
-#> 4 1324 1240  82  2
-#> 5 1359 1335  15  9
-#> 6 1483 1380 100  3
+#>      N   S0 I0 V0
+#> 1 1011  942 63  6
+#> 2 1458 1419 31  8
+#> 3 1405 1345 53  7
+#> 4 1447 1406 39  2
+#> 5 1443 1423 11  9
+#> 6 1437 1380 54  3
 ```
 
 #### Vaccination
@@ -87,14 +92,14 @@ colnames(vac_zones) <- c("t", paste0("v", 1:N_pop))
 
 vac_zones
 #>       t v1 v2 v3 v4 v5 v6
-#> [1,]  0  1  4  8  2  9  3
-#> [2,] 14 10  9  8  4  9  3
-#> [3,] 28  4  3  5 10  1  6
-#> [4,] 42  8  2  3  4  5  3
-#> [5,] 56  5  4  6  7  1  1
-#> [6,] 70  8  2  2  9  2  9
-#> [7,] 84  8  7  6  2  5  2
-#> [8,] 98  9  3  6  2  2 10
+#> [1,]  0  6  8  7  2  9  3
+#> [2,] 14  3  5  1  4  2  4
+#> [3,] 28  3  3  8 10  7  4
+#> [4,] 42  6  2  9  2  1  5
+#> [5,] 56  7  7  5  7  6  1
+#> [6,] 70  3  3  4  8  9  9
+#> [7,] 84  6  5  5  5  8 10
+#> [8,] 98  2  3  4  7  5  2
 ```
 
 ``` r
@@ -161,7 +166,7 @@ out <- meta_sim(N_pop = N_pop,
 #> gcc -I"/usr/share/R/include" -DNDEBUG      -fpic  -g -O2 -ffile-prefix-map=/build/r-base-4A2Reg/r-base-4.1.2=. -fstack-protector-strong -Wformat -Werror=format-security -Wdate-time -D_FORTIFY_SOURCE=2 -g  -UNDEBUG -Wall -pedantic -g -O0 -c odin.c -o odin.o
 #> gcc -I"/usr/share/R/include" -DNDEBUG      -fpic  -g -O2 -ffile-prefix-map=/build/r-base-4A2Reg/r-base-4.1.2=. -fstack-protector-strong -Wformat -Werror=format-security -Wdate-time -D_FORTIFY_SOURCE=2 -g  -UNDEBUG -Wall -pedantic -g -O0 -c registration.c -o registration.o
 #> gcc -shared -L/usr/lib/R/lib -Wl,-Bsymbolic-functions -flto=auto -ffat-lto-objects -flto=auto -Wl,-z,relro -o odin840d0a65.so odin.o registration.o -L/usr/lib/R/lib -lR
-#> installing to /tmp/RtmpwZCkhn/devtools_install_7da49714cdb3/00LOCK-file7da492f74baa2/00new/odin840d0a65/libs
+#> installing to /tmp/RtmpuaNN6h/devtools_install_7f2783bf2fcf5/00LOCK-file7f2782f113a3a/00new/odin840d0a65/libs
 #> ** checking absolute paths in shared objects and dynamic libraries
 #> * DONE (odin840d0a65)
 #> ℹ Loading odin840d0a65
@@ -234,7 +239,7 @@ ggplot(long_out %>% filter(disease_state %in% c("S", "E", "H", "D",
           )
 ```
 
-<img src="man/figures/README-unnamed-chunk-5-1.png" width="100%" />
+<img src="man/figures/README-unnamed-chunk-6-1.png" width="100%" />
 
 To run this simulation interactively, use the provided shiny app
 
