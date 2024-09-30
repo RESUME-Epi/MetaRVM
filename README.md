@@ -13,8 +13,10 @@ virus diseases.
 
 ## Model
 
-<div class="grViz html-widget html-fill-item" id="htmlwidget-72ba327d9b9082e597d2" style="width:100%;height:480px;"></div>
-<script type="application/json" data-for="htmlwidget-72ba327d9b9082e597d2">{"x":{"diagram":"digraph {\n\n    graph[layout = dot,\n          fontsize = 15,\n          outputorder = edgesfirst,\n          ranksep = 1]\n\n    # Node numbers with labelled text\n    node [shape = box,\n    width = 2,\n    fontname = Helvetica]\n\n    S [label = \"Susceptible\", style = \"filled\", fillcolor = \"palegreen4\"]\n    E [label = \"Exposed\", style = \"filled\", fillcolor = \"yellow\"]\n    V [label = \"Vaccinated\", style = \"filled\", fillcolor = \"palegreen\"]\n    Ip [label = \"Infectious \n Presymptomatic\", style = \"filled\", fillcolor = \"indianred1\"]\n    Ia [label = \"Infectious \n Asymptomatic\", style = \"filled\", fillcolor = \"indianred3\"]\n    Is [label = \"Infectious \n Symptomatic\", style = \"filled\", fillcolor = \"indianred3\"]\n    H [label = \"Hospitalized\", style = \"filled\", fillcolor = \"indianred4\", fontcolor = \"white\"]\n    R [label = \"Recoverd\", style = \"filled\", fillcolor = \"lightyellow\"]\n    D [label = \"Dead\", style = \"filled\", fillcolor = \"grey\"]\n\n    edge[color=darkgrey,arrowhead=vee]\n    S -> E ;\n    E -> Ia ;\n    Ia -> R ;\n    S -> V ;\n    V -> S ;\n    V -> E ;\n    E -> Ip ;\n    Ip -> Is ;\n    Is -> H ;\n    Is -> R;\n    H -> R;\n    H -> D;\n    R -> S ;\n\n    {rank = min; S; E; Ia; R}\n    {rank = same; Ip; Is; H}\n    {rank = max; V; D}\n\n    }","config":{"engine":"dot","options":null}},"evals":[],"jsHooks":[]}</script>
+<figure>
+<img src="man/figures/model.png" alt="Model schematics" />
+<figcaption aria-hidden="true">Model schematics</figcaption>
+</figure>
 
 ## Installation
 
@@ -66,12 +68,12 @@ pop_zones$S0 <- pop_zones$N - pop_zones$I0 - pop_zones$V0
 
 pop_zones
 #>      N   S0 I0 V0
-#> 1 1011  942 63  6
-#> 2 1458 1419 31  8
-#> 3 1405 1345 53  7
-#> 4 1447 1406 39  2
-#> 5 1443 1423 11  9
-#> 6 1437 1380 54  3
+#> 1 1099 1051 41  7
+#> 2 1176 1104 63  9
+#> 3 1144 1105 38  1
+#> 4 1174 1087 84  3
+#> 5 1409 1328 71 10
+#> 6 1161 1061 96  4
 ```
 
 #### Vaccination
@@ -92,14 +94,14 @@ colnames(vac_zones) <- c("t", paste0("v", 1:N_pop))
 
 vac_zones
 #>       t v1 v2 v3 v4 v5 v6
-#> [1,]  0  6  8  7  2  9  3
-#> [2,] 14  3  5  1  4  2  4
-#> [3,] 28  3  3  8 10  7  4
-#> [4,] 42  6  2  9  2  1  5
-#> [5,] 56  7  7  5  7  6  1
-#> [6,] 70  3  3  4  8  9  9
-#> [7,] 84  6  5  5  5  8 10
-#> [8,] 98  2  3  4  7  5  2
+#> [1,]  0  7  9  1  3 10  4
+#> [2,] 14  7  5  6  4  1  5
+#> [3,] 28  6  7  3 10 10  9
+#> [4,] 42  8  5 10  2  2  4
+#> [5,] 56  5  9  5  5  9  2
+#> [6,] 70  7  7  8  7  2  9
+#> [7,] 84  6  7  9  5  8  4
+#> [8,] 98  1  4  7  7 10  9
 ```
 
 ``` r
@@ -166,7 +168,7 @@ out <- meta_sim(N_pop = N_pop,
 #> gcc -I"/usr/share/R/include" -DNDEBUG      -fpic  -g -O2 -ffile-prefix-map=/build/r-base-4A2Reg/r-base-4.1.2=. -fstack-protector-strong -Wformat -Werror=format-security -Wdate-time -D_FORTIFY_SOURCE=2 -g  -UNDEBUG -Wall -pedantic -g -O0 -c odin.c -o odin.o
 #> gcc -I"/usr/share/R/include" -DNDEBUG      -fpic  -g -O2 -ffile-prefix-map=/build/r-base-4A2Reg/r-base-4.1.2=. -fstack-protector-strong -Wformat -Werror=format-security -Wdate-time -D_FORTIFY_SOURCE=2 -g  -UNDEBUG -Wall -pedantic -g -O0 -c registration.c -o registration.o
 #> gcc -shared -L/usr/lib/R/lib -Wl,-Bsymbolic-functions -flto=auto -ffat-lto-objects -flto=auto -Wl,-z,relro -o odin840d0a65.so odin.o registration.o -L/usr/lib/R/lib -lR
-#> installing to /tmp/RtmpuaNN6h/devtools_install_7f2783bf2fcf5/00LOCK-file7f2782f113a3a/00new/odin840d0a65/libs
+#> installing to /tmp/Rtmp3FjtcU/devtools_install_7feee7047e3f3/00LOCK-file7feee37bdb12d/00new/odin840d0a65/libs
 #> ** checking absolute paths in shared objects and dynamic libraries
 #> * DONE (odin840d0a65)
 #> ℹ Loading odin840d0a65
@@ -239,7 +241,7 @@ ggplot(long_out %>% filter(disease_state %in% c("S", "E", "H", "D",
           )
 ```
 
-<img src="man/figures/README-unnamed-chunk-6-1.png" width="100%" />
+<img src="man/figures/README-unnamed-chunk-5-1.png" width="100%" />
 
 To run this simulation interactively, use the provided shiny app
 
