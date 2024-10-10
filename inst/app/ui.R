@@ -95,10 +95,11 @@ ui <- tagList(
       ")),
 
   div(class = "app-container",
-      page_navbar(
+      # page_navbar(id = "navbar",
+      navbarPage(id = "navbar",
 
       # Apply a theme
-      theme = shinytheme("readable"),
+      # theme = shinytheme("readable"),
       # theme = bs_theme(version = 5, bootswatch = "spacelab"),
 
       # # for math
@@ -131,7 +132,7 @@ ui <- tagList(
 
       #
       #
-      nav_panel("Model",
+      tabPanel("Model",
           fluidRow(
             column(12,
                    # h3("Model Description"),
@@ -195,7 +196,7 @@ ui <- tagList(
             )
           )
       ),
-      nav_panel("Simulation Control",
+      tabPanel("Simulation Control",
           fluidRow(
             column(4, wellPanel(
                         h3("File inputs"),
@@ -342,11 +343,12 @@ ui <- tagList(
           )
 
       ),
-      nav_panel("HCEZ Figures",
+      tabPanel("HCEZ Figures",
                 fluidRow(
                   br(),
                    br(),
                    column(12, leaflet::leafletOutput("map", height = "500px")),     # Choropleth map
+                  # column(12, plotOutput("map", height = "500px")),
                    br(),
                    br(),
                    # column(12,
@@ -370,7 +372,7 @@ ui <- tagList(
                 )
       ),
 
-      nav_panel("Input Data",
+      tabPanel("Input Data",
                 fluidRow(
                   br(),
                   br(),
@@ -396,6 +398,8 @@ ui <- tagList(
                   br(),
                   h4("Mixing matrix - weekend night"),
                   column(12, DT::dataTableOutput("m4")),
+                  h4("Selected tab"),
+                  column(12, textOutput("tab")),
                 )
       ),
 
