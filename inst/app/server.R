@@ -4,6 +4,8 @@ library(dplyr)
 library(ggplot2)
 library(odin)
 library(dde)
+library(future)
+library(promises)
 # library(data.table)
 # library(DiagrammeR)
 # library(odin)
@@ -144,6 +146,10 @@ server <- function(input, output, session) {
   })
   output$m4 <- DT::renderDT({
     read_m4()
+  })
+
+  output$tab <- renderText({
+    input$navbar
   })
 
   ## ---------------------------------------------------------------------------
@@ -436,41 +442,51 @@ server <- function(input, output, session) {
 
     ## -------------------------------------------------------------------------
     ## -------------------------------------------------------------------------
-
-    # Read HCZ geometry
-    hcz_geo <- read.csv(system.file("extdata", "Healthy_Chicago_Equity_Zones_20231129.csv", package = "MetaRVM"))
-    hcz_sf <- sf::st_as_sf(hcz_geo, wkt = "Geometry", crs = 4326)
-    hcz_names <- hcz_geo$Equity.Zone
-
-    # Create a color palette for the boroughs
-    palette <- leaflet::colorFactor(palette = "Set1", domain = hcz_names)  # Set1 palette from RColorBrewer
+    ## GEO plot
 
 
     # Render Leaflet map with borough boundaries
-    output$map <- leaflet::renderLeaflet({
-      leaflet::leaflet(hcz_sf) %>%
-        leaflet::addProviderTiles("CartoDB.Positron") %>%
-        leaflet::addPolygons(
-          layerId = ~Equity.Zone,
-          fillColor = ~palette(hcz_names),
-          color = "black",
-          weight = 2,
-          fillOpacity = 0.5,
-          highlight = highlightOptions(
-            weight = 3, color = "#666", fillOpacity = 0.9, bringToFront = TRUE
-          ),
-          label = ~hcz_names,                 # Labels showing the borough name on hover
-          labelOptions = labelOptions(
-            style = list("font-weight" = "bold", "color" = "black"),
-            textsize = "15px", direction = "auto"
-          )
-        )
-    })
+      output$map <- leaflet::renderLeaflet({
+        if(input$navbar == "HCEZ Figures"){                     # capture tab input
+
+          # Read HCZ geometry
+          hcz_geo <- read.csv(system.file("extdata", "Healthy_Chicago_Equity_Zones_20231129.csv", package = "MetaRVM"))
+          hcz_sf <<- sf::st_as_sf(hcz_geo, wkt = "Geometry", crs = 4326)
+          hcz_names <<- hcz_geo$Equity.Zone
+
+          # Create a color palette for the boroughs
+          palette <- leaflet::colorFactor(palette = "Set1", domain = hcz_names)  # Set1 palette from RColorBrewer
+
+          # plot(mtcars$mpg, mtcars$cyl)
+
+          # map plot
+          leaflet::leaflet(hcz_sf) %>%
+            leaflet::addProviderTiles("CartoDB.Positron") %>%
+            leaflet::addPolygons(
+              layerId = ~Equity.Zone,
+              fillColor = ~palette(hcz_names),
+              color = "black",
+              weight = 2,
+              fillOpacity = 0.5,
+              highlight = highlightOptions(
+                weight = 3, color = "#666", fillOpacity = 0.9, bringToFront = TRUE
+              ),
+              label = ~hcz_names,                 # Labels showing the borough name on hover
+              labelOptions = labelOptions(
+                style = list("font-weight" = "bold", "color" = "black"),
+                textsize = "15px", direction = "auto"
+              )
+            )
+
+        }
+      })
 
     # Observe a click on the map and update the ggplot for the selected borough
     # Observe the click event on the map
     observeEvent(input$map_shape_click, {
       zone <- input$map_shape_click$id
+
+      palette <- leaflet::colorFactor(palette = "Set1", domain = hcz_names)
 
       # Update the map to highlight the selected region and dim the others
       leaflet::leafletProxy("map", data = hcz_sf) %>%
@@ -490,13 +506,10 @@ server <- function(input, output, session) {
         )
     })
 
-
-
+    # capture clicked zone
     selected_zone <- reactive({
       input$map_shape_click$id  # Capture the clicked zone (by zone name)
     })
-
-
 
     # Render the ggplot based on the selected zone
     output$zone_simout <- plotly::renderPlotly({
@@ -545,6 +558,17 @@ server <- function(input, output, session) {
           )
       )
     })
+
+
+
+      # output$map <- leaflet::renderLeaflet({
+      #
+      # })
+
+
+
+
+
 
   })
 
