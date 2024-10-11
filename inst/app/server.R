@@ -4,17 +4,7 @@ library(dplyr)
 library(ggplot2)
 library(odin)
 library(dde)
-library(future)
-library(promises)
-# library(data.table)
-# library(DiagrammeR)
-# library(odin)
-# library(tidyr)
-# library(ggplot2)
 library(leaflet)
-# library(sf)
-# library(plotly)
-# library(RColorBrewer)
 
 server <- function(input, output, session) {
 
