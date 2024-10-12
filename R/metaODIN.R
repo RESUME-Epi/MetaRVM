@@ -138,7 +138,7 @@ meta_sim <- function(N_pop, beta_i, beta_v,
     ## =================================================
     ## Draws from binomial distributions for numbers changing between
     ## compartments:
-    n_SE_eff[, ]      <- if(stoch == 1) rbinom(S_eff_prod[j, i], p_SE[i]) else S_eff_prod[j, i] * p_SE[i]
+    n_SE_eff[, ]      <- if(S[i] <= 0) 0 else (if(stoch == 1) rbinom(S_eff_prod[j, i], p_SE[i]) else S_eff_prod[j, i] * p_SE[i])
     n_SE[]            <- sum(n_SE_eff[i, ]) # rowSums
     n_EI[]            <- if(E[i] == 0) 0 else (if(stoch == 1) rbinom(E[i], p_EIpresymp) else E[i] * p_EIpresymp)
     n_EIpresymp[]     <- ceiling(n_EI[i] * etopa)

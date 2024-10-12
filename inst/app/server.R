@@ -142,6 +142,15 @@ server <- function(input, output, session) {
     input$navbar
   })
 
+  # Read the population mapping table
+  read_pop_map <- reactive({
+    if(!is.null(input$population_map)){
+      read.csv(input$population_map$datapath, header = T)
+    } else {
+      read.csv(system.file("extdata", "m_weekday_day.csv", package = "MetaRVM"), header = F) ## TODO: change
+    }
+  })
+
   ## ---------------------------------------------------------------------------
   ## ---------------------------------------------------------------------------
   # Run SEIR meta-population simulation when the button is clicked
@@ -170,6 +179,8 @@ server <- function(input, output, session) {
     m2 <- read_m2()
     m3 <- read_m3()
     m4 <- read_m4()
+
+    pop_map_df <- read_pop_map()
 
     seed <- input$seed
     nrep <- input$rep
@@ -549,12 +560,55 @@ server <- function(input, output, session) {
       )
     })
 
+    ## -------------------------------------------------------------------------
+    ## -------------------------------------------------------------------------
+    ## GEO plot
+
+    output$cat_simout <- plotly::renderPlotly({
+
+      compartment_colors <- c("S" = "steelblue3",
+                              "E" = "tan1",
+                              "I_presymp" = "salmon3",
+                              "I_asymp" = "orangered2",
+                              "I_symp" = "red4",
+                              "H" = "mediumpurple",
+                              "R" = "green",
+                              "D" = "grey",
+                              "V" = "darkgreen")
 
 
-      # output$map <- leaflet::renderLeaflet({
-      #
-      # })
+      # merge long output with population map
+      long_out <- merge(long_out, pop_map_df, by = "population_id")
 
+
+      plotly::ggplotly(
+        ggplot2::ggplot(long_out %>%
+                          dplyr::filter(disease_state %in% c("S", "E", "H", "D",
+                                                             "I_presymp", "I_asymp",
+                                                             "I_symp", "R", "V")) %>%
+                          dplyr::mutate(disease_state = factor(disease_state,
+                                                               levels = c("S", "E", "H", "D",
+                                                                          "I_presymp", "I_asymp",
+                                                                          "I_symp", "R", "V"))) %>%
+                          dplyr::group_by(step, disease_state, rep, !!sym(input$Category)) %>%
+                          dplyr::summarize(total_value = sum(value), .groups = "drop"),
+                        aes(x = step, y = total_value, color = disease_state)) +
+          ggplot2::facet_wrap(vars(!!sym(input$Category))) +
+          ggplot2::geom_line(linewidth = 0.5, alpha = 0.5) +
+          ggplot2::scale_color_manual(values = compartment_colors) +
+          ggplot2::labs(
+            # title = "Disease Compartments Over Time",
+            x = "Time",
+            y = "# of people",
+            color = "Compartment",
+          ) +
+          ggplot2::theme_bw() +
+          ggplot2::theme(
+            plot.title = element_text(hjust = 0.5),
+            legend.position = "right"
+          )
+      )
+    })
 
 
 

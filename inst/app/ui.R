@@ -208,8 +208,8 @@ ui <- tagList(
                         fileInput("mix_mat2", "Weekday Night-time mixing matrix"),
                         fileInput("mix_mat3", "Weekend Day-time mixing matrix"),
                         fileInput("mix_mat4", "Weekend Night-time mixing matrix"),
-                        # fileInput("population_map", "Sub population demographic info",
-                                  # accept = c("text/csv", "text/comma-separated-values,text/plain", ".csv")),
+                        fileInput("population_map", "Sub population demographic info",
+                                  accept = c("text/csv", "text/comma-separated-values,text/plain", ".csv")),
                         actionButton("simulate", "Simulate", class = "custom-button")
             )),
 
@@ -370,6 +370,30 @@ ui <- tagList(
                          )
                   ),
                 )
+      ),
+
+      tabPanel("Figures",
+               fluidRow(
+                 br(),
+                 br(),
+                 column(12, wellPanel(radioButtons("Category", "Choose an option:",
+                                                   choices = list("Age" = "age",
+                                                                  "Race/ethnicity" = "race",
+                                                                  "HCEZ" = "hcez"),
+                                                   selected = "age", inline = TRUE)
+                                      )
+                        ),
+                 br(),
+                 br(),
+                 column(12,
+                        card(
+                          div(class = "custom-card",
+                              div(class = "custom-card-header", card_header("Disease Compartments")),
+                              div(class = "custom-card-body", plotly::plotlyOutput("cat_simout", height = "500px"))
+                          )
+                        )
+                 ),
+               )
       ),
 
       tabPanel("Input Data",
