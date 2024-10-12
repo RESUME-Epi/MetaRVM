@@ -562,7 +562,7 @@ server <- function(input, output, session) {
 
     ## -------------------------------------------------------------------------
     ## -------------------------------------------------------------------------
-    ## GEO plot
+    ## caterogy-wise plot
 
     output$cat_simout <- plotly::renderPlotly({
 
@@ -610,7 +610,41 @@ server <- function(input, output, session) {
       )
     })
 
+    output$stacked_simout <- plotly::renderPlotly({
 
+      # merge long output with population map
+      long_out <- merge(long_out, pop_map_df, by = "population_id")
+
+
+      plotly::ggplotly(
+        ggplot2::ggplot(long_out %>%
+                          dplyr::filter(disease_state %in% c("S", "E", "H", "D",
+                                                             "I_presymp", "I_asymp",
+                                                             "I_symp", "R", "V")) %>%
+                          dplyr::mutate(disease_state = factor(disease_state,
+                                                               levels = c("S", "E", "H", "D",
+                                                                          "I_presymp", "I_asymp",
+                                                                          "I_symp", "R", "V")),
+                                        age = factor(age, levels = c("0-4", "5-19", "20-49", "50-79", "80-"))) %>%
+                          dplyr::group_by(step, disease_state, rep, !!sym(input$Category)) %>%
+                          dplyr::summarize(total_value = sum(value), .groups = "drop"),
+                        aes(x = step, y = total_value, fill = !!sym(input$Category))) +
+          ggplot2::facet_wrap(~ disease_state, scales = "free_y") +
+          ggplot2::geom_bar(position="stack", stat="identity") +
+          viridis::scale_fill_viridis(discrete = T) +
+          ggplot2::labs(
+            # title = "Disease Compartments Over Time",
+            x = "Time",
+            y = "# of people",
+            color = "Compartment",
+          ) +
+          ggplot2::theme_bw() +
+          ggplot2::theme(
+            plot.title = element_text(hjust = 0.5),
+            legend.position = "right"
+          )
+      )
+    })
 
 
 

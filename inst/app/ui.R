@@ -393,6 +393,16 @@ ui <- tagList(
                           )
                         )
                  ),
+                 br(),
+                 br(),
+                 column(12,
+                        card(
+                          div(class = "custom-card",
+                              div(class = "custom-card-header", card_header("Disease Compartments")),
+                              div(class = "custom-card-body", plotly::plotlyOutput("stacked_simout", height = "500px"))
+                          )
+                        )
+                 ),
                )
       ),
 
