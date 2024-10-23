@@ -208,25 +208,28 @@ ui <- tagList(
                         fileInput("mix_mat2", "Weekday Night-time mixing matrix"),
                         fileInput("mix_mat3", "Weekend Day-time mixing matrix"),
                         fileInput("mix_mat4", "Weekend Night-time mixing matrix"),
-                        # fileInput("population_map", "Sub population demographic info",
-                                  # accept = c("text/csv", "text/comma-separated-values,text/plain", ".csv")),
+                        fileInput("population_map", "Sub population demographic info",
+                                  accept = c("text/csv", "text/comma-separated-values,text/plain", ".csv")),
                         actionButton("simulate", "Simulate", class = "custom-button")
             )),
 
             # disease parameter inputs
 
            column(4, wellPanel(
-                          h3("Transition rates"),
-                          numericInput("beta_i", "S to E", value = 0.5, min = 0, step = 0.001),
-                          numericInput("VtoS", "V to S:", value = 0.02, min = 0, step = 0.001),
-                          numericInput("beta_v", "V to E", value = 0.1, min = 0, step = 0.001),
-                          numericInput("EtoIpresymp", "E to Ia/Ip", value = 0.7, min = 0, step = 0.001),
-                          numericInput("pretoIsymp", "Ip to Is", value = 0.1, min = 0, step = 0.001),
-                          numericInput("IasymptoR", "Ia to R", value = 0.1, min = 0, step = 0.001),
-                          numericInput("IsymptoRH", "Is to R/H", value = 0.5, min = 0, step = 0.001),
-                          numericInput("HtoRD", "H to R/D", value = 0.33, min = 0, step = 0.001),
-                          numericInput("RtoS", "R to S", value = 0.02, min = 0, step = 0.001),
-                          numericInput("vac_eff", "Vaccination efficacy", value = 0.5, min = 0, step = 0.01))
+                          h3("Disease Transition Parameters"),
+                          h4("Rates"),
+                          numericInput("beta_i", "Transmission rate for susceptibles", value = 0.5, min = 0, step = 0.001),
+                          numericInput("beta_v", "Transmission rate for vaccinated", value = 0.1, min = 0, step = 0.001),
+                          numericInput("vac_eff", "Vaccination efficacy", value = 0.5, min = 0, step = 0.01),
+                          hr(),
+                          h4("Mean duration (in days)"),
+                          numericInput("VtoS", "Vaccinated to Susceptible", value = 50, min = 1, step = 1),
+                          numericInput("EtoIpresymp", "Exposed to Infectious asymptomatic or presymptomatic", value = 2, min = 1, step = 1),
+                          numericInput("pretoIsymp", "Infectious presymptomatic to symptomatic", value = 10, min = 1, step = 1),
+                          numericInput("IasymptoR", "Infectious asymptomatic to Recovered", value = 10, min = 1, step = 1),
+                          numericInput("IsymptoRH", "Infectious symptomatic to Recovered or Hospitalized", value = 2, min = 1, step = 1),
+                          numericInput("HtoRD", "Hospitalized to Recovered or Dead", value = 3, min = 1, step = 1),
+                          numericInput("RtoS", "Recovered to Susceptible", value = 50, min = 1, step = 1))
                 ),
            column(4, wellPanel(
                         h3("Proportions"),
@@ -370,6 +373,40 @@ ui <- tagList(
                          )
                   ),
                 )
+      ),
+
+      tabPanel("Figures",
+               fluidRow(
+                 br(),
+                 br(),
+                 column(12, wellPanel(radioButtons("Category", "Choose an option:",
+                                                   choices = list("Age" = "age",
+                                                                  "Race/ethnicity" = "race",
+                                                                  "HCEZ" = "hcez"),
+                                                   selected = "age", inline = TRUE)
+                                      )
+                        ),
+                 br(),
+                 br(),
+                 column(12,
+                        card(
+                          div(class = "custom-card",
+                              div(class = "custom-card-header", card_header("Disease Compartments")),
+                              div(class = "custom-card-body", plotly::plotlyOutput("cat_simout", height = "500px"))
+                          )
+                        )
+                 ),
+                 br(),
+                 br(),
+                 column(12,
+                        card(
+                          div(class = "custom-card",
+                              div(class = "custom-card-header", card_header("Disease Compartments")),
+                              div(class = "custom-card-body", plotly::plotlyOutput("stacked_simout", height = "500px"))
+                          )
+                        )
+                 ),
+               )
       ),
 
       tabPanel("Input Data",
