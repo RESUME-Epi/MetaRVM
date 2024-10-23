@@ -188,16 +188,16 @@ server <- function(input, output, session) {
     nsteps <- input$days / delta_t
     beta_i <- input$beta_i
     beta_v <- input$beta_v
-    VtoS <- input$VtoS
-    EtoIpresymp <- input$EtoIpresymp
+    VtoS <- 1/input$VtoS
+    EtoIpresymp <- 1/input$EtoIpresymp
     etopa <- input$etopa
-    pretoIsymp <- input$pretoIsymp
-    IasymptoR <- input$IasymptoR
-    IsymptoRH <- input$IsymptoRH
+    pretoIsymp <- 1/input$pretoIsymp
+    IasymptoR <- 1/input$IasymptoR
+    IsymptoRH <- 1/input$IsymptoRH
     istohr <- input$istohr
-    HtoRD <- input$HtoRD
+    HtoRD <- 1/input$HtoRD
     htor <- input$htor
-    RtoS <- input$RtoS
+    RtoS <- 1/input$RtoS
     vac_eff <- input$vac_eff
 
     # check if the model output should be deterministic
