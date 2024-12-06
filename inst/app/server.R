@@ -8,6 +8,9 @@ library(leaflet)
 
 server <- function(input, output, session) {
 
+  # permanently load shapefile
+  hcz_geo <- read.csv(system.file("extdata", "Healthy_Chicago_Equity_Zones_20231129.csv", package = "MetaRVM"))
+
   # Read the CSV file for population data
   population_data <- reactive({
     if(!is.null(input$population_data)){
@@ -182,8 +185,10 @@ server <- function(input, output, session) {
 
     pop_map_df <- read_pop_map()
 
-    seed <- input$seed
-    nrep <- input$rep
+    # seed <- input$seed
+    # nrep <- input$rep
+    start_date <- as.Date(input$start_date)
+    nrep <- 1
     delta_t <- input$dt
     nsteps <- input$days / delta_t
     beta_i <- input$beta_i
@@ -201,7 +206,8 @@ server <- function(input, output, session) {
     vac_eff <- input$vac_eff
 
     # check if the model output should be deterministic
-    is.stoch <- ifelse(input$choice == "stoch", 1, 0)
+    # is.stoch <- ifelse(input$choice == "stoch", 1, 0)
+    is.stoch <- 0
 
     if(is.stoch){
       if(!is.na(input$seed)) set.seed(input$seed) else set.seed(1)
@@ -254,9 +260,9 @@ server <- function(input, output, session) {
         values_to = "value"          # Column to store the actual values
       )
 
-    # Display the population data table in the UI
-    output$out_table <- renderTable({
-      out
+    # Display the output data table in the UI
+    output$out_table <- DT::renderDT({
+      long_out
     })
 
     ## ===============================================
@@ -273,30 +279,41 @@ server <- function(input, output, session) {
                               "D" = "grey",
                               "V" = "darkgreen")
 
+      long_out_daily <- long_out %>%
+        dplyr::filter(time %% 1 == 0) %>%
+        dplyr::filter(disease_state %in% c("S", "E", "H", "D",
+                                           "I_presymp", "I_asymp",
+                                           "I_symp", "R", "V")) %>%
+        dplyr::mutate(disease_state = factor(disease_state,
+                                             levels = c("S", "E", "H", "D",
+                                                        "I_presymp", "I_asymp",
+                                                        "I_symp", "R", "V"))) %>%
+        dplyr::group_by(time, disease_state, rep) %>%
+        dplyr::summarize(total_value = sum(value), .groups = "drop") %>%
+        dplyr::mutate(date = start_date + time)
+
+
+
       plotly::ggplotly(
-        ggplot2::ggplot(long_out %>%
-                          dplyr::filter(disease_state %in% c("S", "E", "H", "D",
-                                                             "I_presymp", "I_asymp",
-                                                             "I_symp", "R", "V")) %>%
-                          dplyr::mutate(disease_state = factor(disease_state,
-                                                               levels = c("S", "E", "H", "D",
-                                                                          "I_presymp", "I_asymp",
-                                                                          "I_symp", "R", "V"))) %>%
-                          dplyr::group_by(step, disease_state, rep) %>%
-                          dplyr::summarize(total_value = sum(value), .groups = "drop"),
-                        aes(x = step, y = total_value, color = disease_state, group = rep)) +
+        ggplot2::ggplot(long_out_daily,
+                        aes(x = date, y = total_value, color = disease_state, group = rep)) +
           ggplot2::geom_line(linewidth = 0.5, alpha = 0.5) +
           ggplot2::scale_color_manual(values = compartment_colors) +
+          scale_x_date(
+            date_breaks = "1 week",  # Breaks every week
+            date_labels = "%b %d"   # Format labels as "Month Day" (e.g., Jan 01)
+          ) +
           ggplot2::labs(
             # title = "Disease Compartments Over Time",
-            x = "Time",
-            y = "# of people",
+            x = "Date",
+            y = "Count",
             color = "Compartment",
           ) +
           ggplot2::theme_bw() +
           ggplot2::theme(
             plot.title = element_text(hjust = 0.5),
-            legend.position = "right"
+            legend.position = "right",
+            axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)
           )
       )
     })
@@ -309,30 +326,37 @@ server <- function(input, output, session) {
 
       # prepare the data
       df_e <- long_out %>%
+        dplyr::filter(time %% 1 == 0) %>%
         dplyr::filter(disease_state %in% c("n_SE", "n_VE")) %>%
-        dplyr::group_by(step, rep) %>%
+        dplyr::group_by(time, rep) %>%
         dplyr::summarise(E_sum = sum(value), .groups = "drop") %>% ungroup()
       df_pop <- long_out %>%
+        dplyr::filter(time %% 1 == 0) %>%
         dplyr::filter(disease_state == "P") %>%    # Filter for P compartment (total population)
-        dplyr::group_by(step, rep) %>%
-        dplyr::select(step, rep, P = value) %>%
+        dplyr::group_by(time, rep) %>%
+        dplyr::select(time, rep, P = value) %>%
         dplyr::summarise(P_sum = sum(P), .groups = "drop") %>% ungroup()
       df_combined <- df_e %>%
-        dplyr::left_join(df_pop, by = c("step", "rep")) %>%
-        dplyr::mutate(E_rate = E_sum / P_sum)
+        dplyr::left_join(df_pop, by = c("time", "rep")) %>%
+        dplyr::mutate(E_rate = E_sum / P_sum) %>%
+        dplyr::mutate(date = start_date + time)
 
       plotly::ggplotly(
         ggplot2::ggplot(df_combined,
-                        aes(x = step, y = E_rate, group = rep)) +
-          ggplot2::geom_line(linewidth = 0.5, alpha = 0.5, color = "orangered2") +
-          # scale_color_manual(values = compartment_colors) +
+                        aes(x = date, group = rep)) +
+          ggplot2::geom_line(aes(y = E_rate), linewidth = 0.5, alpha = 0.5, color = "orangered2") +
           ggplot2::labs(
             # title = "New infection rate",
-            x = "Time",
+            x = "Date",
             y = "proportions") +
+          scale_x_date(
+            date_breaks = "1 week",  # Breaks every week
+            date_labels = "%b %d"   # Format labels as "Month Day" (e.g., Jan 01)
+          ) +
           ggplot2::theme_minimal() +
           ggplot2::theme(
-            plot.title = element_text(hjust = 0.5)
+            plot.title = element_text(hjust = 0.5),
+            axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)
           )
       )
     })
@@ -344,29 +368,35 @@ server <- function(input, output, session) {
       # prepare the data
       df_h <- long_out %>%
         dplyr::filter(disease_state %in% c("n_IsympH")) %>%
-        dplyr::group_by(step, rep) %>%
+        dplyr::group_by(time, rep) %>%
         dplyr::summarise(H_sum = sum(value), .groups = "drop") %>% ungroup()
       df_pop <- long_out %>%
         dplyr::filter(disease_state == "P") %>%    # Filter for P compartment (total population)
-        dplyr::group_by(step, rep) %>%
-        dplyr::select(step, rep, P = value) %>%
+        dplyr::group_by(time, rep) %>%
+        dplyr::select(time, rep, P = value) %>%
         dplyr::summarise(P_sum = sum(P), .groups = "drop") %>% ungroup()
       df_combined <- df_h %>%
-        dplyr::left_join(df_pop, by = c("step", "rep")) %>%
-        dplyr::mutate(H_rate = H_sum / P_sum)
+        dplyr::left_join(df_pop, by = c("time", "rep")) %>%
+        dplyr::mutate(H_rate = H_sum / P_sum) %>%
+        dplyr::mutate(date = start_date + time)
 
       plotly::ggplotly(
         ggplot2::ggplot(df_combined,
-                        aes(x = step, y = H_rate, group = rep)) +
+                        aes(x = date, y = H_rate, group = rep)) +
           ggplot2::geom_line(linewidth = 0.5, alpha = 0.5, color = "mediumpurple") +
+          scale_x_date(
+            date_breaks = "1 week",  # Breaks every week
+            date_labels = "%b %d"   # Format labels as "Month Day" (e.g., Jan 01)
+          ) +
           # scale_color_manual(values = compartment_colors) +
           ggplot2::labs(
             # title = "New hospitalization rate",
-            x = "Time",
+            x = "Date",
             y = "proportions") +
           ggplot2::theme_minimal() +
           ggplot2::theme(
-            plot.title = element_text(hjust = 0.5)
+            plot.title = element_text(hjust = 0.5),
+            axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)
           )
       )
     })
@@ -378,21 +408,26 @@ server <- function(input, output, session) {
       # prepare the data
       df_d <- long_out %>%
         dplyr::filter(disease_state %in% c("n_HD")) %>%
-        dplyr::group_by(step, rep) %>%
+        dplyr::group_by(time, rep) %>%
         dplyr::summarise(D_sum = sum(value), .groups = "drop") %>% ungroup()
       df_pop <- long_out %>%
         dplyr::filter(disease_state == "P") %>%    # Filter for P compartment (total population)
-        dplyr::group_by(step, rep) %>%
-        dplyr::select(step, rep, P = value) %>%
+        dplyr::group_by(time, rep) %>%
+        dplyr::select(time, rep, P = value) %>%
         dplyr::summarise(P_sum = sum(P), .groups = "drop") %>% ungroup()
       df_combined <- df_d %>%
-        dplyr::left_join(df_pop, by = c("step", "rep")) %>%
-        dplyr::mutate(D_rate = D_sum / P_sum)
+        dplyr::left_join(df_pop, by = c("time", "rep")) %>%
+        dplyr::mutate(D_rate = D_sum / P_sum) %>%
+        dplyr::mutate(date = start_date + time)
 
       plotly::ggplotly(
         ggplot2::ggplot(df_combined,
-                        aes(x = step, y = D_rate, group = rep)) +
+                        aes(x = date, y = D_rate, group = rep)) +
           ggplot2::geom_line(linewidth = 0.5, alpha = 0.5, color = "grey") +
+          scale_x_date(
+            date_breaks = "1 week",  # Breaks every week
+            date_labels = "%b %d"   # Format labels as "Month Day" (e.g., Jan 01)
+          ) +
           # scale_color_manual(values = compartment_colors) +
           ggplot2::labs(
             # title = "New deaths rate",
@@ -400,7 +435,8 @@ server <- function(input, output, session) {
             y = "proportions") +
           ggplot2::theme_minimal() +
           ggplot2::theme(
-            plot.title = element_text(hjust = 0.5)
+            plot.title = element_text(hjust = 0.5),
+            axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)
           )
       )
     })
@@ -413,21 +449,26 @@ server <- function(input, output, session) {
       # prepare the data
       df_d <- long_out %>%
         dplyr::filter(disease_state %in% c("n_SV")) %>%
-        dplyr::group_by(step, rep) %>%
+        dplyr::group_by(time, rep) %>%
         dplyr::summarise(V_sum = sum(value), .groups = "drop") %>% ungroup()
       df_pop <- long_out %>%
         dplyr::filter(disease_state == "P") %>%    # Filter for P compartment (total population)
-        dplyr::group_by(step, rep) %>%
-        dplyr::select(step, rep, P = value) %>%
+        dplyr::group_by(time, rep) %>%
+        dplyr::select(time, rep, P = value) %>%
         dplyr::summarise(P_sum = sum(P), .groups = "drop") %>% ungroup()
       df_combined <- df_d %>%
-        dplyr::left_join(df_pop, by = c("step", "rep")) %>%
-        dplyr::mutate(V_rate = V_sum / P_sum)
+        dplyr::left_join(df_pop, by = c("time", "rep")) %>%
+        dplyr::mutate(V_rate = V_sum / P_sum) %>%
+        dplyr::mutate(date = start_date + time)
 
       plotly::ggplotly(
         ggplot2::ggplot(df_combined,
-                        aes(x = step, y = V_rate, group = rep)) +
+                        aes(x = date, y = V_rate, group = rep)) +
           ggplot2::geom_col(alpha = 0.5, color = "darkgreen") +
+          scale_x_date(
+            date_breaks = "1 week",  # Breaks every week
+            date_labels = "%b %d"   # Format labels as "Month Day" (e.g., Jan 01)
+          ) +
           # scale_color_manual(values = compartment_colors) +
           ggplot2::labs(
             # title = "New vaccination",
@@ -435,7 +476,8 @@ server <- function(input, output, session) {
             y = "proportions") +
           ggplot2::theme_minimal() +
           ggplot2::theme(
-            plot.title = element_text(hjust = 0.5)
+            plot.title = element_text(hjust = 0.5),
+            axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)
           )
       )
     })
@@ -451,7 +493,7 @@ server <- function(input, output, session) {
         if(input$navbar == "HCEZ Figures"){                     # capture tab input
 
           # Read HCZ geometry
-          hcz_geo <- read.csv(system.file("extdata", "Healthy_Chicago_Equity_Zones_20231129.csv", package = "MetaRVM"))
+          # hcz_geo <- read.csv(system.file("extdata", "Healthy_Chicago_Equity_Zones_20231129.csv", package = "MetaRVM"))
           hcz_sf <<- sf::st_as_sf(hcz_geo, wkt = "Geometry", crs = 4326)
           hcz_names <<- hcz_geo$Equity.Zone
 
@@ -521,9 +563,11 @@ server <- function(input, output, session) {
 
       # Filter simulation data for the selected zone
       filtered_data <- long_out %>%
+        dplyr::filter(time %% 1 == 0) %>%
         dplyr::filter(population_id == zone_id, disease_state %in% c("S", "E", "H", "D",
                                                                      "I_presymp", "I_asymp",
-                                                                     "I_symp", "R", "V"))
+                                                                     "I_symp", "R", "V")) %>%
+        dplyr::mutate(date = start_date + time)
 
       # Plot the simulation output for the selected zone
 
@@ -541,21 +585,26 @@ server <- function(input, output, session) {
                                                                levels = c("S", "E", "H", "D",
                                                                           "I_presymp", "I_asymp",
                                                                           "I_symp", "R", "V"))) %>%
-                          dplyr::group_by(step, disease_state, rep) %>%
+                          dplyr::group_by(date, disease_state, rep) %>%
                           dplyr::summarize(total_value = value, .groups = "drop"),
-                        aes(x = step, y = total_value, color = disease_state, group = rep)) +
+                        aes(x = date, y = total_value, color = disease_state, group = rep)) +
           ggplot2::geom_line(linewidth = 0.5, alpha = 0.5) +
           ggplot2::scale_color_manual(values = compartment_colors) +
           ggplot2::labs(
             title = selected_zone(),
-            x = "Time",
-            y = "# of people",
+            x = "Date",
+            y = "Count",
             color = "Compartment",
+          ) +
+          scale_x_date(
+            date_breaks = "1 week",  # Breaks every week
+            date_labels = "%b %d"   # Format labels as "Month Day" (e.g., Jan 01)
           ) +
           ggplot2::theme_bw() +
           ggplot2::theme(
             plot.title = element_text(hjust = 0.5),
-            legend.position = "right"
+            legend.position = "right",
+            axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)
           )
       )
     })
@@ -580,32 +629,41 @@ server <- function(input, output, session) {
       # merge long output with population map
       long_out <- merge(long_out, pop_map_df, by = "population_id")
 
+      cat_long_out <- long_out %>%
+        dplyr::filter(time %% 1 == 0) %>%
+        dplyr::filter(disease_state %in% c("S", "E", "H", "D",
+                                           "I_presymp", "I_asymp",
+                                           "I_symp", "R", "V")) %>%
+        dplyr::mutate(disease_state = factor(disease_state,
+                                             levels = c("S", "E", "H", "D",
+                                                        "I_presymp", "I_asymp",
+                                                        "I_symp", "R", "V"))) %>%
+        dplyr::group_by(time, disease_state, rep, !!sym(input$Category)) %>%
+        dplyr::summarize(total_value = sum(value), .groups = "drop") %>%
+        dplyr::mutate(date = start_date + time)
 
       plotly::ggplotly(
-        ggplot2::ggplot(long_out %>%
-                          dplyr::filter(disease_state %in% c("S", "E", "H", "D",
-                                                             "I_presymp", "I_asymp",
-                                                             "I_symp", "R", "V")) %>%
-                          dplyr::mutate(disease_state = factor(disease_state,
-                                                               levels = c("S", "E", "H", "D",
-                                                                          "I_presymp", "I_asymp",
-                                                                          "I_symp", "R", "V"))) %>%
-                          dplyr::group_by(step, disease_state, rep, !!sym(input$Category)) %>%
-                          dplyr::summarize(total_value = sum(value), .groups = "drop"),
-                        aes(x = step, y = total_value, color = disease_state)) +
+        ggplot2::ggplot(cat_long_out,
+                        aes(x = date, y = total_value, color = disease_state)) +
           ggplot2::facet_wrap(vars(!!sym(input$Category))) +
           ggplot2::geom_line(linewidth = 0.5, alpha = 0.5) +
           ggplot2::scale_color_manual(values = compartment_colors) +
+          scale_x_date(
+            date_breaks = "1 week",  # Breaks every week
+            date_labels = "%b %d"   # Format labels as "Month Day" (e.g., Jan 01)
+          ) +
           ggplot2::labs(
             # title = "Disease Compartments Over Time",
-            x = "Time",
-            y = "# of people",
+            x = "Date",
+            y = "Count",
             color = "Compartment",
           ) +
           ggplot2::theme_bw() +
           ggplot2::theme(
             plot.title = element_text(hjust = 0.5),
-            legend.position = "right"
+            legend.position = "right",
+            axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1),
+            strip.text = element_text(size = 16)
           )
       )
     })
@@ -615,33 +673,41 @@ server <- function(input, output, session) {
       # merge long output with population map
       long_out <- merge(long_out, pop_map_df, by = "population_id")
 
+      cat_long_out <- long_out %>%
+        dplyr::filter(time %% 1 == 0) %>%
+        dplyr::filter(disease_state %in% c("S", "E", "H", "D",
+                                           "I_presymp", "I_asymp",
+                                           "I_symp", "R", "V")) %>%
+        dplyr::mutate(disease_state = factor(disease_state,
+                                             levels = c("S", "E", "H", "D",
+                                                        "I_presymp", "I_asymp",
+                                                        "I_symp", "R", "V"))) %>%
+        dplyr::group_by(time, disease_state, rep, !!sym(input$Category)) %>%
+        dplyr::summarize(total_value = sum(value), .groups = "drop") %>%
+        dplyr::mutate(date = start_date + time)
 
       plotly::ggplotly(
-        ggplot2::ggplot(long_out %>%
-                          dplyr::filter(disease_state %in% c("S", "E", "H", "D",
-                                                             "I_presymp", "I_asymp",
-                                                             "I_symp", "R", "V")) %>%
-                          dplyr::mutate(disease_state = factor(disease_state,
-                                                               levels = c("S", "E", "H", "D",
-                                                                          "I_presymp", "I_asymp",
-                                                                          "I_symp", "R", "V")),
-                                        age = factor(age, levels = c("0-4", "5-19", "20-49", "50-79", "80-"))) %>%
-                          dplyr::group_by(step, disease_state, rep, !!sym(input$Category)) %>%
-                          dplyr::summarize(total_value = sum(value), .groups = "drop"),
-                        aes(x = step, y = total_value, fill = !!sym(input$Category))) +
+        ggplot2::ggplot(cat_long_out,
+                        aes(x = date, y = total_value, fill = !!sym(input$Category))) +
           ggplot2::facet_wrap(~ disease_state, scales = "free_y") +
           ggplot2::geom_bar(position="stack", stat="identity") +
           viridis::scale_fill_viridis(discrete = T) +
+          scale_x_date(
+            date_breaks = "1 week",  # Breaks every week
+            date_labels = "%b %d"   # Format labels as "Month Day" (e.g., Jan 01)
+          ) +
           ggplot2::labs(
             # title = "Disease Compartments Over Time",
-            x = "Time",
-            y = "# of people",
+            x = "Date",
+            y = "Count",
             color = "Compartment",
           ) +
           ggplot2::theme_bw() +
           ggplot2::theme(
             plot.title = element_text(hjust = 0.5),
-            legend.position = "right"
+            legend.position = "right",
+            axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1),
+            strip.text = element_text(size = 16)
           )
       )
     })

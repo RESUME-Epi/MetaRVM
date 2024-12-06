@@ -218,8 +218,8 @@ ui <- tagList(
            column(4, wellPanel(
                           h3("Disease Transition Parameters"),
                           h4("Rates"),
-                          numericInput("beta_i", "Transmission rate for susceptibles", value = 0.5, min = 0, step = 0.001),
-                          numericInput("beta_v", "Transmission rate for vaccinated", value = 0.1, min = 0, step = 0.001),
+                          numericInput("beta_i", "Transmission rate for susceptibles (1/contact rate)", value = 0.5, min = 0, step = 0.001),
+                          numericInput("beta_v", "Transmission rate for vaccinated (1/contact rate)", value = 0.1, min = 0, step = 0.001),
                           numericInput("vac_eff", "Vaccination efficacy", value = 0.5, min = 0, step = 0.01),
                           hr(),
                           h4("Mean duration (in days)"),
@@ -239,12 +239,23 @@ ui <- tagList(
                         br(),
                         br(),
                         h3("Settings"),
-                        numericInput("seed", "Random seed (optional):", value = NA),
-                        radioButtons("choice", "Model type:",
-                                     choices = list("Deterministic" = "det", "Stochastic" = "stoch")),
+                        # numericInput("seed", "Random seed (optional):", value = NA),
+                        # radioButtons("choice", "Model type:",
+                        #              choices = list("Deterministic" = "det", "Stochastic" = "stoch")
+                        ),
+                        dateInput(
+                          inputId = "start_date",        # Unique ID for the input
+                          label = "Start date  (must be a Monday)", # Label for the input
+                          value = "2024-09-30",      # Default value (current date)
+                          min = "2020-01-01",      # Minimum date selectable
+                          max = "2030-12-31",      # Maximum date selectable
+                          format = "yyyy-mm-dd",   # Format for the displayed date
+                          startview = "month",     # Default view (month)
+                          weekstart = 1            # Week starts on Monday
+                        ),
                         numericInput("dt", "Time step:", value = 0.5, min = 0, step = .5),
                         numericInput("days", "Simulation Length:", value = 100, min = 1),
-                        numericInput("rep", "Number of replicates", value = 1, min = 1, step = 1))
+                        # numericInput("rep", "Number of replicates", value = 1, min = 1, step = 1))
                   ),
            br(),
             br(),
@@ -409,36 +420,37 @@ ui <- tagList(
                )
       ),
 
-      tabPanel("Input Data",
-                fluidRow(
-                  br(),
-                  br(),
-                  h4("Population data"),
-                  column(12, DT::dataTableOutput("population_table")),
-                  br(),
-                  br(),
-                  h4("Vaccination data"),
-                  column(12, DT::dataTableOutput("vac_table")),
-                  br(),
-                  br(),
-                  h4("Mixing matrix - weekday day"),
-                  column(12, DT::dataTableOutput("m1")),
-                  br(),
-                  br(),
-                  h4("Mixing matrix - weekday night"),
-                  column(12, DT::dataTableOutput("m2")),
-                  br(),
-                  br(),
-                  h4("Mixing matrix - weekend day"),
-                  column(12, DT::dataTableOutput("m3")),
-                  br(),
-                  br(),
-                  h4("Mixing matrix - weekend night"),
-                  column(12, DT::dataTableOutput("m4")),
-                  h4("Selected tab"),
-                  column(12, textOutput("tab")),
-                )
-      ),
+      # tabPanel("Input Data",
+      #           fluidRow(
+      #             br(),
+      #             br(),
+      #             h4("Population data"),
+      #             # column(12, DT::dataTableOutput("population_table")),
+      #             column(12, DT::dataTableOutput("out_table")),
+      #             br(),
+      #             br(),
+      #             h4("Vaccination data"),
+      #             column(12, DT::dataTableOutput("vac_table")),
+      #             br(),
+      #             br(),
+      #             h4("Mixing matrix - weekday day"),
+      #             column(12, DT::dataTableOutput("m1")),
+      #             br(),
+      #             br(),
+      #             h4("Mixing matrix - weekday night"),
+      #             column(12, DT::dataTableOutput("m2")),
+      #             br(),
+      #             br(),
+      #             h4("Mixing matrix - weekend day"),
+      #             column(12, DT::dataTableOutput("m3")),
+      #             br(),
+      #             br(),
+      #             h4("Mixing matrix - weekend night"),
+      #             column(12, DT::dataTableOutput("m4")),
+      #             h4("Selected tab"),
+      #             column(12, textOutput("tab")),
+      #           )
+      # ),
 
       #         tabPanel("Data",
       #                  div(style = "max-width: 1200px; margin: 20px;",
