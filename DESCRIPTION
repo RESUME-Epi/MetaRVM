@@ -31,7 +31,8 @@ Imports:
     shiny,
     shinydashboard,
     shinythemes,
-    tidyr
+    tidyr,
+    viridis
 Suggests: 
     knitr,
     rmarkdown

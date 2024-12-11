@@ -16,7 +16,7 @@ server <- function(input, output, session) {
     if(!is.null(input$population_data)){
       data.table::fread(input$population_data$datapath)
     } else {
-      data.table::fread(system.file("extdata", "pop_init_zones.csv", package = "MetaRVM"))
+      data.table::fread(system.file("extdata", "pop_init_150.csv", package = "MetaRVM"))
     }
   })
 
@@ -29,7 +29,7 @@ server <- function(input, output, session) {
     if(!is.null(input$vac_data)){
       data.table::fread(input$vac_data$datapath)
     } else {
-      data.table::fread(system.file("extdata", "vac_zones.csv", package = "MetaRVM"))
+      data.table::fread(system.file("extdata", "vac_150.csv", package = "MetaRVM"))
     }
   })
 
@@ -102,28 +102,28 @@ server <- function(input, output, session) {
     if(!is.null(input$mix_mat1)){
       read.csv(input$mix_mat1$datapath, header = F)
     } else {
-      read.csv(system.file("extdata", "m_weekday_day.csv", package = "MetaRVM"), header = F)
+      read.csv(system.file("extdata", "m_weekday_day_150.csv", package = "MetaRVM"), header = F)
     }
   })
   read_m2 <- reactive({
     if(!is.null(input$mix_mat2)){
       read.csv(input$mix_mat2$datapath, header = F)
     } else {
-      read.csv(system.file("extdata", "m_weekday_night.csv", package = "MetaRVM"), header = F)
+      read.csv(system.file("extdata", "m_weekday_night_150.csv", package = "MetaRVM"), header = F)
     }
   })
   read_m3 <- reactive({
     if(!is.null(input$mix_mat3)){
       read.csv(input$mix_mat3$datapath, header = F)
     } else {
-      read.csv(system.file("extdata", "m_weekend_day.csv", package = "MetaRVM"), header = F)
+      read.csv(system.file("extdata", "m_weekend_day_150.csv", package = "MetaRVM"), header = F)
     }
   })
   read_m4 <- reactive({
     if(!is.null(input$mix_mat4)){
       read.csv(input$mix_mat4$datapath, header = F)
     } else {
-      read.csv(system.file("extdata", "m_weekend_night.csv", package = "MetaRVM"), header = F)
+      read.csv(system.file("extdata", "m_weekend_night_150.csv", package = "MetaRVM"), header = F)
     }
   })
 
@@ -150,7 +150,7 @@ server <- function(input, output, session) {
     if(!is.null(input$population_map)){
       read.csv(input$population_map$datapath, header = T)
     } else {
-      read.csv(system.file("extdata", "m_weekday_day.csv", package = "MetaRVM"), header = F) ## TODO: change
+      read.csv(system.file("extdata", "pop_mapping_150.csv", package = "MetaRVM"), header = T) ## TODO: change
     }
   })
 
@@ -662,7 +662,7 @@ server <- function(input, output, session) {
           ggplot2::theme(
             plot.title = element_text(hjust = 0.5),
             legend.position = "right",
-            axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1),
+            axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1, size = 5),
             strip.text = element_text(size = 16)
           )
       )
@@ -706,7 +706,7 @@ server <- function(input, output, session) {
           ggplot2::theme(
             plot.title = element_text(hjust = 0.5),
             legend.position = "right",
-            axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1),
+            axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1, size = 5),
             strip.text = element_text(size = 16)
           )
       )
