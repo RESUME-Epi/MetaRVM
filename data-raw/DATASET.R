@@ -13,7 +13,7 @@ N_total <-  2719822
 ages <- data.frame(cat = c("0-4", "5-19", "20-49", "50-79", "80-"), prop = c(0.0005,	0.1826,	0.3505,	0.4453,	0.0211))
 races <- data.frame(cat = c("Hispanic", "Asian", "Black", "White", "Other"),
                     prop = c(0.2299, 0.1261, 0.2632, 0.2877, 0.0981))
-zones <- data.frame(cat = c("North Central", "Near South", "Northwest", "Southwest",
+zones <- data.frame(cat = c("North/Central", "Near South", "Northwest", "Southwest",
                             "West", "Far South"),
                     prop = c(0.1703,	0.1254,	0.1928,	0.2286,	0.0687,	0.2143))
 

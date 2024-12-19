@@ -7,7 +7,7 @@ library(dde)
 library(leaflet)
 library(future)
 library(promises)
-future::plan(multisession)
+# future::plan(multisession)
 
 server <- function(input, output, session) {
 
@@ -18,6 +18,8 @@ server <- function(input, output, session) {
                            package = "MetaRVM"))
     })
   })
+  # hcz_geo <- read.csv(system.file("extdata", "Healthy_Chicago_Equity_Zones_20231129.csv", package = "MetaRVM"))
+
 
 
   # Read the CSV file for population data
@@ -283,16 +285,6 @@ server <- function(input, output, session) {
     ## ===============================================
     # summarized SEIR plot
     output$seir_plot <- plotly::renderPlotly({
-    # output$seir_plot <- renderPlot({
-      # compartment_colors <- c("S" = "steelblue3",
-      #                         "E" = "tan1",
-      #                         "I_presymp" = "salmon3",
-      #                         "I_asymp" = "orangered2",
-      #                         "I_symp" = "red4",
-      #                         "H" = "mediumpurple",
-      #                         "R" = "green",
-      #                         "D" = "grey",
-      #                         "V" = "darkgreen")
       compartment_colors <- c("Susceptible" = "steelblue3",
                               "Exposed" = "tan1",
                               "Presymptomatic" = "salmon3",
@@ -561,8 +553,8 @@ server <- function(input, output, session) {
 
 
     # Render Leaflet map with borough boundaries
-      output$map <- leaflet::renderLeaflet({
-        if(input$navbar == "HCEZ Figures"){                     # capture tab input
+    output$map <- leaflet::renderLeaflet({
+        # if(input$navbar == "HCEZ Figures"){                     # capture tab input
 
           # Read HCZ geometry
           # hcz_geo <- read.csv(system.file("extdata", "Healthy_Chicago_Equity_Zones_20231129.csv", package = "MetaRVM"))
@@ -572,8 +564,6 @@ server <- function(input, output, session) {
 
           # Create a color palette for the boroughs
           palette <- leaflet::colorFactor(palette = "Set1", domain = hcz_names)  # Set1 palette from RColorBrewer
-
-          # plot(mtcars$mpg, mtcars$cyl)
 
           # map plot
           leaflet::leaflet(hcz_sf) %>%
@@ -594,8 +584,9 @@ server <- function(input, output, session) {
               )
             )
 
-        }
+        # }
       })
+
 
     # Observe a click on the map and update the ggplot for the selected borough
     # Observe the click event on the map
@@ -628,6 +619,8 @@ server <- function(input, output, session) {
     })
 
     # Render the ggplot based on the selected zone
+    long_out_zones <- zone_summary(long_out, pop_map_df, start_date)
+
     output$zone_simout <- plotly::renderPlotly({
       req(selected_zone())  # Make sure a zone is selected
 
@@ -635,28 +628,31 @@ server <- function(input, output, session) {
       zone_id <- which(hcz_names == selected_zone())
 
       # Filter simulation data for the selected zone
-      filtered_data <- long_out %>%
-        dplyr::filter(population_id == zone_id) %>%
-        dplyr::filter(time %% 1 == 0) %>%
-        dplyr::filter(disease_state %in% c("S", "E", "H", "D",
-                                           "I_presymp", "I_asymp",
-                                           "I_symp", "R", "V")) %>%
-        dplyr::mutate(disease_state = factor(disease_state,
-                                             levels = c("S", "E", "H", "D",
-                                                        "I_presymp", "I_asymp",
-                                                        "I_symp", "R", "V"),
-                                             labels = c("Susceptible",
-                                                        "Exposed",
-                                                        "Hospitalized",
-                                                        "Dead",
-                                                        "Presymptomatic",
-                                                        "Asymptomatic",
-                                                        "Symptomatic",
-                                                        "Recovered",
-                                                        "Vaccinated"))) %>%
-        dplyr::group_by(time, disease_state, rep) %>%
-        dplyr::summarize(total_value = sum(value), .groups = "drop") %>%
-        dplyr::mutate(date = start_date + time)
+      # filtered_data <- long_out %>%
+      #   dplyr::filter(population_id == zone_id) %>%
+      #   dplyr::filter(time %% 1 == 0) %>%
+      #   dplyr::filter(disease_state %in% c("S", "E", "H", "D",
+      #                                      "I_presymp", "I_asymp",
+      #                                      "I_symp", "R", "V")) %>%
+      #   dplyr::mutate(disease_state = factor(disease_state,
+      #                                        levels = c("S", "E", "H", "D",
+      #                                                   "I_presymp", "I_asymp",
+      #                                                   "I_symp", "R", "V"),
+      #                                        labels = c("Susceptible",
+      #                                                   "Exposed",
+      #                                                   "Hospitalized",
+      #                                                   "Dead",
+      #                                                   "Presymptomatic",
+      #                                                   "Asymptomatic",
+      #                                                   "Symptomatic",
+      #                                                   "Recovered",
+      #                                                   "Vaccinated"))) %>%
+      #   dplyr::group_by(time, disease_state, rep) %>%
+      #   dplyr::summarize(total_value = sum(value), .groups = "drop") %>%
+      #   dplyr::mutate(date = start_date + time)
+
+      filtered_data <- long_out_zones %>%
+        dplyr::filter(hcez %in% selected_zone())
 
 
       # Plot the simulation output for the selected zone
