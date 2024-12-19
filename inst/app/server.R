@@ -5,11 +5,20 @@ library(ggplot2)
 library(odin)
 library(dde)
 library(leaflet)
+library(future)
+library(promises)
+future::plan(multisession)
 
 server <- function(input, output, session) {
 
   # permanently load shapefile
-  hcz_geo <- read.csv(system.file("extdata", "Healthy_Chicago_Equity_Zones_20231129.csv", package = "MetaRVM"))
+  read_hcz_geo <- ExtendedTask$new(function() {
+    future_promise({
+      read.csv(system.file("extdata", "Healthy_Chicago_Equity_Zones_20231129.csv",
+                           package = "MetaRVM"))
+    })
+  })
+
 
   # Read the CSV file for population data
   population_data <- reactive({
@@ -167,6 +176,7 @@ server <- function(input, output, session) {
     I_symp_ini <- pop_df[, I0]
     V_ini <- pop_df[, V0]
 
+    read_hcz_geo$invoke()
 
     ## fill in the missing time in vac data
     complete_time <- data.table::data.table(t = seq(0, input$days))
@@ -252,63 +262,66 @@ server <- function(input, output, session) {
 
     ## -------------------------------------------------------------------------
     ## -------------------------------------------------------------------------
-    long_out <- out %>%
-      tidyr::pivot_longer(
-        cols = -c("step", "time", "rep"),               # Exclude 'time' from being pivoted
-        names_to = c("disease_state", "population_id"),  # Create new columns for disease state and subpopulation
-        names_pattern = "([A-Za-z_]+)\\.(\\d+)\\.",  # Regex to extract the disease state and subpopulation ID
-        values_to = "value"          # Column to store the actual values
-      )
+    # long_out <- out %>%
+    #   tidyr::pivot_longer(
+    #     cols = -c("step", "time", "rep"),               # Exclude 'time' from being pivoted
+    #     names_to = c("disease_state", "population_id"),  # Create new columns for disease state and subpopulation
+    #     names_pattern = "([A-Za-z_]+)\\.(\\d+)\\.",  # Regex to extract the disease state and subpopulation ID
+    #     values_to = "value"          # Column to store the actual values
+    #   )
+
+    ## some post processed data for plotting
+    long_out <- format_output(out)
+    long_out_daily <- daily_output(long_out, start_date)
+    # long_out_rates <- daily_out_rates_sums(long_out, start_date)
 
     # Display the output data table in the UI
     output$out_table <- DT::renderDT({
-      long_out
+      long_out_daily
     })
 
     ## ===============================================
     # summarized SEIR plot
     output$seir_plot <- plotly::renderPlotly({
-
-      compartment_colors <- c("S" = "steelblue3",
-                              "E" = "tan1",
-                              "I_presymp" = "salmon3",
-                              "I_asymp" = "orangered2",
-                              "I_symp" = "red4",
-                              "H" = "mediumpurple",
-                              "R" = "green",
-                              "D" = "grey",
-                              "V" = "darkgreen")
-
-      long_out_daily <- long_out %>%
-        dplyr::filter(time %% 1 == 0) %>%
-        dplyr::filter(disease_state %in% c("S", "E", "H", "D",
-                                           "I_presymp", "I_asymp",
-                                           "I_symp", "R", "V")) %>%
-        dplyr::mutate(disease_state = factor(disease_state,
-                                             levels = c("S", "E", "H", "D",
-                                                        "I_presymp", "I_asymp",
-                                                        "I_symp", "R", "V"))) %>%
-        dplyr::group_by(time, disease_state, rep) %>%
-        dplyr::summarize(total_value = sum(value), .groups = "drop") %>%
-        dplyr::mutate(date = start_date + time)
-
+    # output$seir_plot <- renderPlot({
+      # compartment_colors <- c("S" = "steelblue3",
+      #                         "E" = "tan1",
+      #                         "I_presymp" = "salmon3",
+      #                         "I_asymp" = "orangered2",
+      #                         "I_symp" = "red4",
+      #                         "H" = "mediumpurple",
+      #                         "R" = "green",
+      #                         "D" = "grey",
+      #                         "V" = "darkgreen")
+      compartment_colors <- c("Susceptible" = "steelblue3",
+                              "Exposed" = "tan1",
+                              "Presymptomatic" = "salmon3",
+                              "Asymptomatic" = "orangered2",
+                              "Symptomatic" = "red4",
+                              "Hospitalized" = "mediumpurple",
+                              "Recovered" = "green",
+                              "Dead" = "grey",
+                              "Vaccinated" = "darkgreen")
 
 
       plotly::ggplotly(
         ggplot2::ggplot(long_out_daily,
                         aes(x = date, y = total_value, color = disease_state, group = rep)) +
-          ggplot2::geom_line(linewidth = 0.5, alpha = 0.5) +
+          ggplot2::geom_line(linewidth = 1, alpha = 0.7) +
           ggplot2::scale_color_manual(values = compartment_colors) +
-          scale_x_date(
+          ggplot2::scale_x_date(
             date_breaks = "1 week",  # Breaks every week
             date_labels = "%b %d"   # Format labels as "Month Day" (e.g., Jan 01)
           ) +
+          # ggplot2::scale_y_continuous(transform = "log") +
+          # ggplot2::ylim(0, max(long_out_daily$total_value[!long_out_daily$disease_state %in% c("Susceptible", "Recovered")])) +
           ggplot2::labs(
             # title = "Disease Compartments Over Time",
             x = "Date",
-            y = "Count",
-            color = "Compartment",
+            y = "# of people",
+            color = "",
           ) +
+          # ggthemes::theme_tufte() +
           ggplot2::theme_bw() +
           ggplot2::theme(
             plot.title = element_text(hjust = 0.5),
@@ -316,44 +329,31 @@ server <- function(input, output, session) {
             axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)
           )
       )
+
     })
 
 
-    ## ===============================================
-    ## rate plots
+    ## =========================================================================
+    ## rate and count plots
     # new infection
-    output$new_infection_plot <- plotly::renderPlotly({
+    output$new_infection_prop <- plotly::renderPlotly({
 
-      # prepare the data
-      df_e <- long_out %>%
-        dplyr::filter(time %% 1 == 0) %>%
-        dplyr::filter(disease_state %in% c("n_SE", "n_VE")) %>%
-        dplyr::group_by(time, rep) %>%
-        dplyr::summarise(E_sum = sum(value), .groups = "drop") %>% ungroup()
-      df_pop <- long_out %>%
-        dplyr::filter(time %% 1 == 0) %>%
-        dplyr::filter(disease_state == "P") %>%    # Filter for P compartment (total population)
-        dplyr::group_by(time, rep) %>%
-        dplyr::select(time, rep, P = value) %>%
-        dplyr::summarise(P_sum = sum(P), .groups = "drop") %>% ungroup()
-      df_combined <- df_e %>%
-        dplyr::left_join(df_pop, by = c("time", "rep")) %>%
-        dplyr::mutate(E_rate = E_sum / P_sum) %>%
-        dplyr::mutate(date = start_date + time)
+      df_combined <- daily_out_rates_sums(long_out, start_date, c("n_SE", "n_VE"))
 
       plotly::ggplotly(
         ggplot2::ggplot(df_combined,
                         aes(x = date, group = rep)) +
-          ggplot2::geom_line(aes(y = E_rate), linewidth = 0.5, alpha = 0.5, color = "orangered2") +
+          ggplot2::geom_line(aes(y = d_rate), linewidth = 1, alpha = 1, color = "orangered2") +
           ggplot2::labs(
             # title = "New infection rate",
             x = "Date",
-            y = "proportions") +
+            y = "% of population") +
           scale_x_date(
             date_breaks = "1 week",  # Breaks every week
             date_labels = "%b %d"   # Format labels as "Month Day" (e.g., Jan 01)
           ) +
-          ggplot2::theme_minimal() +
+          ggplot2::scale_y_continuous(labels = scales::percent) +
+          ggplot2::theme_bw() +
           ggplot2::theme(
             plot.title = element_text(hjust = 0.5),
             axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)
@@ -361,29 +361,42 @@ server <- function(input, output, session) {
       )
     })
 
-    # new hospitalizations
-    output$new_hosp_plot <- plotly::renderPlotly({
+    output$new_infection_count <- plotly::renderPlotly({
 
-
-      # prepare the data
-      df_h <- long_out %>%
-        dplyr::filter(disease_state %in% c("n_IsympH")) %>%
-        dplyr::group_by(time, rep) %>%
-        dplyr::summarise(H_sum = sum(value), .groups = "drop") %>% ungroup()
-      df_pop <- long_out %>%
-        dplyr::filter(disease_state == "P") %>%    # Filter for P compartment (total population)
-        dplyr::group_by(time, rep) %>%
-        dplyr::select(time, rep, P = value) %>%
-        dplyr::summarise(P_sum = sum(P), .groups = "drop") %>% ungroup()
-      df_combined <- df_h %>%
-        dplyr::left_join(df_pop, by = c("time", "rep")) %>%
-        dplyr::mutate(H_rate = H_sum / P_sum) %>%
-        dplyr::mutate(date = start_date + time)
+      df_combined <- daily_out_rates_sums(long_out, start_date, c("n_SE", "n_VE"))
 
       plotly::ggplotly(
         ggplot2::ggplot(df_combined,
-                        aes(x = date, y = H_rate, group = rep)) +
-          ggplot2::geom_line(linewidth = 0.5, alpha = 0.5, color = "mediumpurple") +
+                        aes(x = date, group = rep)) +
+          ggplot2::geom_col(aes(y = d_sum), linewidth = 0.5, alpha = 0.5, color = "orangered2") +
+          ggplot2::labs(
+            # title = "New infection rate",
+            x = "Date",
+            y = "# of people") +
+          scale_x_date(
+            date_breaks = "1 week",  # Breaks every week
+            date_labels = "%b %d"   # Format labels as "Month Day" (e.g., Jan 01)
+          ) +
+          ggplot2::theme_bw() +
+          ggplot2::theme(
+            plot.title = element_text(hjust = 0.5),
+            axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)
+          )
+      )
+    })
+
+    ## =========================================================================
+    # new hospitalizations
+    output$new_hosp_prop <- plotly::renderPlotly({
+
+
+      # prepare the data
+      df_combined <- daily_out_rates_sums(long_out, start_date, c("n_IsympH"))
+
+      plotly::ggplotly(
+        ggplot2::ggplot(df_combined,
+                        aes(x = date, y = d_rate, group = rep)) +
+          ggplot2::geom_line(linewidth = 1, alpha = 1, color = "mediumpurple") +
           scale_x_date(
             date_breaks = "1 week",  # Breaks every week
             date_labels = "%b %d"   # Format labels as "Month Day" (e.g., Jan 01)
@@ -392,8 +405,9 @@ server <- function(input, output, session) {
           ggplot2::labs(
             # title = "New hospitalization rate",
             x = "Date",
-            y = "proportions") +
-          ggplot2::theme_minimal() +
+            y = "% of proportions") +
+          ggplot2::scale_y_continuous(labels = scales::percent) +
+          ggplot2::theme_bw() +
           ggplot2::theme(
             plot.title = element_text(hjust = 0.5),
             axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)
@@ -401,29 +415,45 @@ server <- function(input, output, session) {
       )
     })
 
-    # new deaths
-    output$new_death_plot <- plotly::renderPlotly({
+    output$new_hosp_count <- plotly::renderPlotly({
 
 
       # prepare the data
-      df_d <- long_out %>%
-        dplyr::filter(disease_state %in% c("n_HD")) %>%
-        dplyr::group_by(time, rep) %>%
-        dplyr::summarise(D_sum = sum(value), .groups = "drop") %>% ungroup()
-      df_pop <- long_out %>%
-        dplyr::filter(disease_state == "P") %>%    # Filter for P compartment (total population)
-        dplyr::group_by(time, rep) %>%
-        dplyr::select(time, rep, P = value) %>%
-        dplyr::summarise(P_sum = sum(P), .groups = "drop") %>% ungroup()
-      df_combined <- df_d %>%
-        dplyr::left_join(df_pop, by = c("time", "rep")) %>%
-        dplyr::mutate(D_rate = D_sum / P_sum) %>%
-        dplyr::mutate(date = start_date + time)
+      df_combined <- daily_out_rates_sums(long_out, start_date, c("n_IsympH"))
 
       plotly::ggplotly(
         ggplot2::ggplot(df_combined,
-                        aes(x = date, y = D_rate, group = rep)) +
-          ggplot2::geom_line(linewidth = 0.5, alpha = 0.5, color = "grey") +
+                        aes(x = date, y = d_sum, group = rep)) +
+          ggplot2::geom_col(linewidth = 1, alpha = 1, color = "mediumpurple") +
+          scale_x_date(
+            date_breaks = "1 week",  # Breaks every week
+            date_labels = "%b %d"   # Format labels as "Month Day" (e.g., Jan 01)
+          ) +
+          # scale_color_manual(values = compartment_colors) +
+          ggplot2::labs(
+            # title = "New hospitalization rate",
+            x = "Date",
+            y = "# of people") +
+          ggplot2::theme_bw() +
+          ggplot2::theme(
+            plot.title = element_text(hjust = 0.5),
+            axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)
+          )
+      )
+    })
+
+    ## =========================================================================
+    # new deaths
+    output$new_death_prop <- plotly::renderPlotly({
+
+
+      # prepare the data
+      df_combined <- daily_out_rates_sums(long_out, start_date, c("n_HD"))
+
+      plotly::ggplotly(
+        ggplot2::ggplot(df_combined,
+                        aes(x = date, y = d_rate, group = rep)) +
+          ggplot2::geom_line(linewidth = 1, alpha = 1, color = "grey") +
           scale_x_date(
             date_breaks = "1 week",  # Breaks every week
             date_labels = "%b %d"   # Format labels as "Month Day" (e.g., Jan 01)
@@ -431,9 +461,10 @@ server <- function(input, output, session) {
           # scale_color_manual(values = compartment_colors) +
           ggplot2::labs(
             # title = "New deaths rate",
-            x = "Time",
-            y = "proportions") +
-          ggplot2::theme_minimal() +
+            x = "Date",
+            y = "% of proportions") +
+          ggplot2::scale_y_continuous(labels = scales::percent) +
+          ggplot2::theme_bw() +
           ggplot2::theme(
             plot.title = element_text(hjust = 0.5),
             axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)
@@ -441,30 +472,44 @@ server <- function(input, output, session) {
       )
     })
 
-
-    # new vaccinations
-    output$new_vac_plot <- plotly::renderPlotly({
-
+    output$new_death_count <- plotly::renderPlotly({
 
       # prepare the data
-      df_d <- long_out %>%
-        dplyr::filter(disease_state %in% c("n_SV")) %>%
-        dplyr::group_by(time, rep) %>%
-        dplyr::summarise(V_sum = sum(value), .groups = "drop") %>% ungroup()
-      df_pop <- long_out %>%
-        dplyr::filter(disease_state == "P") %>%    # Filter for P compartment (total population)
-        dplyr::group_by(time, rep) %>%
-        dplyr::select(time, rep, P = value) %>%
-        dplyr::summarise(P_sum = sum(P), .groups = "drop") %>% ungroup()
-      df_combined <- df_d %>%
-        dplyr::left_join(df_pop, by = c("time", "rep")) %>%
-        dplyr::mutate(V_rate = V_sum / P_sum) %>%
-        dplyr::mutate(date = start_date + time)
+      df_combined <- daily_out_rates_sums(long_out, start_date, c("n_HD"))
 
       plotly::ggplotly(
         ggplot2::ggplot(df_combined,
-                        aes(x = date, y = V_rate, group = rep)) +
-          ggplot2::geom_col(alpha = 0.5, color = "darkgreen") +
+                        aes(x = date, y = d_sum, group = rep)) +
+          ggplot2::geom_col(linewidth = 1, alpha = 1, color = "grey") +
+          scale_x_date(
+            date_breaks = "1 week",  # Breaks every week
+            date_labels = "%b %d"   # Format labels as "Month Day" (e.g., Jan 01)
+          ) +
+          # scale_color_manual(values = compartment_colors) +
+          ggplot2::labs(
+            # title = "New deaths rate",
+            x = "Date",
+            y = "# of people") +
+          ggplot2::theme_bw() +
+          ggplot2::theme(
+            plot.title = element_text(hjust = 0.5),
+            axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)
+          )
+      )
+    })
+
+    ## =========================================================================
+    # new vaccinations
+    output$new_vac_prop <- plotly::renderPlotly({
+
+
+      # prepare the data
+      df_combined <- daily_out_rates_sums(long_out, start_date, c("n_SV"))
+
+      plotly::ggplotly(
+        ggplot2::ggplot(df_combined,
+                        aes(x = date, y = d_rate, group = rep)) +
+          ggplot2::geom_line(linewidth = 1, alpha = 1, color = "darkgreen") +
           scale_x_date(
             date_breaks = "1 week",  # Breaks every week
             date_labels = "%b %d"   # Format labels as "Month Day" (e.g., Jan 01)
@@ -474,7 +519,34 @@ server <- function(input, output, session) {
             # title = "New vaccination",
             x = "Time",
             y = "proportions") +
-          ggplot2::theme_minimal() +
+          ggplot2::scale_y_continuous(labels = scales::percent) +
+          ggplot2::theme_bw() +
+          ggplot2::theme(
+            plot.title = element_text(hjust = 0.5),
+            axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)
+          )
+      )
+    })
+
+    output$new_vac_count <- plotly::renderPlotly({
+
+      # prepare the data
+      df_combined <- daily_out_rates_sums(long_out, start_date, c("n_SV"))
+
+      plotly::ggplotly(
+        ggplot2::ggplot(df_combined,
+                        aes(x = date, y = d_sum, group = rep)) +
+          ggplot2::geom_col(alpha = 1, color = "darkgreen") +
+          scale_x_date(
+            date_breaks = "1 week",  # Breaks every week
+            date_labels = "%b %d"   # Format labels as "Month Day" (e.g., Jan 01)
+          ) +
+          # scale_color_manual(values = compartment_colors) +
+          ggplot2::labs(
+            # title = "New vaccination",
+            x = "Time",
+            y = "# of people") +
+          ggplot2::theme_bw() +
           ggplot2::theme(
             plot.title = element_text(hjust = 0.5),
             axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)
@@ -494,6 +566,7 @@ server <- function(input, output, session) {
 
           # Read HCZ geometry
           # hcz_geo <- read.csv(system.file("extdata", "Healthy_Chicago_Equity_Zones_20231129.csv", package = "MetaRVM"))
+          hcz_geo <- read_hcz_geo$result()
           hcz_sf <<- sf::st_as_sf(hcz_geo, wkt = "Geometry", crs = 4326)
           hcz_names <<- hcz_geo$Equity.Zone
 
@@ -563,37 +636,55 @@ server <- function(input, output, session) {
 
       # Filter simulation data for the selected zone
       filtered_data <- long_out %>%
+        dplyr::filter(population_id == zone_id) %>%
         dplyr::filter(time %% 1 == 0) %>%
-        dplyr::filter(population_id == zone_id, disease_state %in% c("S", "E", "H", "D",
-                                                                     "I_presymp", "I_asymp",
-                                                                     "I_symp", "R", "V")) %>%
+        dplyr::filter(disease_state %in% c("S", "E", "H", "D",
+                                           "I_presymp", "I_asymp",
+                                           "I_symp", "R", "V")) %>%
+        dplyr::mutate(disease_state = factor(disease_state,
+                                             levels = c("S", "E", "H", "D",
+                                                        "I_presymp", "I_asymp",
+                                                        "I_symp", "R", "V"),
+                                             labels = c("Susceptible",
+                                                        "Exposed",
+                                                        "Hospitalized",
+                                                        "Dead",
+                                                        "Presymptomatic",
+                                                        "Asymptomatic",
+                                                        "Symptomatic",
+                                                        "Recovered",
+                                                        "Vaccinated"))) %>%
+        dplyr::group_by(time, disease_state, rep) %>%
+        dplyr::summarize(total_value = sum(value), .groups = "drop") %>%
         dplyr::mutate(date = start_date + time)
+
 
       # Plot the simulation output for the selected zone
 
-      compartment_colors <- c("S" = "steelblue3",
-                              "E" = "tan1",
-                              "I_presymp" = "salmon3",
-                              "I_asymp" = "orangered2",
-                              "I_symp" = "red4",
-                              "H" = "mediumpurple",
-                              "R" = "green",
-                              "D" = "grey")
+      compartment_colors <- c("Susceptible" = "steelblue3",
+                              "Exposed" = "tan1",
+                              "Presymptomatic" = "salmon3",
+                              "Asymptomatic" = "orangered2",
+                              "Symptomatic" = "red4",
+                              "Hospitalized" = "mediumpurple",
+                              "Recovered" = "green",
+                              "Dead" = "grey",
+                              "Vaccinated" = "darkgreen")
       plotly::ggplotly(
-        ggplot2::ggplot(filtered_data %>%
-                          dplyr::mutate(disease_state = factor(disease_state,
-                                                               levels = c("S", "E", "H", "D",
-                                                                          "I_presymp", "I_asymp",
-                                                                          "I_symp", "R", "V"))) %>%
-                          dplyr::group_by(date, disease_state, rep) %>%
-                          dplyr::summarize(total_value = value, .groups = "drop"),
+        ggplot2::ggplot(filtered_data, # %>%
+                          # dplyr::mutate(disease_state = factor(disease_state,
+                          #                                      levels = c("S", "E", "H", "D",
+                          #                                                 "I_presymp", "I_asymp",
+                          #                                                 "I_symp", "R", "V"))) %>%
+                          # dplyr::group_by(date, disease_state, rep) %>%
+                          # dplyr::summarize(total_value = value, .groups = "drop"),
                         aes(x = date, y = total_value, color = disease_state, group = rep)) +
-          ggplot2::geom_line(linewidth = 0.5, alpha = 0.5) +
+          ggplot2::geom_line(linewidth = 1, alpha = 1) +
           ggplot2::scale_color_manual(values = compartment_colors) +
           ggplot2::labs(
             title = selected_zone(),
             x = "Date",
-            y = "Count",
+            y = "# of people",
             color = "Compartment",
           ) +
           scale_x_date(
@@ -613,23 +704,25 @@ server <- function(input, output, session) {
     ## -------------------------------------------------------------------------
     ## caterogy-wise plot
 
-    output$cat_simout <- plotly::renderPlotly({
+    # output$cat_simout <- plotly::renderPlotly({
+    output$cat_simout <- renderCachedPlot({
 
-      compartment_colors <- c("S" = "steelblue3",
-                              "E" = "tan1",
-                              "I_presymp" = "salmon3",
-                              "I_asymp" = "orangered2",
-                              "I_symp" = "red4",
-                              "H" = "mediumpurple",
-                              "R" = "green",
-                              "D" = "grey",
-                              "V" = "darkgreen")
+
+      compartment_colors <- c("Susceptible" = "steelblue3",
+                              "Exposed" = "tan1",
+                              "Presymptomatic" = "salmon3",
+                              "Asymptomatic" = "orangered2",
+                              "Symptomatic" = "red4",
+                              "Hospitalized" = "mediumpurple",
+                              "Recovered" = "green",
+                              "Dead" = "grey",
+                              "Vaccinated" = "darkgreen")
 
 
       # merge long output with population map
-      long_out <- merge(long_out, pop_map_df, by = "population_id")
+      df_long <- merge(long_out, pop_map_df, by = "population_id")
 
-      cat_long_out <- long_out %>%
+      cat_long_out <- df_long %>%
         dplyr::filter(time %% 1 == 0) %>%
         dplyr::filter(disease_state %in% c("S", "E", "H", "D",
                                            "I_presymp", "I_asymp",
@@ -637,16 +730,25 @@ server <- function(input, output, session) {
         dplyr::mutate(disease_state = factor(disease_state,
                                              levels = c("S", "E", "H", "D",
                                                         "I_presymp", "I_asymp",
-                                                        "I_symp", "R", "V"))) %>%
+                                                        "I_symp", "R", "V"),
+                                             labels = c("Susceptible",
+                                                        "Exposed",
+                                                        "Hospitalized",
+                                                        "Dead",
+                                                        "Presymptomatic",
+                                                        "Asymptomatic",
+                                                        "Symptomatic",
+                                                        "Recovered",
+                                                        "Vaccinated"))) %>%
         dplyr::group_by(time, disease_state, rep, !!sym(input$Category)) %>%
         dplyr::summarize(total_value = sum(value), .groups = "drop") %>%
         dplyr::mutate(date = start_date + time)
 
-      plotly::ggplotly(
+      # plotly::ggplotly(
         ggplot2::ggplot(cat_long_out,
                         aes(x = date, y = total_value, color = disease_state)) +
-          ggplot2::facet_wrap(vars(!!sym(input$Category))) +
-          ggplot2::geom_line(linewidth = 0.5, alpha = 0.5) +
+          ggplot2::facet_wrap(vars(!!sym(input$Category)), scales = "free_y") +
+          ggplot2::geom_line(linewidth = 1, alpha = 0.5) +
           ggplot2::scale_color_manual(values = compartment_colors) +
           scale_x_date(
             date_breaks = "1 week",  # Breaks every week
@@ -655,25 +757,35 @@ server <- function(input, output, session) {
           ggplot2::labs(
             # title = "Disease Compartments Over Time",
             x = "Date",
-            y = "Count",
+            y = "# of people",
             color = "Compartment",
           ) +
           ggplot2::theme_bw() +
           ggplot2::theme(
             plot.title = element_text(hjust = 0.5),
             legend.position = "right",
-            axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1, size = 5),
-            strip.text = element_text(size = 16)
+            legend.spacing = unit(1.5, "cm"),            # Increase spacing between legend items
+            # legend.spacing.y = unit(2, "cm"),
+            legend.title.align = 0.5,                  # Align the legend title in the center
+            legend.box.margin = margin(10, 10, 10, 10), # Add margin around the legend box
+            legend.key.size = unit(3, "lines"),      # Increase size of legend keys (symbols)
+            legend.text = element_text(size = 15),     # Adjust legend text size
+            legend.title = element_text(size = 20, margin = margin(b = 10)),     # Adjust legend title size
+            axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1, size = 10),
+            axis.text.y = element_text(size = 15),
+            axis.title = element_text(size = 15),
+            strip.text = element_text(size = 20)
           )
-      )
-    })
+      # )
+    }, cacheKeyExpr = { input$Category })
 
-    output$stacked_simout <- plotly::renderPlotly({
+    # output$stacked_simout <- plotly::renderPlotly({
+    output$stacked_simout <- renderCachedPlot({
 
       # merge long output with population map
-      long_out <- merge(long_out, pop_map_df, by = "population_id")
+      df_long <- merge(long_out, pop_map_df, by = "population_id")
 
-      cat_long_out <- long_out %>%
+      cat_long_out <- df_long %>%
         dplyr::filter(time %% 1 == 0) %>%
         dplyr::filter(disease_state %in% c("S", "E", "H", "D",
                                            "I_presymp", "I_asymp",
@@ -681,12 +793,21 @@ server <- function(input, output, session) {
         dplyr::mutate(disease_state = factor(disease_state,
                                              levels = c("S", "E", "H", "D",
                                                         "I_presymp", "I_asymp",
-                                                        "I_symp", "R", "V"))) %>%
+                                                        "I_symp", "R", "V"),
+                                             labels = c("Susceptible",
+                                                        "Exposed",
+                                                        "Hospitalized",
+                                                        "Dead",
+                                                        "Presymptomatic",
+                                                        "Asymptomatic",
+                                                        "Symptomatic",
+                                                        "Recovered",
+                                                        "Vaccinated"))) %>%
         dplyr::group_by(time, disease_state, rep, !!sym(input$Category)) %>%
         dplyr::summarize(total_value = sum(value), .groups = "drop") %>%
         dplyr::mutate(date = start_date + time)
 
-      plotly::ggplotly(
+      # plotly::ggplotly(
         ggplot2::ggplot(cat_long_out,
                         aes(x = date, y = total_value, fill = !!sym(input$Category))) +
           ggplot2::facet_wrap(~ disease_state, scales = "free_y") +
@@ -699,21 +820,72 @@ server <- function(input, output, session) {
           ggplot2::labs(
             # title = "Disease Compartments Over Time",
             x = "Date",
-            y = "Count",
+            y = "# of people",
             color = "Compartment",
           ) +
           ggplot2::theme_bw() +
           ggplot2::theme(
             plot.title = element_text(hjust = 0.5),
             legend.position = "right",
-            axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1, size = 5),
-            strip.text = element_text(size = 16)
+            legend.spacing = unit(1.5, "cm"),            # Increase spacing between legend items
+            # legend.spacing.y = unit(5, "cm"),
+            legend.title.align = 0.5,                  # Align the legend title in the center
+            legend.box.margin = margin(10, 10, 10, 10), # Add margin around the legend box
+            legend.key.size = unit(3, "lines"),      # Increase size of legend keys (symbols)
+            legend.text = element_text(size = 15),     # Adjust legend text size
+            legend.title = element_text(size = 20, margin = margin(b = 10)),     # Adjust legend title size
+            axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1, size = 10),
+            axis.text.y = element_text(size = 15),
+            axis.title = element_text(size = 15),
+            strip.text = element_text(size = 20)
           )
-      )
+      # )
+    }, cacheKeyExpr = { input$Category })
+
+
+    ## subset simulation output, display, download
+
+    age_choices <- unique(pop_map_df$age)
+    race_choices <- unique(pop_map_df$race)
+    geo_choices <- unique(pop_map_df$hcez)
+
+    observe({
+      updateCheckboxGroupInput(session, "ages", choices = age_choices, selected = age_choices[1])
+      updateCheckboxGroupInput(session, "races", choices = race_choices, selected = race_choices[1])
+      updateCheckboxGroupInput(session, "hcezs", choices = geo_choices, selected = geo_choices[1])
+      updateCheckboxGroupInput(session, "disease_states", choices = c("Susceptible",
+                                                                      "Exposed",
+                                                                      "Hospitalized",
+                                                                      "Dead",
+                                                                      "Presymptomatic",
+                                                                      "Asymptomatic",
+                                                                      "Symptomatic",
+                                                                      "Recovered",
+                                                                      "Vaccinated"), selected = "Exposed")
     })
 
+    sub_out <- reactive({
+      subset_simout(long_out, start_date, pop_map_df,
+                             input$ages, input$races, input$hcezs, input$disease_states)
+    })
+
+    # Display the filtered results
+    output$simulationOutput <- DT::renderDT({
+      sub_out()
+    })
+
+    # Download filtered results
+    output$download <- downloadHandler(
+      filename = function() {
+        paste("out_", Sys.Date(), ".csv", sep = "")
+      },
+      content = function(file) {
+        write.csv(sub_out(), file, row.names = FALSE)
+      }
+    )
 
 
   })
 
 }
+

@@ -22,7 +22,7 @@ ui <- tagList(
   ),
 
   # Title above navbar
-  div(style = "text-align:left; padding: 20px;",
+  div(style = "text-align:center; padding: 20px;",
       class = "title-background",
       h2("Generic Meta-population Model Simulation for Respiratory Viruses")
   ),
@@ -54,11 +54,11 @@ ui <- tagList(
       }
 
       .custom-card-header {
-        background-color: #a59892;                   /* Solid blue background */
-        color: white;                                /* White font */
+        background-color: #c7deee;
+        color: #09446c;                                /* White font */
         text-align: center;                          /* Center the header text */
         padding: 5px;                               /* Padding for header */
-        font-size: 25px;                             /* Font size */
+        font-size: 20px;                             /* Font size */
         border-bottom: 1px solid #ddd;               /* Border below the header */
         border-top-left-radius: 5px;                 /* Rounded corners for the top */
         border-top-right-radius: 5px;
@@ -66,7 +66,7 @@ ui <- tagList(
 
       .custom-card-body {
         padding: 20px;                               /* Padding for card body */
-        background-color: #f0f4ef;
+        background-color: #ffffff;
       }
     "))
   ),
@@ -74,7 +74,7 @@ ui <- tagList(
   # Add custom CSS for box around figures
   tags$style(HTML("
         .custom-box {
-          border: 2px solid #3498db;    /* Custom border color */
+          border: 1px solid #3498db;    /* Custom border color */
           border-radius: 10px;          /* Rounded corners */
         }
 
@@ -132,7 +132,7 @@ ui <- tagList(
 
       #
       #
-      tabPanel("Model",
+      tabPanel("Model Description",
           fluidRow(
             column(12,
                    # h3("Model Description"),
@@ -199,7 +199,7 @@ ui <- tagList(
       tabPanel("Simulation Control",
           fluidRow(
             column(4, wellPanel(
-                        h3("File inputs"),
+                        h4("File inputs"),
                         fileInput("population_data", "Population and initialization data",
                                   accept = c("text/csv", "text/comma-separated-values,text/plain", ".csv")),
                         fileInput("vac_data", "Vaccination data",
@@ -216,13 +216,13 @@ ui <- tagList(
             # disease parameter inputs
 
            column(4, wellPanel(
-                          h3("Disease Transition Parameters"),
-                          h4("Rates"),
+                          h4("Disease Transition Parameters"),
+                          h5("Rates"),
                           numericInput("beta_i", "Transmission rate for susceptibles (1/contact rate)", value = 0.5, min = 0, step = 0.001),
                           numericInput("beta_v", "Transmission rate for vaccinated (1/contact rate)", value = 0.1, min = 0, step = 0.001),
                           numericInput("vac_eff", "Vaccination efficacy", value = 0.5, min = 0, step = 0.01),
                           hr(),
-                          h4("Mean duration (in days)"),
+                          h5("Mean duration (in days)"),
                           numericInput("VtoS", "Vaccinated to Susceptible", value = 50, min = 1, step = 1),
                           numericInput("EtoIpresymp", "Exposed to Infectious asymptomatic or presymptomatic", value = 2, min = 1, step = 1),
                           numericInput("pretoIsymp", "Infectious presymptomatic to symptomatic", value = 10, min = 1, step = 1),
@@ -232,17 +232,18 @@ ui <- tagList(
                           numericInput("RtoS", "Recovered to Susceptible", value = 50, min = 1, step = 1))
                 ),
            column(4, wellPanel(
-                        h3("Proportions"),
+                        h4("Proportions"),
                         numericInput("etopa", "Proportion of Ia among Ia+Ip", value = 0.5, min = 0, step = 0.001),
                         numericInput("istohr", "Proportion of Is -> R among R+H", value = 0.5, min = 0, step = 0.001),
                         numericInput("htor", "Proportion of H -> R among R+D", value = 0.7, min = 0, step = 0.001),
                         br(),
                         br(),
-                        h3("Settings"),
+
                         # numericInput("seed", "Random seed (optional):", value = NA),
                         # radioButtons("choice", "Model type:",
                         #              choices = list("Deterministic" = "det", "Stochastic" = "stoch")
                         ),
+                  h4("Settings"),
                         dateInput(
                           inputId = "start_date",        # Unique ID for the input
                           label = "Start date  (must be a Monday)", # Label for the input
@@ -274,7 +275,8 @@ ui <- tagList(
                   card(
                     div(class = "custom-card",
                         div(class = "custom-card-header", card_header(strong("Disease compartments over time"))),
-                        div(class = "custom-card-body", plotly::plotlyOutput("seir_plot", height = "500px"))
+                        div(class = "custom-card-body", plotly::plotlyOutput("seir_plot", height = "400px"))
+                        # div(class = "custom-card-body", plotOutput("seir_plot", height = "500px"))
                     )
                   )
            ),
@@ -292,11 +294,12 @@ ui <- tagList(
            #            # class = "custom-box",
            #            plotly::plotlyOutput("new_infection_plot", height = "500px"))
            #   ),
-           column(6,
+           column(12,
                   card(
                     div(class = "custom-card",
                         div(class = "custom-card-header", card_header("New Infections")),
-                        div(class = "custom-card-body", plotly::plotlyOutput("new_infection_plot", height = "300px"))
+                        column(6, plotly::plotlyOutput("new_infection_prop", height = "300px")),
+                        column(6, plotly::plotlyOutput("new_infection_count", height = "300px"))
                     )
                   )
            ),
@@ -310,11 +313,12 @@ ui <- tagList(
              #          # class = "custom-box",
              #          plotly::plotlyOutput("new_hosp_plot", height = "500px"))
              # ),
-           column(6,
+           column(12,
                   card(
                     div(class = "custom-card",
                         div(class = "custom-card-header", card_header("New Hospitalizations")),
-                        div(class = "custom-card-body", plotly::plotlyOutput("new_hosp_plot", height = "300px"))
+                        column(6, plotly::plotlyOutput("new_hosp_prop", height = "300px")),
+                        column(6, plotly::plotlyOutput("new_hosp_count", height = "300px"))
                     )
                   )
            ),
@@ -328,11 +332,14 @@ ui <- tagList(
              #          # class = "custom-box",
              #          plotly::plotlyOutput("new_death_plot", height = "500px"))
              # ),
-           column(6,
+           column(12,
                   card(
                     div(class = "custom-card",
                         div(class = "custom-card-header", card_header("New Deaths")),
-                        div(class = "custom-card-body", plotly::plotlyOutput("new_death_plot", height = "300px"))
+                        column(6, plotly::plotlyOutput("new_death_prop", height = "300px")),
+                        column(6, plotly::plotlyOutput("new_death_count", height = "300px"))
+                        # div(class = "custom-card-body", plotly::plotlyOutput("new_death_plot", height = "300px")),
+                        # div(class = "custom-card-body", plotly::plotlyOutput("new_death_plot", height = "300px"))
                     )
                   )
            ),
@@ -346,18 +353,19 @@ ui <- tagList(
              #          # class = "custom-box",
              #          plotly::plotlyOutput("new_vac_plot", height = "500px"))
              # ),
-           column(6,
+           column(12,
                   card(
                     div(class = "custom-card",
                         div(class = "custom-card-header", card_header("New Vaccinations")),
-                        div(class = "custom-card-body", plotly::plotlyOutput("new_vac_plot", height = "300px"))
+                        column(6, plotly::plotlyOutput("new_vac_prop", height = "300px")),
+                        column(6, plotly::plotlyOutput("new_vac_count", height = "300px"))
                     )
                   )
            ),
           )
 
       ),
-      tabPanel("HCEZ Figures",
+      tabPanel("HCEZ",
                 fluidRow(
                   br(),
                    br(),
@@ -386,7 +394,7 @@ ui <- tagList(
                 )
       ),
 
-      tabPanel("Figures",
+      tabPanel("Demographic Categories",
                fluidRow(
                  br(),
                  br(),
@@ -403,7 +411,7 @@ ui <- tagList(
                         card(
                           div(class = "custom-card",
                               div(class = "custom-card-header", card_header("Disease Compartments")),
-                              div(class = "custom-card-body", plotly::plotlyOutput("cat_simout", height = "500px"))
+                              div(class = "custom-card-body", plotOutput("cat_simout", height = "500px"))
                           )
                         )
                  ),
@@ -413,7 +421,7 @@ ui <- tagList(
                         card(
                           div(class = "custom-card",
                               div(class = "custom-card-header", card_header("Disease Compartments")),
-                              div(class = "custom-card-body", plotly::plotlyOutput("stacked_simout", height = "500px"))
+                              div(class = "custom-card-body", plotOutput("stacked_simout", height = "500px"))
                           )
                         )
                  ),
@@ -451,6 +459,34 @@ ui <- tagList(
       #             column(12, textOutput("tab")),
       #           )
       # ),
+
+      tabPanel("Download results",
+               fluidRow(
+                 br(),
+                 br(),
+                 column(3, wellPanel(checkboxGroupInput("ages", "Age categories",
+                                                         choices = NULL)
+                                    ),
+                        downloadButton("download", "Download CSV", class = "custom-button")
+                 ),
+                 column(3, wellPanel(checkboxGroupInput("races", "Race categories",
+                                                         choices = NULL)
+                                    )
+                 ),
+                 column(3, wellPanel(checkboxGroupInput("hcezs", "HCEZ",
+                                                         choices = NULL)
+                                    )
+                 ),
+                 column(3, wellPanel(checkboxGroupInput("disease_states", "Disease States",
+                                                        choices = NULL)
+                                    )
+                 ),
+                 br(),
+                 br(),
+                 column(12, DT::dataTableOutput("simulationOutput"))
+
+               )
+      ),
 
       #         tabPanel("Data",
       #                  div(style = "max-width: 1200px; margin: 20px;",
