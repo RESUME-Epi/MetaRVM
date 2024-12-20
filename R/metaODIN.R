@@ -14,6 +14,7 @@
 #' @param I0 A vector of initial number of infected people in N_pop subpopulations
 #' @param P0 A vector of population sizes for N_pop subpopulations
 #' @param V0 A vector of initial number of vaccinated people in N_pop subpopulations
+#' @param R0 A vector of initial number of recovered people in N_pop subpopulations
 #' @param m_weekday_day mixing matrix for weekday 6 am - 6 pm
 #' @param m_weekday_night mixing matrix for weekday 6 pm - 6 am
 #' @param m_weekend_day mixing matrix for weekend 6 am - 6 pm
@@ -42,7 +43,7 @@
 
 
 meta_sim <- function(N_pop, beta_i, beta_v,
-                     S0, I0, P0, V0,
+                     S0, I0, P0, V0, R0,
                      m_weekday_day, m_weekday_night, m_weekend_day, m_weekend_night,
                      delta_t,
                      tvac, vac_mat,
@@ -138,23 +139,31 @@ meta_sim <- function(N_pop, beta_i, beta_v,
     ## =================================================
     ## Draws from binomial distributions for numbers changing between
     ## compartments:
-    n_SE_eff[, ]      <- if(S[i] <= 0) 0 else (if(stoch == 1) rbinom(S_eff_prod[j, i], p_SE[i]) else S_eff_prod[j, i] * p_SE[i])
+    n_SE_eff[, ]      <- ceiling(if(S[i] <= 0) 0 else (if(stoch == 1) rbinom(S_eff_prod[j, i], p_SE[i]) else S_eff_prod[j, i] * p_SE[i]))
     n_SE[]            <- sum(n_SE_eff[i, ]) # rowSums
     n_EI[]            <- if(E[i] == 0) 0 else (if(stoch == 1) rbinom(E[i], p_EIpresymp) else E[i] * p_EIpresymp)
+    n_EI[]            <- ceiling(n_EI[i])
     n_EIpresymp[]     <- ceiling(n_EI[i] * etopa)
     n_EIasymp[]       <- n_EI[i] - n_EIpresymp[i]
     n_preIsymp[]      <- if(I_presymp[i] == 0) 0 else (if(stoch == 1) rbinom(I_presymp[i], p_preIsymp) else I_presymp[i] * p_preIsymp)
+    n_preIsymp[]      <- ceiling(n_preIsymp[i])
     n_IasympR[]       <- if(I_asymp[i] == 0) 0 else (if(stoch == 1) rbinom(I_asymp[i], p_IasympR) else I_asymp[i] * p_IasympR)
+    n_IasympR[]       <- ceiling(n_IasympR[i])
     n_IsympRH[]       <- if(I_symp[i] == 0) 0 else (if(stoch == 1) rbinom(I_symp[i], p_IsympRH) else I_symp[i] * p_IsympRH)
+    n_IsympRH[]       <- ceiling(n_IsympRH[i])
     n_IsympH[]        <- ceiling(n_IsympRH[i] * istohr)
     n_IsympR[]        <- n_IsympRH[i] - n_IsympH[i]
     n_HRD[]           <- if(H[i] == 0) 0 else (if(stoch == 1) rbinom(H[i], p_HRD) else H[i] * p_HRD)
+    n_HRD[]           <- ceiling(n_HRD[i])
     n_HR[]            <- ceiling(n_HRD[i] * htor)
     n_HD[]            <- n_HRD[i] - n_HR[i]
     n_RS[]            <- if(R[i] == 0) 0 else (if(stoch == 1) rbinom(R[i], p_RS) else R[i] * p_RS)
+    n_RS[]            <- ceiling(n_RS[i])
     n_VS[]            <- if(stoch == 1) rbinom(V[i], p_VS) else V[i] * p_VS
+    n_VS[]            <- ceiling(n_VS[i])
     n_VE_eff[, ]      <- if(stoch == 1) rbinom(V_eff_prod[j, i], p_VE[i]) else V_eff_prod[j, i] * p_VE[i]
     n_VE[]            <- sum(n_VE_eff[i, ]) # rowSums
+    n_VE[]            <- ceiling(n_VE[i])
 
     ## =================================================
     ## Initial states:
@@ -164,7 +173,7 @@ meta_sim <- function(N_pop, beta_i, beta_v,
     initial(I_asymp[])      <- 0
     initial(I_symp[])       <- I_symp_ini[i]
     initial(I_all[])        <- I_symp_ini[i]
-    initial(R[])            <- 0
+    initial(R[])            <- R_ini[i]
     initial(H[])            <- 0
     initial(D[])            <- 0
     initial(V[])            <- V_ini[i]
@@ -194,6 +203,7 @@ meta_sim <- function(N_pop, beta_i, beta_v,
     I_symp_ini[] <- user()
     V_ini[] <- user()
     P_ini[] <- user()
+    R_ini[] <- user()
 
     # beta_e         <- user(0.0165)
     beta_i         <- user(0.2)
@@ -217,6 +227,7 @@ meta_sim <- function(N_pop, beta_i, beta_v,
     dim(I_symp_ini) <- N_pop
     dim(V_ini) <- N_pop
     dim(P_ini) <- N_pop
+    dim(R_ini) <- N_pop
 
     dim(S) <- N_pop
     dim(E) <- N_pop
@@ -280,6 +291,7 @@ meta_sim <- function(N_pop, beta_i, beta_v,
                         I_symp_ini = I0,
                         P_ini = P0,
                         V_ini = V0,
+                        R_ini = R0,
                         m_weekday_day = m_weekday_day,
                         m_weekday_night = m_weekday_night,
                         m_weekend_day = m_weekend_day,

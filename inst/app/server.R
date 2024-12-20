@@ -40,13 +40,28 @@ server <- function(input, output, session) {
     if(!is.null(input$vac_data)){
       data.table::fread(input$vac_data$datapath)
     } else {
-      data.table::fread(system.file("extdata", "vac_150.csv", package = "MetaRVM"))
+      data.table::fread(system.file("extdata", "vac_dates_150.csv", package = "MetaRVM"))
     }
+  })
+
+  # process vaccination data to align with ODIN requirement
+  process_vac_data <- reactive({
+    raw_vac_data <- vac_data()
+    raw_vac_data$date <- as.Date(raw_vac_data$date)
+
+    date_filtered <- raw_vac_data %>%
+      dplyr::filter(date >= as.Date(input$start_date)) %>%
+      dplyr::mutate(t = (date - as.Date(input$start_date)) / input$dt) %>%
+      dplyr::select(-c(date)) %>%
+      select(last_col(), everything())
+
+    date_filtered
   })
 
   # Display the population data table in the UI
   output$vac_table <- DT::renderDT({
-    vac_data()
+    process_vac_data()
+    # vac_data()
   })
 
   # pop_mapping_data <- reactive({
@@ -172,11 +187,12 @@ server <- function(input, output, session) {
     # Extract population data
     pop_df <- population_data()
     N_pop <- nrow(pop_df)
-    vac_df <- vac_data()
+    vac_df <- process_vac_data()
     P_ini <- pop_df[, N]
     S_ini <- pop_df[, S0]
     I_symp_ini <- pop_df[, I0]
     V_ini <- pop_df[, V0]
+    R_ini <- pop_df[, R0]
 
     read_hcz_geo$invoke()
 
@@ -238,6 +254,7 @@ server <- function(input, output, session) {
                     I0 = I_symp_ini,
                     P0 = P_ini,
                     V0 = V_ini,
+                    R0 = R_ini,
                     m_weekday_day = as.matrix(m1),
                     m_weekday_night = as.matrix(m2),
                     m_weekend_day = as.matrix(m3),
@@ -627,30 +644,6 @@ server <- function(input, output, session) {
       # Map borough name to sub_population_id
       zone_id <- which(hcz_names == selected_zone())
 
-      # Filter simulation data for the selected zone
-      # filtered_data <- long_out %>%
-      #   dplyr::filter(population_id == zone_id) %>%
-      #   dplyr::filter(time %% 1 == 0) %>%
-      #   dplyr::filter(disease_state %in% c("S", "E", "H", "D",
-      #                                      "I_presymp", "I_asymp",
-      #                                      "I_symp", "R", "V")) %>%
-      #   dplyr::mutate(disease_state = factor(disease_state,
-      #                                        levels = c("S", "E", "H", "D",
-      #                                                   "I_presymp", "I_asymp",
-      #                                                   "I_symp", "R", "V"),
-      #                                        labels = c("Susceptible",
-      #                                                   "Exposed",
-      #                                                   "Hospitalized",
-      #                                                   "Dead",
-      #                                                   "Presymptomatic",
-      #                                                   "Asymptomatic",
-      #                                                   "Symptomatic",
-      #                                                   "Recovered",
-      #                                                   "Vaccinated"))) %>%
-      #   dplyr::group_by(time, disease_state, rep) %>%
-      #   dplyr::summarize(total_value = sum(value), .groups = "drop") %>%
-      #   dplyr::mutate(date = start_date + time)
-
       filtered_data <- long_out_zones %>%
         dplyr::filter(hcez %in% selected_zone())
 
@@ -762,11 +755,11 @@ server <- function(input, output, session) {
             legend.position = "right",
             legend.spacing = unit(1.5, "cm"),            # Increase spacing between legend items
             # legend.spacing.y = unit(2, "cm"),
-            legend.title.align = 0.5,                  # Align the legend title in the center
+            # legend.title.align = 0.5,                  # Align the legend title in the center
             legend.box.margin = margin(10, 10, 10, 10), # Add margin around the legend box
             legend.key.size = unit(3, "lines"),      # Increase size of legend keys (symbols)
             legend.text = element_text(size = 15),     # Adjust legend text size
-            legend.title = element_text(size = 20, margin = margin(b = 10)),     # Adjust legend title size
+            legend.title = element_text(size = 20, margin = margin(b = 10), hjust = 0.5),     # Adjust legend title size
             axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1, size = 10),
             axis.text.y = element_text(size = 15),
             axis.title = element_text(size = 15),

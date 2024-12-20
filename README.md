@@ -64,16 +64,17 @@ pop_zones <- data.frame(N = rep(NA, N_pop),
 pop_zones$N <- sample(1000:1500, N_pop)
 pop_zones$I0 <- sample(10:100, N_pop)
 pop_zones$V0 <- sample(1:10, N_pop)
-pop_zones$S0 <- pop_zones$N - pop_zones$I0 - pop_zones$V0
+pop_zones$R0 <- sample(100:200, N_pop)
+pop_zones$S0 <- pop_zones$N - pop_zones$I0 - pop_zones$V0 - pop_zones$R0
 
 pop_zones
-#>      N   S0 I0 V0
-#> 1 1099 1051 41  7
-#> 2 1176 1104 63  9
-#> 3 1144 1105 38  1
-#> 4 1174 1087 84  3
-#> 5 1409 1328 71 10
-#> 6 1161 1061 96  4
+#>      N   S0 I0 V0  R0
+#> 1 1117  922 42  8 145
+#> 2 1149  951 30  7 161
+#> 3 1464 1322 38  1 103
+#> 4 1454 1234 32 10 178
+#> 5 1229 1040 26  4 159
+#> 6 1226  996 88  5 137
 ```
 
 #### Vaccination
@@ -94,14 +95,14 @@ colnames(vac_zones) <- c("t", paste0("v", 1:N_pop))
 
 vac_zones
 #>       t v1 v2 v3 v4 v5 v6
-#> [1,]  0  7  9  1  3 10  4
-#> [2,] 14  7  5  6  4  1  5
-#> [3,] 28  6  7  3 10 10  9
-#> [4,] 42  8  5 10  2  2  4
-#> [5,] 56  5  9  5  5  9  2
-#> [6,] 70  7  7  8  7  2  9
-#> [7,] 84  6  7  9  5  8  4
-#> [8,] 98  1  4  7  7 10  9
+#> [1,]  0  8  7  1 10  4  5
+#> [2,] 14  7  5 10  2  3  7
+#> [3,] 28  1  4  3  9  5  2
+#> [4,] 42  9  2  1  3  3  8
+#> [5,] 56  4  8  6  3  4 10
+#> [6,] 70  2  8  9  9  6  3
+#> [7,] 84  8  5  6 10  7  3
+#> [8,] 98  5  7  9  5  7  6
 ```
 
 ``` r
@@ -137,6 +138,7 @@ out <- meta_sim(N_pop = N_pop,
                 I0 = pop_zones$I0,
                 P0 = pop_zones$N,
                 V0 = pop_zones$V0,
+                R0 = pop_zones$R0,
                 m_weekday_day = m_weekday_day,
                 m_weekend_day = m_weekend_day,
                 m_weekday_night = m_weekday_night,
@@ -160,18 +162,18 @@ out <- meta_sim(N_pop = N_pop,
                  seed = NULL)
 #> Loading required namespace: pkgbuild
 #> Generating model in c
-#> ℹ Re-compiling odin840d0a65 (debug build)
+#> ℹ Re-compiling odin5a20de50 (debug build)
 #> ── R CMD INSTALL ───────────────────────────────────────────────────────────────
-#> * installing *source* package ‘odin840d0a65’ ...
+#> * installing *source* package ‘odin5a20de50’ ...
 #> ** using staged installation
 #> ** libs
 #> gcc -I"/usr/share/R/include" -DNDEBUG      -fpic  -g -O2 -ffile-prefix-map=/build/r-base-4A2Reg/r-base-4.1.2=. -fstack-protector-strong -Wformat -Werror=format-security -Wdate-time -D_FORTIFY_SOURCE=2 -g  -UNDEBUG -Wall -pedantic -g -O0 -c odin.c -o odin.o
 #> gcc -I"/usr/share/R/include" -DNDEBUG      -fpic  -g -O2 -ffile-prefix-map=/build/r-base-4A2Reg/r-base-4.1.2=. -fstack-protector-strong -Wformat -Werror=format-security -Wdate-time -D_FORTIFY_SOURCE=2 -g  -UNDEBUG -Wall -pedantic -g -O0 -c registration.c -o registration.o
-#> gcc -shared -L/usr/lib/R/lib -Wl,-Bsymbolic-functions -flto=auto -ffat-lto-objects -flto=auto -Wl,-z,relro -o odin840d0a65.so odin.o registration.o -L/usr/lib/R/lib -lR
-#> installing to /tmp/Rtmp3FjtcU/devtools_install_7feee7047e3f3/00LOCK-file7feee37bdb12d/00new/odin840d0a65/libs
+#> gcc -shared -L/usr/lib/R/lib -Wl,-Bsymbolic-functions -flto=auto -ffat-lto-objects -flto=auto -Wl,-z,relro -o odin5a20de50.so odin.o registration.o -L/usr/lib/R/lib -lR
+#> installing to /tmp/RtmpYAEgGp/devtools_install_133b015e6799bf/00LOCK-file133b01a67a1d7/00new/odin5a20de50/libs
 #> ** checking absolute paths in shared objects and dynamic libraries
-#> * DONE (odin840d0a65)
-#> ℹ Loading odin840d0a65
+#> * DONE (odin5a20de50)
+#> ℹ Loading odin5a20de50
 ```
 
 There are some utility functions to extract a subset of disease states

@@ -64,7 +64,8 @@ pop_zones <- data.frame(N = rep(NA, N_pop),
 pop_zones$N <- sample(1000:1500, N_pop)
 pop_zones$I0 <- sample(10:100, N_pop)
 pop_zones$V0 <- sample(1:10, N_pop)
-pop_zones$S0 <- pop_zones$N - pop_zones$I0 - pop_zones$V0
+pop_zones$R0 <- sample(100:200, N_pop)
+pop_zones$S0 <- pop_zones$N - pop_zones$I0 - pop_zones$V0 - pop_zones$R0
 
 pop_zones
 ```
@@ -120,6 +121,7 @@ out <- meta_sim(N_pop = N_pop,
                 I0 = pop_zones$I0,
                 P0 = pop_zones$N,
                 V0 = pop_zones$V0,
+                R0 = pop_zones$R0,
                 m_weekday_day = m_weekday_day,
                 m_weekend_day = m_weekend_day,
                 m_weekday_night = m_weekday_night,
