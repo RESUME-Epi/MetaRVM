@@ -162,37 +162,57 @@ ui <- tagList(
                      their structure and acceptable ranges. The model can also be run in either deterministic or stochastic mode.
                      A set of sample datasets are already provided in the package which can be seen under the Input data tab.
                      When no input data is provided by the users, the provided data sets will be used as default."),
-                       tags$ul(
-                         tags$li(strong("Population and initialization data:"), tags$br(),
-                                 HTML("&nbsp;&nbsp;&nbsp;&nbsp;"), "A CSV file with four columns where the number of rows is the same
+                    tags$ul(
+                      tags$li(strong("File inputs:"),
+                              tags$ul(
+                                tags$li(strong("Population and initialization data:"), tags$br(),
+                                        HTML("&nbsp;&nbsp;&nbsp;&nbsp;"), "A CSV file with header consisting of five columns where the number of rows is the same
                                  as the number of subpopulations, The columns are N: total population,
                                S0: number of susceptible at the start of the simulation, I0: number of
                                  infected people at the start of the simulation, V0: number of vaccinated
-                                 people at the start of the simulation"),
-                         tags$li(strong("Vaccination data:"), tags$br(),
-                                 HTML("&nbsp;&nbsp;&nbsp;&nbsp;"), "A CSV file with number of (subpopulations + 1) many columns.
-                                 The first column indicates the time indices and the remaining
+                                 people at the start of the simulation, R0: number of recovered
+                                 people (from an earlier exposure) at the start of the simulation"),
+                                tags$li(strong("Vaccination data:"), tags$br(),
+                                        HTML("&nbsp;&nbsp;&nbsp;&nbsp;"), "A CSV file with header consisting of the number of (subpopulations + 1) many columns.
+                                 The first column contains calendar dates and the remaining
                                columns hold the number of vaccinations in each of the subpopulations."),
-                         tags$li(strong("Mixing matrix:"), tags$br(),
-                                 HTML("&nbsp;&nbsp;&nbsp;&nbsp;"), "A CSV file of mixing matrix. There are four sets of
+                                tags$li(strong("Mixing matrix:"), tags$br(),
+                                        HTML("&nbsp;&nbsp;&nbsp;&nbsp;"), "A CSV file of mixing matrix. There are four sets of
                                  mixing matrices required for the simulation, accounting for different mixing patterns in
                                  weekdays vs weekends and in day time vs night time. The rows of a mixing matrix should add up to 1."),
-                         tags$li(strong("delta_t:"), "positive real number, simulation time step"),
-                         tags$li(strong("beta_e:"), "transmission rate for Susceptible to Exposed, a value between 0 and 1"),
-                         tags$li(strong("beta_v:"), "transmission rate for Vaccinated to Exposed, a value between 0 and 1"),
-                         tags$li(strong("VtoS:"), "rate for transitioning from Vaccinated to Susceptible, a value between 0 and 1"),
-                         tags$li(strong("EtoIpresymp:"), "rate for transitioning from Exposed to Infectious presymptomatic or asymptomatic, a value between 0 and 1"),
-                         tags$li(strong("etopa:"), "proportion of people becoming Infectious presymptomatic from Exposed, a value between 0 and 1. "),
-                         tags$li(strong("pretoIsymp:"), "rate for transitioning from Infectious presymptomatic to Infectious symptomatic, a value between 0 and 1"),
-                         tags$li(strong("IasymptoR:"), "rate for transitioning from Infectious presymptomatic to Recovered, a value between 0 and 1"),
-                         tags$li(strong("IsymptoRH:"), "rate for transitioning from Infectious symptomatic to Recovered or Hospitalized, a value between 0 and 1"),
-                         tags$li(strong("istohr:"), "proportion of people hospitalized from Infectious symptomatic, a value between 0 and 1. "),
-                         tags$li(strong("HtoRD:"), "rate for transitioning from Hospitalized to Recovered or Dead, a value between 0 and 1"),
-                         tags$li(strong("htor:"), "proportion of people Recovered from Hospitalized, a value between 0 and 1. "),
-                         tags$li(strong("RtoS:"), "rate for transitioning from Recovered to Susceptible, a value between 0 and 1"),
-                         tags$li(strong("days:"), "days to simulate, a positive integer" ),
-                         tags$li(strong("reps:"), "number of replicates to run, a positive integer" ),
+                                tags$li(strong("Demographic Mapping:"), tags$br(),
+                                        HTML("&nbsp;&nbsp;&nbsp;&nbsp;"), "A CSV file with header consisting of the sub-population demographic
+                                        mapping. "),
+                                )
+                              )
+                    ),
+                   tags$ul(
+                     tags$li(strong("Disease parameters"),
+                             tags$ul(
+                               tags$li(strong("Transmissibility for susceptibles:"), "a value between 0 and 1"),
+                               tags$li(strong("Transmissibility for vaccinated:"), "a value between 0 and 1"),
+                               tags$li(strong("Vaccinated to Susceptible:"), "Mean number of days to transition from Vaccinated to Susceptible, a value between 0 and 1"),
+                               tags$li(strong("Exposed to Infectious Asymptomatic or Presymptomatic:"), "Mean number of days to transition from Exposed to Infectious presymptomatic or asymptomatic, a value between 0 and 1"),
+                               tags$li(strong("Infectious Presymptomatic to symptomatic:"), "Mean number of days to transition from Infectious presymptomatic to Infectious symptomatic, a value between 0 and 1"),
+                               tags$li(strong("Infectious Asymptomatic to Recovered:"), "Mean number of days to transition from Infectious presymptomatic to Recovered, a value between 0 and 1"),
+                               tags$li(strong("Infectious Symptomatic to Recovered or Hospitalized:"), "Mean number of days to transition from Infectious symptomatic to Recovered or Hospitalized, a value between 0 and 1"),
+                               tags$li(strong("Hospitalized to Recovered or Dead:"), "Mean number of days to transition from Hospitalized to Recovered or Dead, a value between 0 and 1"),
+                               tags$li(strong("Recovered to Susceptible:"), "Mean number of days to transition from Recovered to Susceptible, a value between 0 and 1"),
+                               tags$li(strong("Proportion of asymptomatic among asymptomatic + presymptomatic:"), "proportion of people becoming Infectious presymptomatic from Exposed, a value between 0 and 1. "),
+                               tags$li(strong("Proportion of recovered among recovered+hospitalized from symptomatic:"), "Proportion of people hospitalized from Infectious symptomatic, a value between 0 and 1. "),
+                               tags$li(strong("Proportion of recovered among recovered+dead from hospitalized:"), "Proportion of people Recovered from Hospitalized, a value between 0 and 1. "),
+                             ))
+                   ),
+                   tags$ul(
+                     tags$li(strong("Settings"),
+                       tags$ul(
+                         tags$li(strong("Start date:"), "a calendar date, must be a Monday"),
+                         tags$li(strong("Model time step:"), "positive real number, simulation time step"),
+                         tags$li(strong("Simulation length:"), "days to simulate, a positive integer" ),
+                         # tags$li(strong("reps:"), "number of replicates to run, a positive integer" ),
                        ),
+                     )
+                   )
             )
           )
       ),
@@ -208,7 +228,7 @@ ui <- tagList(
                         fileInput("mix_mat2", "Weekday Night-time mixing matrix"),
                         fileInput("mix_mat3", "Weekend Day-time mixing matrix"),
                         fileInput("mix_mat4", "Weekend Night-time mixing matrix"),
-                        fileInput("population_map", "Sub population demographic info",
+                        fileInput("population_map", "Demographic Mapping",
                                   accept = c("text/csv", "text/comma-separated-values,text/plain", ".csv")),
                         actionButton("simulate", "Simulate", class = "custom-button")
             )),
@@ -216,10 +236,10 @@ ui <- tagList(
             # disease parameter inputs
 
            column(4, wellPanel(
-                          h4("Disease Transition Parameters"),
+                          h4("Disease Parameters"),
                           h5("Rates"),
-                          numericInput("beta_i", "Transmission rate for susceptibles (1/contact rate)", value = 0.5, min = 0, step = 0.001),
-                          numericInput("beta_v", "Transmission rate for vaccinated (1/contact rate)", value = 0.1, min = 0, step = 0.001),
+                          numericInput("beta_i", "Transmissibility for susceptibles", value = 0.5, min = 0, step = 0.001),
+                          numericInput("beta_v", "Transmissibility for vaccinated", value = 0.1, min = 0, step = 0.001),
                           numericInput("vac_eff", "Vaccination efficacy", value = 0.5, min = 0, step = 0.01),
                           hr(),
                           h5("Mean duration (in days)"),
@@ -233,9 +253,9 @@ ui <- tagList(
                 ),
            column(4, wellPanel(
                         h4("Proportions"),
-                        numericInput("etopa", "Proportion of Ia among Ia+Ip", value = 0.5, min = 0, step = 0.001),
-                        numericInput("istohr", "Proportion of Is -> R among R+H", value = 0.5, min = 0, step = 0.001),
-                        numericInput("htor", "Proportion of H -> R among R+D", value = 0.7, min = 0, step = 0.001),
+                        numericInput("etopa", "Proportion of asymptomatic among asymptomatic + presymptomatic", value = 0.5, min = 0, step = 0.001),
+                        numericInput("istohr", "Proportion of recovered among recovered+hospitalized from symptomatic", value = 0.5, min = 0, step = 0.001),
+                        numericInput("htor", "Proportion of recovered among recovered+dead from hospitalized", value = 0.7, min = 0, step = 0.001),
                         br(),
                         br(),
 
@@ -254,7 +274,7 @@ ui <- tagList(
                           startview = "month",     # Default view (month)
                           weekstart = 1            # Week starts on Monday
                         ),
-                        numericInput("dt", "Time step:", value = 0.5, min = 0, step = .5),
+                        numericInput("dt", "Model time step:", value = 0.5, min = 0, step = .5),
                         numericInput("days", "Simulation Length:", value = 100, min = 1),
                         # numericInput("rep", "Number of replicates", value = 1, min = 1, step = 1))
                   ),
@@ -297,7 +317,7 @@ ui <- tagList(
            column(12,
                   card(
                     div(class = "custom-card",
-                        div(class = "custom-card-header", card_header("New Infections")),
+                        div(class = "custom-card-header", card_header(strong("New Infections"))),
                         column(6, plotly::plotlyOutput("new_infection_prop", height = "300px")),
                         column(6, plotly::plotlyOutput("new_infection_count", height = "300px"))
                     )
@@ -316,7 +336,7 @@ ui <- tagList(
            column(12,
                   card(
                     div(class = "custom-card",
-                        div(class = "custom-card-header", card_header("New Hospitalizations")),
+                        div(class = "custom-card-header", card_header(strong("New Hospitalizations"))),
                         column(6, plotly::plotlyOutput("new_hosp_prop", height = "300px")),
                         column(6, plotly::plotlyOutput("new_hosp_count", height = "300px"))
                     )
@@ -335,7 +355,7 @@ ui <- tagList(
            column(12,
                   card(
                     div(class = "custom-card",
-                        div(class = "custom-card-header", card_header("New Deaths")),
+                        div(class = "custom-card-header", card_header(strong("New Deaths"))),
                         column(6, plotly::plotlyOutput("new_death_prop", height = "300px")),
                         column(6, plotly::plotlyOutput("new_death_count", height = "300px"))
                         # div(class = "custom-card-body", plotly::plotlyOutput("new_death_plot", height = "300px")),
@@ -356,7 +376,7 @@ ui <- tagList(
            column(12,
                   card(
                     div(class = "custom-card",
-                        div(class = "custom-card-header", card_header("New Vaccinations")),
+                        div(class = "custom-card-header", card_header(strong("New Vaccinations"))),
                         column(6, plotly::plotlyOutput("new_vac_prop", height = "300px")),
                         column(6, plotly::plotlyOutput("new_vac_count", height = "300px"))
                     )
@@ -410,7 +430,7 @@ ui <- tagList(
                  column(12,
                         card(
                           div(class = "custom-card",
-                              div(class = "custom-card-header", card_header("Disease Compartments")),
+                              div(class = "custom-card-header", card_header("By categories")),
                               div(class = "custom-card-body", plotOutput("cat_simout", height = "500px"))
                           )
                         )
@@ -420,7 +440,7 @@ ui <- tagList(
                  column(12,
                         card(
                           div(class = "custom-card",
-                              div(class = "custom-card-header", card_header("Disease Compartments")),
+                              div(class = "custom-card-header", card_header("By disease compartments")),
                               div(class = "custom-card-body", plotOutput("stacked_simout", height = "500px"))
                           )
                         )
@@ -428,37 +448,37 @@ ui <- tagList(
                )
       ),
 
-      # tabPanel("Input Data",
-      #           fluidRow(
-      #             br(),
-      #             br(),
-      #             h4("Population data"),
-      #             # column(12, DT::dataTableOutput("population_table")),
-      #             column(12, DT::dataTableOutput("out_table")),
-      #             br(),
-      #             br(),
-      #             h4("Vaccination data"),
-      #             column(12, DT::dataTableOutput("vac_table")),
-      #             br(),
-      #             br(),
-      #             h4("Mixing matrix - weekday day"),
-      #             column(12, DT::dataTableOutput("m1")),
-      #             br(),
-      #             br(),
-      #             h4("Mixing matrix - weekday night"),
-      #             column(12, DT::dataTableOutput("m2")),
-      #             br(),
-      #             br(),
-      #             h4("Mixing matrix - weekend day"),
-      #             column(12, DT::dataTableOutput("m3")),
-      #             br(),
-      #             br(),
-      #             h4("Mixing matrix - weekend night"),
-      #             column(12, DT::dataTableOutput("m4")),
-      #             h4("Selected tab"),
-      #             column(12, textOutput("tab")),
-      #           )
-      # ),
+      tabPanel("Input Data",
+                fluidRow(
+                  br(),
+                  br(),
+                  h4("Population data"),
+                  # column(12, DT::dataTableOutput("population_table")),
+                  column(12, DT::dataTableOutput("out_table")),
+                  br(),
+                  br(),
+                  h4("Vaccination data"),
+                  column(12, DT::dataTableOutput("vac_table")),
+                  br(),
+                  br(),
+                  h4("Mixing matrix - weekday day"),
+                  column(12, DT::dataTableOutput("m1")),
+                  br(),
+                  br(),
+                  h4("Mixing matrix - weekday night"),
+                  column(12, DT::dataTableOutput("m2")),
+                  br(),
+                  br(),
+                  h4("Mixing matrix - weekend day"),
+                  column(12, DT::dataTableOutput("m3")),
+                  br(),
+                  br(),
+                  h4("Mixing matrix - weekend night"),
+                  column(12, DT::dataTableOutput("m4")),
+                  h4("Selected tab"),
+                  column(12, textOutput("tab")),
+                )
+      ),
 
       tabPanel("Download results",
                fluidRow(
@@ -488,27 +508,27 @@ ui <- tagList(
                )
       ),
 
-      #         tabPanel("Data",
-      #                  div(style = "max-width: 1200px; margin: 20px;",
-      #                      fluidRow(
-      #                        br(),
-      #                        br(),
-      #                        # h4("out_table"),
-      #                        column(12, DT::dataTableOutput("population_table")),
-      #                        br(),
-      #                        column(12, tableOutput("out_table")),
-      #                        br(),
-      #                        h4("Vaccination"),
-      #                        column(12, DT::dataTableOutput("vac_table")),
-      #                        # br(),
-      #                        # br(),
-      #                        # h4("Mixing day"),
-      #                        # column(12, dataTableOutput("mix_mat1")),
-      #                        # h4("Mixing night"),
-      #                        # column(12, dataTableOutput("mix_mat2"))
-      #                      )
-      #                  )
-      #         )
+              # tabPanel("Data",
+              #          div(style = "max-width: 1200px; margin: 20px;",
+              #              fluidRow(
+              #                br(),
+              #                br(),
+              #                # h4("out_table"),
+              #                column(12, DT::dataTableOutput("population_table")),
+              #                br(),
+              #                column(12, tableOutput("out_table")),
+              #                br(),
+              #                h4("Vaccination"),
+              #                column(12, DT::dataTableOutput("vac_table")),
+              #                # br(),
+              #                # br(),
+              #                # h4("Mixing day"),
+              #                # column(12, dataTableOutput("mix_mat1")),
+              #                # h4("Mixing night"),
+              #                # column(12, dataTableOutput("mix_mat2"))
+              #              )
+              #          )
+              # )
       #       )
       #     )
       # )

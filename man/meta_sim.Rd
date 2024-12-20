@@ -12,6 +12,7 @@ meta_sim(
   I0,
   P0,
   V0,
+  R0,
   m_weekday_day,
   m_weekday_night,
   m_weekend_day,
@@ -49,6 +50,8 @@ meta_sim(
 \item{P0}{A vector of population sizes for N_pop subpopulations}
 
 \item{V0}{A vector of initial number of vaccinated people in N_pop subpopulations}
+
+\item{R0}{A vector of initial number of recovered people in N_pop subpopulations}
 
 \item{m_weekday_day}{mixing matrix for weekday 6 am - 6 pm}
 

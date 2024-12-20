@@ -23,6 +23,8 @@ We will create some sample input for this model run. (This data sets are also pr
 
 ```{r}
 ## Model initialization
+sim_length <- 100
+
 N_pop <- 6
 pop_init <- data.frame(N = rep(NA, N_pop),
                        S0 = rep(NA, N_pop),
@@ -32,19 +34,18 @@ pop_init <- data.frame(N = rep(NA, N_pop),
 pop_init$N <- sample(1000:1500, N_pop)
 pop_init$I0 <- sample(10:100, N_pop)
 pop_init$V0 <- sample(1:10, N_pop)
+pop_init$R0 <- sample(100:200, N_pop)
 pop_init$S0 <- pop_init$N - pop_init$I0 - pop_init$V0
 
 pop_zones <- pop_init
 
 ## Vaccine profile
-tt <- seq(0, 100, by = 14)
+tt <- seq(0, sim_length, by = 1)
 nt <- length(tt)
 vol <- sample(1:10, (nt-1)*N_pop, replace = TRUE)
 
-vac_df <- cbind(tt, rbind(pop_init$V0, matrix(vol, nrow = nt-1)))
-colnames(vac_df) <- c("t", paste0("v", 1:N_pop))
-
-vac_zones <- vac_df
+vac_zones <- cbind(tt, rbind(pop_zones$V0, matrix(vol, nrow = nt-1)))
+colnames(vac_zones) <- c("t", paste0("v", 1:N_pop))
 
 ## mixing matrix
 
@@ -77,6 +78,7 @@ out <- meta_sim(N_pop = N_pop,
                 I0 = pop_zones$I0,
                 P0 = pop_zones$N,
                 V0 = pop_zones$V0,
+                R0 = pop_zones$R0,
                 m_weekday_day = m_weekday_day,
                 m_weekend_day = m_weekend_day,
                 m_weekday_night = m_weekday_night,
