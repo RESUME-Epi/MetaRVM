@@ -6,6 +6,7 @@ library(shinydashboard)
 # library(leaflet)
 library(shinythemes)
 library(bslib)
+library(yaml)
 
 ui <- tagList(
 
@@ -218,66 +219,78 @@ ui <- tagList(
       ),
       tabPanel("Simulation Control",
           fluidRow(
-            column(4, wellPanel(
-                        h4("File inputs"),
-                        fileInput("population_data", "Population and initialization data",
-                                  accept = c("text/csv", "text/comma-separated-values,text/plain", ".csv")),
-                        fileInput("vac_data", "Vaccination data",
-                                  accept = c("text/csv", "text/comma-separated-values,text/plain", ".csv")),
-                        fileInput("mix_mat1", "Weekday Day-time mixing matrix"),
-                        fileInput("mix_mat2", "Weekday Night-time mixing matrix"),
-                        fileInput("mix_mat3", "Weekend Day-time mixing matrix"),
-                        fileInput("mix_mat4", "Weekend Night-time mixing matrix"),
-                        fileInput("population_map", "Demographic Mapping",
-                                  accept = c("text/csv", "text/comma-separated-values,text/plain", ".csv")),
-                        actionButton("simulate", "Simulate", class = "custom-button")
-            )),
+            column(4,
+                   card(
+                     div(class = "custom-card",
+                         fileInput("config", "Simulation Configuration",
+                                   accept = c(".yaml", ".yml"))),
+                   actionButton("simulate", "Simulate", class = "custom-button"))),
+            br(),
+            br(),
+            column(12,
+                   card(
+                     div(class = "custom-card-body",
+                         verbatimTextOutput("yaml_content")))),
+            # column(4, wellPanel(
+            #             h4("File inputs"),
+            #             fileInput("population_data", "Population and initialization data",
+            #                       accept = c("text/csv", "text/comma-separated-values,text/plain", ".csv")),
+            #             fileInput("vac_data", "Vaccination data",
+            #                       accept = c("text/csv", "text/comma-separated-values,text/plain", ".csv")),
+            #             fileInput("mix_mat1", "Weekday Day-time mixing matrix"),
+            #             fileInput("mix_mat2", "Weekday Night-time mixing matrix"),
+            #             fileInput("mix_mat3", "Weekend Day-time mixing matrix"),
+            #             fileInput("mix_mat4", "Weekend Night-time mixing matrix"),
+            #             fileInput("population_map", "Demographic Mapping",
+            #                       accept = c("text/csv", "text/comma-separated-values,text/plain", ".csv")),
+            #             actionButton("simulate", "Simulate", class = "custom-button")
+            # )),
 
             # disease parameter inputs
 
-           column(4, wellPanel(
-                          h4("Disease Parameters"),
-                          h5("Rates"),
-                          numericInput("beta_i", "Transmissibility for susceptibles", value = 0.5, min = 0, step = 0.001),
-                          numericInput("beta_v", "Transmissibility for vaccinated", value = 0.1, min = 0, step = 0.001),
-                          numericInput("vac_eff", "Vaccination efficacy", value = 0.5, min = 0, step = 0.01),
-                          hr(),
-                          h5("Mean duration (in days)"),
-                          numericInput("VtoS", "Vaccinated to Susceptible", value = 50, min = 1, step = 1),
-                          numericInput("EtoIpresymp", "Exposed to Infectious asymptomatic or presymptomatic", value = 2, min = 1, step = 1),
-                          numericInput("pretoIsymp", "Infectious presymptomatic to symptomatic", value = 10, min = 1, step = 1),
-                          numericInput("IasymptoR", "Infectious asymptomatic to Recovered", value = 10, min = 1, step = 1),
-                          numericInput("IsymptoRH", "Infectious symptomatic to Recovered or Hospitalized", value = 2, min = 1, step = 1),
-                          numericInput("HtoRD", "Hospitalized to Recovered or Dead", value = 3, min = 1, step = 1),
-                          numericInput("RtoS", "Recovered to Susceptible", value = 50, min = 1, step = 1))
-                ),
-           column(4, wellPanel(
-                        h4("Proportions"),
-                        numericInput("etopa", "Proportion of asymptomatic among asymptomatic + presymptomatic", value = 0.5, min = 0, step = 0.001),
-                        numericInput("istohr", "Proportion of recovered among recovered+hospitalized from symptomatic", value = 0.5, min = 0, step = 0.001),
-                        numericInput("htor", "Proportion of recovered among recovered+dead from hospitalized", value = 0.7, min = 0, step = 0.001),
-                        br(),
-                        br(),
-
-                        # numericInput("seed", "Random seed (optional):", value = NA),
-                        # radioButtons("choice", "Model type:",
-                        #              choices = list("Deterministic" = "det", "Stochastic" = "stoch")
-                        ),
-                  h4("Settings"),
-                        dateInput(
-                          inputId = "start_date",        # Unique ID for the input
-                          label = "Start date  (must be a Monday)", # Label for the input
-                          value = "2024-09-30",      # Default value (current date)
-                          min = "2020-01-01",      # Minimum date selectable
-                          max = "2030-12-31",      # Maximum date selectable
-                          format = "yyyy-mm-dd",   # Format for the displayed date
-                          startview = "month",     # Default view (month)
-                          weekstart = 1            # Week starts on Monday
-                        ),
-                        numericInput("dt", "Model time step:", value = 0.5, min = 0, step = .5),
-                        numericInput("days", "Simulation Length:", value = 100, min = 1),
-                        # numericInput("rep", "Number of replicates", value = 1, min = 1, step = 1))
-                  ),
+           # column(4, wellPanel(
+           #                h4("Disease Parameters"),
+           #                h5("Rates"),
+           #                numericInput("beta_i", "Transmissibility for susceptibles", value = 0.5, min = 0, step = 0.001),
+           #                numericInput("beta_v", "Transmissibility for vaccinated", value = 0.1, min = 0, step = 0.001),
+           #                numericInput("vac_eff", "Vaccination efficacy", value = 0.5, min = 0, step = 0.01),
+           #                hr(),
+           #                h5("Mean duration (in days)"),
+           #                numericInput("VtoS", "Vaccinated to Susceptible", value = 50, min = 1, step = 1),
+           #                numericInput("EtoIpresymp", "Exposed to Infectious asymptomatic or presymptomatic", value = 2, min = 1, step = 1),
+           #                numericInput("pretoIsymp", "Infectious presymptomatic to symptomatic", value = 10, min = 1, step = 1),
+           #                numericInput("IasymptoR", "Infectious asymptomatic to Recovered", value = 10, min = 1, step = 1),
+           #                numericInput("IsymptoRH", "Infectious symptomatic to Recovered or Hospitalized", value = 2, min = 1, step = 1),
+           #                numericInput("HtoRD", "Hospitalized to Recovered or Dead", value = 3, min = 1, step = 1),
+           #                numericInput("RtoS", "Recovered to Susceptible", value = 50, min = 1, step = 1))
+           #      ),
+           # column(4, wellPanel(
+           #              h4("Proportions"),
+           #              numericInput("etopa", "Proportion of asymptomatic among asymptomatic + presymptomatic", value = 0.5, min = 0, step = 0.001),
+           #              numericInput("istohr", "Proportion of recovered among recovered+hospitalized from symptomatic", value = 0.5, min = 0, step = 0.001),
+           #              numericInput("htor", "Proportion of recovered among recovered+dead from hospitalized", value = 0.7, min = 0, step = 0.001),
+           #              br(),
+           #              br(),
+           #
+           #              # numericInput("seed", "Random seed (optional):", value = NA),
+           #              # radioButtons("choice", "Model type:",
+           #              #              choices = list("Deterministic" = "det", "Stochastic" = "stoch")
+           #              ),
+           #        h4("Settings"),
+           #              dateInput(
+           #                inputId = "start_date",        # Unique ID for the input
+           #                label = "Start date  (must be a Monday)", # Label for the input
+           #                value = "2024-09-30",      # Default value (current date)
+           #                min = "2020-01-01",      # Minimum date selectable
+           #                max = "2030-12-31",      # Maximum date selectable
+           #                format = "yyyy-mm-dd",   # Format for the displayed date
+           #                startview = "month",     # Default view (month)
+           #                weekstart = 1            # Week starts on Monday
+           #              ),
+           #              numericInput("dt", "Model time step:", value = 0.5, min = 0, step = .5),
+           #              numericInput("days", "Simulation Length:", value = 100, min = 1),
+           #              # numericInput("rep", "Number of replicates", value = 1, min = 1, step = 1))
+           #        ),
            br(),
             br(),
             br(),
@@ -487,7 +500,7 @@ ui <- tagList(
                  column(3, wellPanel(checkboxGroupInput("ages", "Age categories",
                                                          choices = NULL)
                                     ),
-                        downloadButton("download", "Download CSV", class = "custom-button")
+                        downloadButton("download", "Download zip", class = "custom-button")
                  ),
                  column(3, wellPanel(checkboxGroupInput("races", "Race categories",
                                                          choices = NULL)
