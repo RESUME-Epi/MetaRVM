@@ -141,9 +141,9 @@ ui <- tagList(
                    tags$ul(
                            tags$li(strong("S:"), "Susceptible - individuals who are not yet infected but may become infected."),
                            tags$li(strong("E:"), "Exposed - individuals who are infected but not yet infectious."),
-                           tags$li(strong("Ipresymp:"), "Infectious Presymptomatic - individuals who are infectious but have no symptoms."),
-                           tags$li(strong("Iasymp:"), "Infectious Asymptomatic - individuals who are infectious but will not show symptoms."),
-                           tags$li(strong("Isymp:"), "Infectious Symptomatic - individuals who are infectious and show symptoms."),
+                           tags$li(strong("Ip:"), "Infectious Presymptomatic - individuals who are infectious but have no symptoms."),
+                           tags$li(strong("Ia:"), "Infectious Asymptomatic - individuals who are infectious but will not show symptoms."),
+                           tags$li(strong("Is:"), "Infectious Symptomatic - individuals who are infectious and show symptoms."),
                            tags$li(strong("H:"), "Hospitalized - individuals with severe symptoms."),
                            tags$li(strong("R:"), "Recovered - individuals who have recovered and are no longer infectious."),
                            tags$li(strong("D:"), "Dead - individuals who have died from the infection."),
@@ -152,28 +152,29 @@ ui <- tagList(
                    br(),
                    br(),
                    br(),
-                   DiagrammeR::grVizOutput("compartment_plot"),
+                   # DiagrammeR::grVizOutput("compartment_plot"),
+                   img(src = "metaRVM.png", align = "center", height="90%", width="90%"),
                    br(),
                    br(),
                    br(),
                    h3("Instructions"),
-                   p("The model depends on a set of disease parameters and population information to initialize the simulation.
-                     Majority of the parameters are scalar valued parameter which can be directly entered into the appropriate
-                     input boxes. Others need to supplied via CSV or text file. Below is a brief description of the list of inputs,
-                     their structure and acceptable ranges. The model can also be run in either deterministic or stochastic mode.
-                     A set of sample datasets are already provided in the package which can be seen under the Input data tab.
-                     When no input data is provided by the users, the provided data sets will be used as default."),
+                   p("The model depends on a set of disease parameters and population information to initialize the simulation. The
+                      parameters are supplied via a configuration yaml file.
+                     Majority of the parameters are scalar valued parameter which can be directly specified in the appropriate
+                     fields. Others need to supplied via CSV or text file. Below is a brief description of the list of inputs,
+                     their structure and acceptable ranges."),
+                   img(src = "example_config.png", align = "center", height="90%", width="90%"),
                     tags$ul(
                       tags$li(strong("File inputs:"),
                               tags$ul(
-                                tags$li(strong("Population and initialization data:"), tags$br(),
+                                tags$li(strong("initialization:"), tags$br(),
                                         HTML("&nbsp;&nbsp;&nbsp;&nbsp;"), "A CSV file with header consisting of five columns where the number of rows is the same
                                  as the number of subpopulations, The columns are N: total population,
                                S0: number of susceptible at the start of the simulation, I0: number of
                                  infected people at the start of the simulation, V0: number of vaccinated
                                  people at the start of the simulation, R0: number of recovered
                                  people (from an earlier exposure) at the start of the simulation"),
-                                tags$li(strong("Vaccination data:"), tags$br(),
+                                tags$li(strong("accination:"), tags$br(),
                                         HTML("&nbsp;&nbsp;&nbsp;&nbsp;"), "A CSV file with header consisting of the number of (subpopulations + 1) many columns.
                                  The first column contains calendar dates and the remaining
                                columns hold the number of vaccinations in each of the subpopulations."),
@@ -181,7 +182,7 @@ ui <- tagList(
                                         HTML("&nbsp;&nbsp;&nbsp;&nbsp;"), "A CSV file of mixing matrix. There are four sets of
                                  mixing matrices required for the simulation, accounting for different mixing patterns in
                                  weekdays vs weekends and in day time vs night time. The rows of a mixing matrix should add up to 1."),
-                                tags$li(strong("Demographic Mapping:"), tags$br(),
+                                tags$li(strong("mapping:"), tags$br(),
                                         HTML("&nbsp;&nbsp;&nbsp;&nbsp;"), "A CSV file with header consisting of the sub-population demographic
                                         mapping. "),
                                 )
@@ -190,25 +191,25 @@ ui <- tagList(
                    tags$ul(
                      tags$li(strong("Disease parameters"),
                              tags$ul(
-                               tags$li(strong("Transmissibility for susceptibles:"), "a value between 0 and 1"),
-                               tags$li(strong("Transmissibility for vaccinated:"), "a value between 0 and 1"),
-                               tags$li(strong("Vaccinated to Susceptible:"), "Mean number of days to transition from Vaccinated to Susceptible, a value between 0 and 1"),
-                               tags$li(strong("Exposed to Infectious Asymptomatic or Presymptomatic:"), "Mean number of days to transition from Exposed to Infectious presymptomatic or asymptomatic, a value between 0 and 1"),
-                               tags$li(strong("Infectious Presymptomatic to symptomatic:"), "Mean number of days to transition from Infectious presymptomatic to Infectious symptomatic, a value between 0 and 1"),
-                               tags$li(strong("Infectious Asymptomatic to Recovered:"), "Mean number of days to transition from Infectious presymptomatic to Recovered, a value between 0 and 1"),
-                               tags$li(strong("Infectious Symptomatic to Recovered or Hospitalized:"), "Mean number of days to transition from Infectious symptomatic to Recovered or Hospitalized, a value between 0 and 1"),
-                               tags$li(strong("Hospitalized to Recovered or Dead:"), "Mean number of days to transition from Hospitalized to Recovered or Dead, a value between 0 and 1"),
-                               tags$li(strong("Recovered to Susceptible:"), "Mean number of days to transition from Recovered to Susceptible, a value between 0 and 1"),
-                               tags$li(strong("Proportion of asymptomatic among asymptomatic + presymptomatic:"), "proportion of people becoming Infectious presymptomatic from Exposed, a value between 0 and 1. "),
-                               tags$li(strong("Proportion of recovered among recovered+hospitalized from symptomatic:"), "Proportion of people hospitalized from Infectious symptomatic, a value between 0 and 1. "),
-                               tags$li(strong("Proportion of recovered among recovered+dead from hospitalized:"), "Proportion of people Recovered from Hospitalized, a value between 0 and 1. "),
+                               tags$li(strong("Transmissibility for susceptibles (ts):"), "a value between 0 and 1"),
+                               tags$li(strong("Transmissibility for vaccinated (tv):"), "a value between 0 and 1"),
+                               tags$li(strong("Vaccinated to Susceptible (dv):"), "Mean number of days to transition from Vaccinated to Susceptible, a value between 0 and 1"),
+                               tags$li(strong("Exposed to Infectious Asymptomatic or Presymptomatic (de):"), "Mean number of days to transition from Exposed to Infectious presymptomatic or asymptomatic, a value between 0 and 1"),
+                               tags$li(strong("Infectious Presymptomatic to symptomatic (dp):"), "Mean number of days to transition from Infectious presymptomatic to Infectious symptomatic, a value between 0 and 1"),
+                               tags$li(strong("Infectious Asymptomatic to Recovered (da):"), "Mean number of days to transition from Infectious presymptomatic to Recovered, a value between 0 and 1"),
+                               tags$li(strong("Infectious Symptomatic to Recovered or Hospitalized (ds):"), "Mean number of days to transition from Infectious symptomatic to Recovered or Hospitalized, a value between 0 and 1"),
+                               tags$li(strong("Hospitalized to Recovered or Dead (dh):"), "Mean number of days to transition from Hospitalized to Recovered or Dead, a value between 0 and 1"),
+                               tags$li(strong("Recovered to Susceptible (dr):"), "Mean number of days to transition from Recovered to Susceptible, a value between 0 and 1"),
+                               tags$li(strong("Proportion of presymptomatic among asymptomatic + presymptomatic (pep):"), "proportion of people becoming Infectious presymptomatic from Exposed, a value between 0 and 1. "),
+                               tags$li(strong("Proportion of recovered among recovered+hospitalized from symptomatic (psr):"), "Proportion of people recovered from Infectious symptomatic, a value between 0 and 1. "),
+                               tags$li(strong("Proportion of recovered among recovered+dead from hospitalized (phr):"), "Proportion of people Recovered from Hospitalized, a value between 0 and 1. "),
                              ))
                    ),
                    tags$ul(
                      tags$li(strong("Settings"),
                        tags$ul(
                          tags$li(strong("Start date:"), "a calendar date, must be a Monday"),
-                         tags$li(strong("Model time step:"), "positive real number, simulation time step"),
+                         # tags$li(strong("Model time step:"), "positive real number, simulation time step"),
                          tags$li(strong("Simulation length:"), "days to simulate, a positive integer" ),
                          # tags$li(strong("reps:"), "number of replicates to run, a positive integer" ),
                        ),

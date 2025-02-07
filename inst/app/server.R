@@ -248,19 +248,19 @@ server <- function(input, output, session) {
     nrep <- 1
     delta_t <- 0.5
     nsteps <- yaml_data$simulation_config$length / delta_t
-    beta_i <- yaml_data$disease_params$beta_i
-    beta_v <- yaml_data$disease_params$beta_v
-    VtoS <- 1/yaml_data$disease_params$VtoS
-    EtoIpresymp <- 1/yaml_data$disease_params$EtoIpresymp
-    etopa <- yaml_data$disease_params$etopa
-    pretoIsymp <- 1/yaml_data$disease_params$pretoIsymp
-    IasymptoR <- 1/yaml_data$disease_params$IasymptoR
-    IsymptoRH <- 1/yaml_data$disease_params$IsymptoRH
-    istohr <- yaml_data$disease_params$istohr
-    HtoRD <- 1/yaml_data$disease_params$HtoRD
-    htor <- yaml_data$disease_params$htor
-    RtoS <- 1/yaml_data$disease_params$RtoS
-    vac_eff <- yaml_data$disease_params$vac_eff
+    beta_i <- yaml_data$disease_params$ts
+    beta_v <- yaml_data$disease_params$tv
+    VtoS <- 1/yaml_data$disease_params$dv
+    EtoIpresymp <- 1/yaml_data$disease_params$de
+    etopa <- yaml_data$disease_params$pep
+    pretoIsymp <- 1/yaml_data$disease_params$dp
+    IasymptoR <- 1/yaml_data$disease_params$da
+    IsymptoRH <- 1/yaml_data$disease_params$ds
+    istohr <- yaml_data$disease_params$psr
+    HtoRD <- 1/yaml_data$disease_params$dh
+    htor <- yaml_data$disease_params$phr
+    RtoS <- 1/yaml_data$disease_params$dr
+    vac_eff <- yaml_data$disease_params$ve
 
     # check if the model output should be deterministic
     # is.stoch <- ifelse(input$choice == "stoch", 1, 0)
@@ -903,8 +903,8 @@ server <- function(input, output, session) {
       },
       content = function(file) {
 
-        sim_input <- paste("in_", yaml_data$model_id, ".yaml")
-        sim_output <- paste("out_", yaml_data$model_id, ".csv", sep = "")
+        sim_input <- paste("in_", yaml_data$run_id, ".yaml")
+        sim_output <- paste("out_", yaml_data$run_id, ".csv", sep = "")
 
         write_yaml(yaml_data, sim_input)
         write.csv(sub_out(), sim_output, row.names = FALSE)
