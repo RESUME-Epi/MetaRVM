@@ -25,7 +25,7 @@ You can install the development version of MetaRVM from
 
 ``` r
 # install.packages("devtools")
-devtools::install_github("NSF-RESUME/MetaRVM")
+devtools::install_github("NSF-RESUME/MetaRVM", ref = "15-model-input-via-configuration-file")
 ```
 
 ## Example

@@ -209,7 +209,8 @@ subset_simout <- function(long_out, start_date, pop_map_df, agecats, racecats, z
     dplyr::filter(race %in% racecats) %>%
     dplyr::filter(hcez %in% zones) %>%
     dplyr::filter(disease_state %in% disease_states) %>%
-    dplyr::mutate(date = start_date + time)
+    dplyr::mutate(date = start_date + time) %>%
+    dplyr::select(c(population_id, date, disease_state, value, age, race, hcez))
 }
 
 #' Title

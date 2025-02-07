@@ -7,9 +7,20 @@ library(dde)
 library(leaflet)
 library(future)
 library(promises)
+library(yaml)
 # future::plan(multisession)
 
 server <- function(input, output, session) {
+
+  output$yaml_content <- renderPrint({
+    req(input$config)  # Ensure a file is uploaded
+
+    # Read the uploaded YAML file
+    yaml_data <- read_yaml(input$config$datapath)
+
+    # Print the YAML content
+    cat(as.yaml(yaml_data))
+  })
 
   # permanently load shapefile
   read_hcz_geo <- ExtendedTask$new(function() {
@@ -21,11 +32,19 @@ server <- function(input, output, session) {
   # hcz_geo <- read.csv(system.file("extdata", "Healthy_Chicago_Equity_Zones_20231129.csv", package = "MetaRVM"))
 
 
+  # read simulation inputs
+
+  config_yaml <- reactive({
+    req(input$config)
+    read_yaml(input$config$datapath)
+  })
+
 
   # Read the CSV file for population data
   population_data <- reactive({
-    if(!is.null(input$population_data)){
-      data.table::fread(input$population_data$datapath)
+    yaml_data <- config_yaml()
+    if(!is.null(yaml_data$population_data$initialization)){
+      data.table::fread(yaml_data$population_data$initialization)
     } else {
       data.table::fread(system.file("extdata", "pop_init_150.csv", package = "MetaRVM"))
     }
@@ -37,8 +56,9 @@ server <- function(input, output, session) {
   })
 
   vac_data <- reactive({
-    if(!is.null(input$vac_data)){
-      data.table::fread(input$vac_data$datapath)
+    yaml_data <- config_yaml()
+    if(!is.null(yaml_data$population_data$vaccination)){
+      data.table::fread(yaml_data$population_data$vaccination)
     } else {
       data.table::fread(system.file("extdata", "vac_dates_150.csv", package = "MetaRVM"))
     }
@@ -46,12 +66,13 @@ server <- function(input, output, session) {
 
   # process vaccination data to align with ODIN requirement
   process_vac_data <- reactive({
+    yaml_data <- config_yaml()
     raw_vac_data <- vac_data()
     raw_vac_data$date <- as.Date(raw_vac_data$date)
 
     date_filtered <- raw_vac_data %>%
-      dplyr::filter(date >= as.Date(input$start_date)) %>%
-      dplyr::mutate(t = (date - as.Date(input$start_date)) / input$dt) %>%
+      dplyr::filter(date >= as.Date(yaml_data$simulation_config$start_date)) %>%
+      dplyr::mutate(t = (date - as.Date(yaml_data$simulation_config$start_date)) / 0.5) %>%
       dplyr::select(-c(date)) %>%
       select(last_col(), everything())
 
@@ -125,29 +146,33 @@ server <- function(input, output, session) {
 
   # Read the mixing matrices
   read_m1 <- reactive({
-    if(!is.null(input$mix_mat1)){
-      read.csv(input$mix_mat1$datapath, header = F)
+    yaml_data <- config_yaml()
+    if(!is.null(yaml_data$mixing_matrix$weekday_day)){
+      read.csv(yaml_data$mixing_matrix$weekday_day, header = F)
     } else {
       read.csv(system.file("extdata", "m_weekday_day_150.csv", package = "MetaRVM"), header = F)
     }
   })
   read_m2 <- reactive({
-    if(!is.null(input$mix_mat2)){
-      read.csv(input$mix_mat2$datapath, header = F)
+    yaml_data <- config_yaml()
+    if(!is.null(yaml_data$mixing_matrix$weekday_night)){
+      read.csv(yaml_data$mixing_matrix$weekday_night, header = F)
     } else {
       read.csv(system.file("extdata", "m_weekday_night_150.csv", package = "MetaRVM"), header = F)
     }
   })
   read_m3 <- reactive({
-    if(!is.null(input$mix_mat3)){
-      read.csv(input$mix_mat3$datapath, header = F)
+    yaml_data <- config_yaml()
+    if(!is.null(yaml_data$mixing_matrix$weekend_day)){
+      read.csv(yaml_data$mixing_matrix$weekend_day, header = F)
     } else {
       read.csv(system.file("extdata", "m_weekend_day_150.csv", package = "MetaRVM"), header = F)
     }
   })
   read_m4 <- reactive({
-    if(!is.null(input$mix_mat4)){
-      read.csv(input$mix_mat4$datapath, header = F)
+    yaml_data <- config_yaml()
+    if(!is.null(yaml_data$mixing_matrix$weekend_night)){
+      read.csv(yaml_data$mixing_matrix$weekend_night, header = F)
     } else {
       read.csv(system.file("extdata", "m_weekend_night_150.csv", package = "MetaRVM"), header = F)
     }
@@ -173,8 +198,9 @@ server <- function(input, output, session) {
 
   # Read the population mapping table
   read_pop_map <- reactive({
-    if(!is.null(input$population_map)){
-      read.csv(input$population_map$datapath, header = T)
+    yaml_data <- config_yaml()
+    if(!is.null(yaml_data$population_data$mapping)){
+      read.csv(yaml_data$population_data$mapping, header = T)
     } else {
       read.csv(system.file("extdata", "pop_mapping_150.csv", package = "MetaRVM"), header = T) ## TODO: change
     }
@@ -184,6 +210,9 @@ server <- function(input, output, session) {
   ## ---------------------------------------------------------------------------
   # Run SEIR meta-population simulation when the button is clicked
   observeEvent(input$simulate, {
+
+    yaml_data <- config_yaml()
+
     # Extract population data
     pop_df <- population_data()
     N_pop <- nrow(pop_df)
@@ -197,7 +226,7 @@ server <- function(input, output, session) {
     read_hcz_geo$invoke()
 
     ## fill in the missing time in vac data
-    complete_time <- data.table::data.table(t = seq(0, input$days))
+    complete_time <- data.table::data.table(t = seq(0, yaml_data$simulation_config$length))
 
     ## merge
     vac_df <- merge(complete_time, vac_df, by = "t", all.x = TRUE)
@@ -215,23 +244,23 @@ server <- function(input, output, session) {
 
     # seed <- input$seed
     # nrep <- input$rep
-    start_date <- as.Date(input$start_date)
+    start_date <- as.Date(yaml_data$simulation_config$start_date)
     nrep <- 1
-    delta_t <- input$dt
-    nsteps <- input$days / delta_t
-    beta_i <- input$beta_i
-    beta_v <- input$beta_v
-    VtoS <- 1/input$VtoS
-    EtoIpresymp <- 1/input$EtoIpresymp
-    etopa <- input$etopa
-    pretoIsymp <- 1/input$pretoIsymp
-    IasymptoR <- 1/input$IasymptoR
-    IsymptoRH <- 1/input$IsymptoRH
-    istohr <- input$istohr
-    HtoRD <- 1/input$HtoRD
-    htor <- input$htor
-    RtoS <- 1/input$RtoS
-    vac_eff <- input$vac_eff
+    delta_t <- 0.5
+    nsteps <- yaml_data$simulation_config$length / delta_t
+    beta_i <- yaml_data$disease_params$ts
+    beta_v <- yaml_data$disease_params$tv
+    VtoS <- 1/yaml_data$disease_params$dv
+    EtoIpresymp <- 1/yaml_data$disease_params$de
+    etopa <- yaml_data$disease_params$pep
+    pretoIsymp <- 1/yaml_data$disease_params$dp
+    IasymptoR <- 1/yaml_data$disease_params$da
+    IsymptoRH <- 1/yaml_data$disease_params$ds
+    istohr <- yaml_data$disease_params$psr
+    HtoRD <- 1/yaml_data$disease_params$dh
+    htor <- yaml_data$disease_params$phr
+    RtoS <- 1/yaml_data$disease_params$dr
+    vac_eff <- yaml_data$disease_params$ve
 
     # check if the model output should be deterministic
     # is.stoch <- ifelse(input$choice == "stoch", 1, 0)
@@ -818,11 +847,11 @@ server <- function(input, output, session) {
             legend.position = "right",
             legend.spacing = unit(1.5, "cm"),            # Increase spacing between legend items
             # legend.spacing.y = unit(5, "cm"),
-            legend.title.align = 0.5,                  # Align the legend title in the center
+            # legend.title.align = 0.5,                  # Align the legend title in the center
             legend.box.margin = margin(10, 10, 10, 10), # Add margin around the legend box
             legend.key.size = unit(3, "lines"),      # Increase size of legend keys (symbols)
             legend.text = element_text(size = 15),     # Adjust legend text size
-            legend.title = element_text(size = 20, margin = margin(b = 10)),     # Adjust legend title size
+            legend.title = element_text(size = 20, margin = margin(b = 10), hjust = 0.5),     # Adjust legend title size
             axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1, size = 10),
             axis.text.y = element_text(size = 15),
             axis.title = element_text(size = 15),
@@ -865,12 +894,24 @@ server <- function(input, output, session) {
 
     # Download filtered results
     output$download <- downloadHandler(
+
+      yaml_data <- config_yaml(),
+
       filename = function() {
-        paste("out_", Sys.Date(), ".csv", sep = "")
+        # paste("out_", Sys.Date(), ".zip", sep = "")
+        "out.zip"
       },
       content = function(file) {
-        write.csv(sub_out(), file, row.names = FALSE)
-      }
+
+        sim_input <- paste("in_", yaml_data$run_id, ".yaml")
+        sim_output <- paste("out_", yaml_data$run_id, ".csv", sep = "")
+
+        write_yaml(yaml_data, sim_input)
+        write.csv(sub_out(), sim_output, row.names = FALSE)
+
+        zip(file, files = c(sim_input, sim_output))
+      },
+      contentType = "application/zip"
     )
 
 
