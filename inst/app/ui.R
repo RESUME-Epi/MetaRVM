@@ -160,7 +160,7 @@ ui <- tagList(
                    h3("Instructions"),
                    p("The model depends on a set of disease parameters and population information to initialize the simulation. The
                       parameters are supplied via a configuration yaml file.
-                     Majority of the parameters are scalar valued parameter which can be directly specified in the appropriate
+                     Majority of the parameters are scalar valued parameter (but can be vectors) which can be directly specified in the appropriate
                      fields. Others need to supplied via CSV or text file. Below is a brief description of the list of inputs,
                      their structure and acceptable ranges."),
                    img(src = "example_config.png", align = "center", height="90%", width="90%"),
@@ -214,7 +214,21 @@ ui <- tagList(
                          # tags$li(strong("reps:"), "number of replicates to run, a positive integer" ),
                        ),
                      )
-                   )
+                   ),
+                   br(),
+                   br(),
+                   br(),
+                   p("The disease parameters can be set to subpopulation specific values. In such case instead of specifying the
+                     diseaes parameters in the yaml configuration file, a csv file needs to be provided having the values of the disease
+                     parameters for each compartments. Below are the examples of yaml configuration and the disease parameter csv file."),
+                   img(src = "example_config_vector.png", align = "center", height="90%", width="90%"),
+                   br(),
+                   br(),
+                   br(),
+                   img(src = "example_disease_parameter.png", align = "center", height="90%", width="90%"),
+                   br(),
+                   br(),
+                   br()
             )
           )
       ),

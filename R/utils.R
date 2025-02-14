@@ -191,11 +191,12 @@ subset_simout <- function(long_out, start_date, pop_map_df, agecats, racecats, z
     dplyr::filter(time %% 1 == 0) %>%
     dplyr::filter(disease_state %in% c("S", "E", "H", "D",
                                        "I_presymp", "I_asymp",
-                                       "I_symp", "R", "V")) %>%
+                                       "I_symp", "R", "V", "n_SE", "n_VE", "n_IsympH")) %>%
     dplyr::mutate(disease_state = factor(disease_state,
                                          levels = c("S", "E", "H", "D",
                                                     "I_presymp", "I_asymp",
-                                                    "I_symp", "R", "V"),
+                                                    "I_symp", "R", "V", "n_SE",
+                                                    "n_VE", "n_IsympH"),
                                          labels = c("Susceptible",
                                                     "Exposed",
                                                     "Hospitalized",
@@ -204,7 +205,10 @@ subset_simout <- function(long_out, start_date, pop_map_df, agecats, racecats, z
                                                     "Asymptomatic",
                                                     "Symptomatic",
                                                     "Recovered",
-                                                    "Vaccinated"))) %>%
+                                                    "Vaccinated",
+                                                    "New Exposed (S)",
+                                                    "New Exposed (V)",
+                                                    "New Hopitalized"))) %>%
     dplyr::filter(age %in% agecats) %>%
     dplyr::filter(race %in% racecats) %>%
     dplyr::filter(hcez %in% zones) %>%

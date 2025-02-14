@@ -25,7 +25,7 @@ This is a compartmental model simulation code for generic respiratory virus dise
 
 ## Model
 
-![Model schematics](man/figures/model.png)
+![Model schematics](man/figures/metaRVM.png)
 
 ## Installation
 
@@ -115,8 +115,8 @@ Then run the simulation:
 
 ```{r sim}
 out <- meta_sim(N_pop = N_pop,
-                beta_i = 0.7,
-                beta_v = 0.2,
+                ts = 0.7,
+                tv = 0.2,
                 S0 = pop_zones$S0,
                 I0 = pop_zones$I0,
                 P0 = pop_zones$N,
@@ -129,20 +129,20 @@ out <- meta_sim(N_pop = N_pop,
                 delta_t = 0.5,
                 tvac = vac_zones[, 1],
                 vac_mat = as.matrix(vac_zones[, 2:7]),
-                VtoS = 0.02,
-                 EtoIpresymp = 0.33,
-                 etopa = 0.5,
-                 pretoIsymp = 0.5,
-                 IasymptoR = 0.2,
-                 IsymptoRH = 0.5,
-                 istohr = 0.5,
-                 HtoRD = 0.33,
-                 htor = 0.5,
-                 RtoS = 0.02,
-                 vac_eff = 0.5,
-                 nsteps = 100,
-                 is.stoch = 0,
-                 seed = NULL)
+                dv = 50,
+                de = 3,
+                pea = 0.5,
+                dp = 2,
+                da = 5,
+                ds = 2,
+                psr = 0.5,
+                dh = 3,
+                phr = 2,
+                dr = 50,
+                ve = 0.5,
+                nsteps = 100,
+                is.stoch = 0,
+                seed = NULL)
 ```
 
 There are some utility functions to extract a subset of disease states from the output data frame. For example, if we want to extract all infectious compartments, we can do this by the utility function `get_disease_state`. We can further subset the output by HCE zone id.

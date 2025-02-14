@@ -248,19 +248,43 @@ server <- function(input, output, session) {
     nrep <- 1
     delta_t <- 0.5
     nsteps <- yaml_data$simulation_config$length / delta_t
-    beta_i <- yaml_data$disease_params$ts
-    beta_v <- yaml_data$disease_params$tv
-    VtoS <- 1/yaml_data$disease_params$dv
-    EtoIpresymp <- 1/yaml_data$disease_params$de
-    etopa <- yaml_data$disease_params$pep
-    pretoIsymp <- 1/yaml_data$disease_params$dp
-    IasymptoR <- 1/yaml_data$disease_params$da
-    IsymptoRH <- 1/yaml_data$disease_params$ds
-    istohr <- yaml_data$disease_params$psr
-    HtoRD <- 1/yaml_data$disease_params$dh
-    htor <- yaml_data$disease_params$phr
-    RtoS <- 1/yaml_data$disease_params$dr
-    vac_eff <- yaml_data$disease_params$ve
+
+    # check if the disease parameter is provided via csv
+    if(is.character(yaml_data$disease_params)){
+      params_dt <- data.table::fread(yaml_data$disease_params)
+
+      ts <- params_dt[, ts]
+      tv <- params_dt[, tv]
+      ve <- params_dt[, ve]
+      dv <- params_dt[, dv]
+      de <- params_dt[, de]
+      dp <- params_dt[, dp]
+      da <- params_dt[, da]
+      ds <- params_dt[, ds]
+      dh <- params_dt[, dh]
+      dr <- params_dt[, dr]
+      pea <- params_dt[, pea]
+      psr <- params_dt[, psr]
+      phr <- params_dt[, phr]
+
+
+
+    } else {
+
+      ts <- rep(yaml_data$disease_params$ts, N_pop)
+      tv <- rep(yaml_data$disease_params$tv, N_pop)
+      dv <- rep(yaml_data$disease_params$dv, N_pop)
+      de <- rep(yaml_data$disease_params$de, N_pop)
+      pea <- rep(yaml_data$disease_params$pea, N_pop)
+      dp <- rep(yaml_data$disease_params$dp, N_pop)
+      da <- rep(yaml_data$disease_params$da, N_pop)
+      ds <- rep(yaml_data$disease_params$ds, N_pop)
+      psr <- rep(yaml_data$disease_params$psr, N_pop)
+      dh <- rep(yaml_data$disease_params$dh, N_pop)
+      phr <- rep(yaml_data$disease_params$phr, N_pop)
+      dr <- rep(yaml_data$disease_params$dr, N_pop)
+      ve <- rep(yaml_data$disease_params$ve, N_pop)
+    }
 
     # check if the model output should be deterministic
     # is.stoch <- ifelse(input$choice == "stoch", 1, 0)
@@ -277,8 +301,8 @@ server <- function(input, output, session) {
                     nsteps = nsteps,
                     N_pop = N_pop,
                     # beta_e = beta_e,
-                    beta_i = beta_i,
-                    beta_v = beta_v,
+                    ts = ts,
+                    tv = tv,
                     S0 = S_ini,
                     I0 = I_symp_ini,
                     P0 = P_ini,
@@ -291,17 +315,17 @@ server <- function(input, output, session) {
                     delta_t = delta_t,
                     tvac = tt,
                     vac_mat = vac,
-                    VtoS = VtoS,
-                    EtoIpresymp = EtoIpresymp,
-                    etopa = etopa,
-                    pretoIsymp = pretoIsymp,
-                    IasymptoR = IasymptoR,
-                    IsymptoRH = IsymptoRH,
-                    istohr = istohr,
-                    HtoRD = HtoRD,
-                    htor = htor,
-                    RtoS = RtoS,
-                    vac_eff = vac_eff)
+                    dv = dv,
+                    de = de,
+                    pea = pea,
+                    dp = dp,
+                    da = da,
+                    ds = ds,
+                    psr = psr,
+                    dh = dh,
+                    phr = phr,
+                    dr = dr,
+                    ve = ve)
 
       tmp <- data.frame(o)
       out <- rbind(out, cbind(tmp, ii))
@@ -873,7 +897,10 @@ server <- function(input, output, session) {
       updateCheckboxGroupInput(session, "hcezs", choices = geo_choices, selected = geo_choices[1])
       updateCheckboxGroupInput(session, "disease_states", choices = c("Susceptible",
                                                                       "Exposed",
+                                                                      "New Exposed (S)",
+                                                                      "New Exposed (V)",
                                                                       "Hospitalized",
+                                                                      "New Hospitalized",
                                                                       "Dead",
                                                                       "Presymptomatic",
                                                                       "Asymptomatic",
