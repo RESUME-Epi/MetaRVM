@@ -14,7 +14,7 @@ virus diseases.
 ## Model
 
 <figure>
-<img src="man/figure/metaRVM.png" alt="Model schematics" />
+<img src="man/figures/metaRVM.png" alt="Model schematics" />
 <figcaption aria-hidden="true">Model schematics</figcaption>
 </figure>
 
@@ -69,12 +69,12 @@ pop_zones$S0 <- pop_zones$N - pop_zones$I0 - pop_zones$V0 - pop_zones$R0
 
 pop_zones
 #>      N   S0 I0 V0  R0
-#> 1 1409 1177 40  5 187
-#> 2 1435 1298 16  9 112
-#> 3 1430 1297 18  1 114
-#> 4 1216 1046 42  4 124
-#> 5 1463 1289 55  3 116
-#> 6 1428 1204 82  6 136
+#> 1 1419 1234 68  8 109
+#> 2 1057  917 32  3 105
+#> 3 1410 1171 57  6 176
+#> 4 1246 1102 36  1 107
+#> 5 1157  896 95  9 157
+#> 6 1072  839 73  2 158
 ```
 
 #### Vaccination
@@ -95,14 +95,14 @@ colnames(vac_zones) <- c("t", paste0("v", 1:N_pop))
 
 vac_zones
 #>       t v1 v2 v3 v4 v5 v6
-#> [1,]  0  5  9  1  4  3  6
-#> [2,] 14  8  5  3  2  2  1
-#> [3,] 28  9 10  7  5  1  9
-#> [4,] 42  6 10  1  4  8  9
-#> [5,] 56  6  4  6  5  8  5
-#> [6,] 70 10  1  2  6  6  7
-#> [7,] 84  5  3  3  2  2 10
-#> [8,] 98  3  7  8  9  3  7
+#> [1,]  0  8  3  6  1  9  2
+#> [2,] 14 10  1  2  8  7  8
+#> [3,] 28  6  8  9  3  8  1
+#> [4,] 42  3 10  4  2  9  9
+#> [5,] 56  1  6  3  8  3  4
+#> [6,] 70 10  3  4  2  2  2
+#> [7,] 84  2  3  2  9  2  5
+#> [8,] 98 10  4  6  2  2  1
 ```
 
 ``` r
@@ -171,7 +171,7 @@ out <- meta_sim(N_pop = N_pop,
 #> gcc -I"/usr/share/R/include" -DNDEBUG       -fpic  -g -O2 -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -ffile-prefix-map=/build/r-base-FPSnzf/r-base-4.3.3=. -fstack-protector-strong -fstack-clash-protection -Wformat -Werror=format-security -fcf-protection -fdebug-prefix-map=/build/r-base-FPSnzf/r-base-4.3.3=/usr/src/r-base-4.3.3-2build2 -Wdate-time -D_FORTIFY_SOURCE=3  -UNDEBUG -Wall -pedantic -g -O0 -c odin.c -o odin.o
 #> gcc -I"/usr/share/R/include" -DNDEBUG       -fpic  -g -O2 -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -ffile-prefix-map=/build/r-base-FPSnzf/r-base-4.3.3=. -fstack-protector-strong -fstack-clash-protection -Wformat -Werror=format-security -fcf-protection -fdebug-prefix-map=/build/r-base-FPSnzf/r-base-4.3.3=/usr/src/r-base-4.3.3-2build2 -Wdate-time -D_FORTIFY_SOURCE=3  -UNDEBUG -Wall -pedantic -g -O0 -c registration.c -o registration.o
 #> gcc -shared -L/usr/lib/R/lib -Wl,-Bsymbolic-functions -flto=auto -ffat-lto-objects -Wl,-z,relro -o odin0b127e1d.so odin.o registration.o -L/usr/lib/R/lib -lR
-#> installing to /tmp/RtmpqgbB44/devtools_install_69e7d2191757f/00LOCK-file69e7d3d4276e0/00new/odin0b127e1d/libs
+#> installing to /tmp/RtmpGCYKU4/devtools_install_6a23565abca5e/00LOCK-file6a235540081ef/00new/odin0b127e1d/libs
 #> ** checking absolute paths in shared objects and dynamic libraries
 #> * DONE (odin0b127e1d)
 #> ℹ Loading odin0b127e1d
