@@ -14,7 +14,7 @@ virus diseases.
 ## Model
 
 <figure>
-<img src="man/figures/model.png" alt="Model schematics" />
+<img src="man/figure/metaRVM.png" alt="Model schematics" />
 <figcaption aria-hidden="true">Model schematics</figcaption>
 </figure>
 
@@ -25,7 +25,7 @@ You can install the development version of MetaRVM from
 
 ``` r
 # install.packages("devtools")
-devtools::install_github("NSF-RESUME/MetaRVM", ref = "15-model-input-via-configuration-file")
+devtools::install_github("NSF-RESUME/MetaRVM")
 ```
 
 ## Example
@@ -69,12 +69,12 @@ pop_zones$S0 <- pop_zones$N - pop_zones$I0 - pop_zones$V0 - pop_zones$R0
 
 pop_zones
 #>      N   S0 I0 V0  R0
-#> 1 1117  922 42  8 145
-#> 2 1149  951 30  7 161
-#> 3 1464 1322 38  1 103
-#> 4 1454 1234 32 10 178
-#> 5 1229 1040 26  4 159
-#> 6 1226  996 88  5 137
+#> 1 1409 1177 40  5 187
+#> 2 1435 1298 16  9 112
+#> 3 1430 1297 18  1 114
+#> 4 1216 1046 42  4 124
+#> 5 1463 1289 55  3 116
+#> 6 1428 1204 82  6 136
 ```
 
 #### Vaccination
@@ -95,14 +95,14 @@ colnames(vac_zones) <- c("t", paste0("v", 1:N_pop))
 
 vac_zones
 #>       t v1 v2 v3 v4 v5 v6
-#> [1,]  0  8  7  1 10  4  5
-#> [2,] 14  7  5 10  2  3  7
-#> [3,] 28  1  4  3  9  5  2
-#> [4,] 42  9  2  1  3  3  8
-#> [5,] 56  4  8  6  3  4 10
-#> [6,] 70  2  8  9  9  6  3
-#> [7,] 84  8  5  6 10  7  3
-#> [8,] 98  5  7  9  5  7  6
+#> [1,]  0  5  9  1  4  3  6
+#> [2,] 14  8  5  3  2  2  1
+#> [3,] 28  9 10  7  5  1  9
+#> [4,] 42  6 10  1  4  8  9
+#> [5,] 56  6  4  6  5  8  5
+#> [6,] 70 10  1  2  6  6  7
+#> [7,] 84  5  3  3  2  2 10
+#> [8,] 98  3  7  8  9  3  7
 ```
 
 ``` r
@@ -132,8 +132,8 @@ Then run the simulation:
 
 ``` r
 out <- meta_sim(N_pop = N_pop,
-                beta_i = 0.7,
-                beta_v = 0.2,
+                ts = 0.7,
+                tv = 0.2,
                 S0 = pop_zones$S0,
                 I0 = pop_zones$I0,
                 P0 = pop_zones$N,
@@ -146,34 +146,35 @@ out <- meta_sim(N_pop = N_pop,
                 delta_t = 0.5,
                 tvac = vac_zones[, 1],
                 vac_mat = as.matrix(vac_zones[, 2:7]),
-                VtoS = 0.02,
-                 EtoIpresymp = 0.33,
-                 etopa = 0.5,
-                 pretoIsymp = 0.5,
-                 IasymptoR = 0.2,
-                 IsymptoRH = 0.5,
-                 istohr = 0.5,
-                 HtoRD = 0.33,
-                 htor = 0.5,
-                 RtoS = 0.02,
-                 vac_eff = 0.5,
-                 nsteps = 100,
-                 is.stoch = 0,
-                 seed = NULL)
+                dv = 50,
+                de = 3,
+                pea = 0.5,
+                dp = 2,
+                da = 5,
+                ds = 2,
+                psr = 0.5,
+                dh = 3,
+                phr = 2,
+                dr = 50,
+                ve = 0.5,
+                nsteps = 100,
+                is.stoch = 0,
+                seed = NULL)
 #> Loading required namespace: pkgbuild
 #> Generating model in c
-#> ℹ Re-compiling odin5a20de50 (debug build)
+#> ℹ Re-compiling odin0b127e1d (debug build)
 #> ── R CMD INSTALL ───────────────────────────────────────────────────────────────
-#> * installing *source* package ‘odin5a20de50’ ...
+#> * installing *source* package ‘odin0b127e1d’ ...
 #> ** using staged installation
 #> ** libs
-#> gcc -I"/usr/share/R/include" -DNDEBUG      -fpic  -g -O2 -ffile-prefix-map=/build/r-base-4A2Reg/r-base-4.1.2=. -fstack-protector-strong -Wformat -Werror=format-security -Wdate-time -D_FORTIFY_SOURCE=2 -g  -UNDEBUG -Wall -pedantic -g -O0 -c odin.c -o odin.o
-#> gcc -I"/usr/share/R/include" -DNDEBUG      -fpic  -g -O2 -ffile-prefix-map=/build/r-base-4A2Reg/r-base-4.1.2=. -fstack-protector-strong -Wformat -Werror=format-security -Wdate-time -D_FORTIFY_SOURCE=2 -g  -UNDEBUG -Wall -pedantic -g -O0 -c registration.c -o registration.o
-#> gcc -shared -L/usr/lib/R/lib -Wl,-Bsymbolic-functions -flto=auto -ffat-lto-objects -flto=auto -Wl,-z,relro -o odin5a20de50.so odin.o registration.o -L/usr/lib/R/lib -lR
-#> installing to /tmp/RtmpYAEgGp/devtools_install_133b015e6799bf/00LOCK-file133b01a67a1d7/00new/odin5a20de50/libs
+#> using C compiler: ‘gcc (Ubuntu 13.3.0-6ubuntu2~24.04) 13.3.0’
+#> gcc -I"/usr/share/R/include" -DNDEBUG       -fpic  -g -O2 -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -ffile-prefix-map=/build/r-base-FPSnzf/r-base-4.3.3=. -fstack-protector-strong -fstack-clash-protection -Wformat -Werror=format-security -fcf-protection -fdebug-prefix-map=/build/r-base-FPSnzf/r-base-4.3.3=/usr/src/r-base-4.3.3-2build2 -Wdate-time -D_FORTIFY_SOURCE=3  -UNDEBUG -Wall -pedantic -g -O0 -c odin.c -o odin.o
+#> gcc -I"/usr/share/R/include" -DNDEBUG       -fpic  -g -O2 -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -ffile-prefix-map=/build/r-base-FPSnzf/r-base-4.3.3=. -fstack-protector-strong -fstack-clash-protection -Wformat -Werror=format-security -fcf-protection -fdebug-prefix-map=/build/r-base-FPSnzf/r-base-4.3.3=/usr/src/r-base-4.3.3-2build2 -Wdate-time -D_FORTIFY_SOURCE=3  -UNDEBUG -Wall -pedantic -g -O0 -c registration.c -o registration.o
+#> gcc -shared -L/usr/lib/R/lib -Wl,-Bsymbolic-functions -flto=auto -ffat-lto-objects -Wl,-z,relro -o odin0b127e1d.so odin.o registration.o -L/usr/lib/R/lib -lR
+#> installing to /tmp/RtmpqgbB44/devtools_install_69e7d2191757f/00LOCK-file69e7d3d4276e0/00new/odin0b127e1d/libs
 #> ** checking absolute paths in shared objects and dynamic libraries
-#> * DONE (odin5a20de50)
-#> ℹ Loading odin5a20de50
+#> * DONE (odin0b127e1d)
+#> ℹ Loading odin0b127e1d
 ```
 
 There are some utility functions to extract a subset of disease states

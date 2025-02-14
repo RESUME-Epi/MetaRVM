@@ -32,7 +32,7 @@
 #' @param dh mean number of days in Hospitalized state
 #' @param phr Proportion of people Recovered from Hospitalized
 #' @param dr mean number of days in Recovered state
-#' @param vac_eff Vaccination efficacy, a value between 0 and 1
+#' @param ve Vaccination efficacy, a value between 0 and 1
 #' @param nsteps Number of discrete evolution in the simulation
 #' @param is.stoch 1 if the simulation is stochastic, 0 otherwise
 #' @param seed optional, for reproducibility, only application when is.stoch = 1
@@ -49,7 +49,7 @@ meta_sim <- function(N_pop, ts, tv,
                      tvac, vac_mat,
                      dv, de, pea, dp,
                      da, ds, psr, dh,
-                     phr, dr, vac_eff,
+                     phr, dr, ve,
                      nsteps, is.stoch = FALSE, seed = NULL){
 
   metaODIN <- odin::odin({
@@ -159,11 +159,11 @@ meta_sim <- function(N_pop, ts, tv,
     n_HD[]            <- n_HRD[i] - n_HR[i]
     n_RS[]            <- if(R[i] == 0) 0 else (if(stoch == 1) rbinom(R[i], p_RS[i]) else R[i] * p_RS[i])
     n_RS[]            <- ceiling(n_RS[i])
-    n_VS[]            <- if(stoch == 1) rbinom(V[i], p_VS[i]) else V[i] * p_VS[i]
-    n_VS[]            <- ceiling(n_VS[i])
     n_VE_eff[, ]      <- if(stoch == 1) rbinom(V_eff_prod[j, i], p_VE[i]) else V_eff_prod[j, i] * p_VE[i]
     n_VE[]            <- sum(n_VE_eff[i, ]) # rowSums
     n_VE[]            <- ceiling(n_VE[i])
+    n_VS[]            <- if(stoch == 1) rbinom(V[i] - n_VE[i], p_VS[i]) else (V[i] - n_VE[i]) * p_VS[i]
+    n_VS[]            <- ceiling(n_VS[i])
 
     ## =================================================
     ## Initial states:
@@ -183,19 +183,19 @@ meta_sim <- function(N_pop, ts, tv,
 
     ## =================================================
     ## additional output for debugging
-    output(p_SE) <- TRUE
-    output(p_VE) <- TRUE
-    output(I_eff) <- TRUE
-    output(n_SE) <- TRUE
-    output(n_SV) <- TRUE
-    output(n_VE) <- TRUE
-    output(n_EI) <- TRUE
-    output(n_EIpresymp) <- TRUE
-    output(n_preIsymp) <- TRUE
-    output(n_IsympRH) <- TRUE
-    output(n_IsympH) <- TRUE
-    output(n_HR) <- TRUE
-    output(n_HD) <- TRUE
+    output(p_SE)          <- TRUE
+    output(p_VE)          <- TRUE
+    output(I_eff)         <- TRUE
+    output(n_SE)          <- TRUE
+    output(n_SV)          <- TRUE
+    output(n_VE)          <- TRUE
+    output(n_EI)          <- TRUE
+    output(n_EIpresymp)   <- TRUE
+    output(n_preIsymp)    <- TRUE
+    output(n_IsympRH)     <- TRUE
+    output(n_IsympH)      <- TRUE
+    output(n_HR)          <- TRUE
+    output(n_HD)          <- TRUE
 
     ## =================================================
     ## User defined parameters - default in parentheses:
@@ -305,6 +305,24 @@ meta_sim <- function(N_pop, ts, tv,
 
   })
 
+  ## If disease parameters are scalars, create the vector inputs
+  if(length(ts) == 1) ts <- rep(ts, N_pop)
+  if(length(tv) == 1) tv <- rep(tv, N_pop)
+  if(length(ve) == 1) ve <- rep(ve, N_pop)
+  if(length(dv) == 1) dv <- rep(dv, N_pop)
+  if(length(de) == 1) de <- rep(de, N_pop)
+  if(length(de) == 1) de <- rep(de, N_pop)
+  if(length(dp) == 1) dp <- rep(dp, N_pop)
+  if(length(da) == 1) da <- rep(da, N_pop)
+  if(length(ds) == 1) ds <- rep(ds, N_pop)
+  if(length(dh) == 1) dh <- rep(dh, N_pop)
+  if(length(dr) == 1) dr <- rep(dr, N_pop)
+  if(length(pea) == 1) pea <- rep(pea, N_pop)
+  if(length(psr) == 1) psr <- rep(psr, N_pop)
+  if(length(phr) == 1) phr <- rep(phr, N_pop)
+
+
+
 
   model <- metaODIN$new(stoch = is.stoch,
                         N_pop = N_pop,
@@ -322,17 +340,17 @@ meta_sim <- function(N_pop, ts, tv,
                         dt = delta_t,
                         tt = tvac,
                         vac = vac_mat,
-                        VtoS = dv,
-                        EtoIpresymp = de,
+                        VtoS = 1/dv,
+                        EtoIpresymp = 1/de,
                         etopa = pea,
-                        pretoIsymp = dp,
-                        IasymptoR = da,
-                        IsymptoRH = ds,
+                        pretoIsymp = 1/dp,
+                        IasymptoR = 1/da,
+                        IsymptoRH = 1/ds,
                         istohr = psr,
-                        HtoRD = dh,
+                        HtoRD = 1/dh,
                         htor = phr,
-                        RtoS = dr,
-                        vac_eff = vac_eff)
+                        RtoS = 1/dr,
+                        vac_eff = ve)
 
   out <- model$run(step = 0:nsteps)
   return(out)
