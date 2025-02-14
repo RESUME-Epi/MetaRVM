@@ -194,6 +194,7 @@ meta_sim <- function(N_pop, ts, tv,
     output(n_preIsymp)    <- TRUE
     output(n_IsympRH)     <- TRUE
     output(n_IsympH)      <- TRUE
+    output(n_IsympR)      <- TRUE
     output(n_HR)          <- TRUE
     output(n_HD)          <- TRUE
 

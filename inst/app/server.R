@@ -906,6 +906,8 @@ server <- function(input, output, session) {
                                                                       "Asymptomatic",
                                                                       "Symptomatic",
                                                                       "Recovered",
+                                                                      "New Recovered (I)",
+                                                                      "New Recovered (H)",
                                                                       "Vaccinated"), selected = "Exposed")
     })
 
