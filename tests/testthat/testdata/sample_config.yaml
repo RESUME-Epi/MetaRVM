@@ -1,0 +1,38 @@
+run_id: 1A
+population_data:
+  mapping: /home/fadikar/work/projects/git/MetaRVM/tests/testthat/testdata/demographic_mapping_n24.csv
+  initialization: /home/fadikar/work/projects/git/MetaRVM/tests/testthat/testdata/population_init_n24.csv
+  vaccination: /home/fadikar/work/projects/git/MetaRVM/tests/testthat/testdata/vaccination_n24.csv
+mixing_matrix:
+  weekday_day: /home/fadikar/work/projects/git/MetaRVM/tests/testthat/testdata/m_weekday_day_n24.csv
+  weekday_night: /home/fadikar/work/projects/git/MetaRVM/tests/testthat/testdata/m_weekday_night_n24.csv
+  weekend_day: /home/fadikar/work/projects/git/MetaRVM/tests/testthat/testdata/m_weekend_day_n24.csv
+  weekend_night: /home/fadikar/work/projects/git/MetaRVM/tests/testthat/testdata/m_weekend_night_n24.csv
+disease_params:
+  ts: 0.7
+  tv: 0.35
+  ve: 0.5
+  dv: 50
+  dp: 10
+  da: 10
+  ds: 2
+  dh: 3
+  dr: 50
+  pea: 0.5
+  psr: 0.5
+  phr: 0.7
+  de:
+    dist: lognormal
+    mu: 1.9
+    sd: 1.23
+sub_disease_params:
+  population_id:
+    1:
+      ts: 0.6
+  age:
+    18-64:
+      tv: 0.7
+simulation_config:
+  start_date: 2023-09-04
+  length: 100
+  nsim: 20

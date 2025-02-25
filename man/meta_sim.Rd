@@ -6,8 +6,8 @@
 \usage{
 meta_sim(
   N_pop,
-  beta_i,
-  beta_v,
+  ts,
+  tv,
   S0,
   I0,
   P0,
@@ -20,17 +20,17 @@ meta_sim(
   delta_t,
   tvac,
   vac_mat,
-  VtoS,
-  EtoIpresymp,
-  etopa,
-  pretoIsymp,
-  IasymptoR,
-  IsymptoRH,
-  istohr,
-  HtoRD,
-  htor,
-  RtoS,
-  vac_eff,
+  dv,
+  de,
+  pea,
+  dp,
+  da,
+  ds,
+  psr,
+  dh,
+  phr,
+  dr,
+  ve,
   nsteps,
   is.stoch = FALSE,
   seed = NULL
@@ -38,10 +38,6 @@ meta_sim(
 }
 \arguments{
 \item{N_pop}{Number of sub-populations}
-
-\item{beta_i}{Rate of infection, value between 0 and 1}
-
-\item{beta_v}{Rate of infection for vaccinated people, value between 0 and 1}
 
 \item{S0}{A vector of initial number of susceptible people in N_pop subpopulations}
 
@@ -67,33 +63,37 @@ meta_sim(
 
 \item{vac_mat}{A matrix of order (length of tvac) x N_pop}
 
-\item{VtoS}{Rate of transitioning from vaccinated to susceptible}
+\item{dv}{mean number of days in Vaccinated state before waning immunity completely}
 
-\item{EtoIpresymp}{rate of transitioning from Exposed to infectious presymptomatic or asymptomatic}
+\item{de}{mean number of days in Exposed state}
 
-\item{etopa}{Proportion of people becoming infectious presymptomatic from exposed}
+\item{pea}{Proportion of people becoming infectious presymptomatic from exposed}
 
-\item{pretoIsymp}{Rate of transitioning from infectious presymptomatic to infectious symptomatic}
+\item{dp}{mean number of days in Infectious presymptomatic state}
 
-\item{IasymptoR}{Rate of transitioning from infectious presymptomatic to recovered}
+\item{da}{mean number of days in Infectious presymptomatic state}
 
-\item{IsymptoRH}{Rate for transitioning from infectious symptomatic to recovered or hospitalized}
+\item{ds}{mean number of days in Infectious symptomatic state}
 
-\item{istohr}{Proportion of people hospitalized from infectious symptomatic}
+\item{psr}{Proportion of people recovered from infectious symptomatic}
 
-\item{HtoRD}{Rate for transitioning from hospitalized to recovered or dead}
+\item{dh}{mean number of days in Hospitalized state}
 
-\item{htor}{Proportion of people recovered from hospitalized}
+\item{phr}{Proportion of people Recovered from Hospitalized}
 
-\item{RtoS}{Rate for transitioning from recovered to susceptible}
+\item{dr}{mean number of days in Recovered state}
 
-\item{vac_eff}{Vaccination efficacy, a value between 0 and 1}
+\item{ve}{Vaccination efficacy, a value between 0 and 1}
 
 \item{nsteps}{Number of discrete evolution in the simulation}
 
 \item{is.stoch}{1 if the simulation is stochastic, 0 otherwise}
 
 \item{seed}{optional, for reproducibility, only application when is.stoch = 1}
+
+\item{beta_i}{Rate of transmission for susceptible, value between 0 and 1}
+
+\item{beta_v}{Rate of transmission for vaccinated, value between 0 and 1}
 }
 \value{
 A matrix of model output

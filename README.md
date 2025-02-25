@@ -69,12 +69,12 @@ pop_zones$S0 <- pop_zones$N - pop_zones$I0 - pop_zones$V0 - pop_zones$R0
 
 pop_zones
 #>      N   S0 I0 V0  R0
-#> 1 1419 1234 68  8 109
-#> 2 1057  917 32  3 105
-#> 3 1410 1171 57  6 176
-#> 4 1246 1102 36  1 107
-#> 5 1157  896 95  9 157
-#> 6 1072  839 73  2 158
+#> 1 1435 1263 20 10 142
+#> 2 1142  922 45  2 173
+#> 3 1297 1139 35  3 120
+#> 4 1431 1266 54  7 104
+#> 5 1230 1079 28  9 114
+#> 6 1092  914 58  1 119
 ```
 
 #### Vaccination
@@ -95,14 +95,14 @@ colnames(vac_zones) <- c("t", paste0("v", 1:N_pop))
 
 vac_zones
 #>       t v1 v2 v3 v4 v5 v6
-#> [1,]  0  8  3  6  1  9  2
-#> [2,] 14 10  1  2  8  7  8
-#> [3,] 28  6  8  9  3  8  1
-#> [4,] 42  3 10  4  2  9  9
-#> [5,] 56  1  6  3  8  3  4
-#> [6,] 70 10  3  4  2  2  2
-#> [7,] 84  2  3  2  9  2  5
-#> [8,] 98 10  4  6  2  2  1
+#> [1,]  0 10  2  3  7  9  1
+#> [2,] 14  8  3  6  6  6  9
+#> [3,] 28  7  5  7  3  4  8
+#> [4,] 42  7  7  8  6  4  2
+#> [5,] 56  6  3  9  5  6  7
+#> [6,] 70  9 10  9  3  6  2
+#> [7,] 84  1  4  8  4 10  8
+#> [8,] 98  2  5 10  2  3  9
 ```
 
 ``` r
@@ -162,19 +162,19 @@ out <- meta_sim(N_pop = N_pop,
                 seed = NULL)
 #> Loading required namespace: pkgbuild
 #> Generating model in c
-#> ℹ Re-compiling odin0b127e1d (debug build)
+#> ℹ Re-compiling odind3ff41e0 (debug build)
 #> ── R CMD INSTALL ───────────────────────────────────────────────────────────────
-#> * installing *source* package ‘odin0b127e1d’ ...
+#> * installing *source* package ‘odind3ff41e0’ ...
 #> ** using staged installation
 #> ** libs
 #> using C compiler: ‘gcc (Ubuntu 13.3.0-6ubuntu2~24.04) 13.3.0’
 #> gcc -I"/usr/share/R/include" -DNDEBUG       -fpic  -g -O2 -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -ffile-prefix-map=/build/r-base-FPSnzf/r-base-4.3.3=. -fstack-protector-strong -fstack-clash-protection -Wformat -Werror=format-security -fcf-protection -fdebug-prefix-map=/build/r-base-FPSnzf/r-base-4.3.3=/usr/src/r-base-4.3.3-2build2 -Wdate-time -D_FORTIFY_SOURCE=3  -UNDEBUG -Wall -pedantic -g -O0 -c odin.c -o odin.o
 #> gcc -I"/usr/share/R/include" -DNDEBUG       -fpic  -g -O2 -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -ffile-prefix-map=/build/r-base-FPSnzf/r-base-4.3.3=. -fstack-protector-strong -fstack-clash-protection -Wformat -Werror=format-security -fcf-protection -fdebug-prefix-map=/build/r-base-FPSnzf/r-base-4.3.3=/usr/src/r-base-4.3.3-2build2 -Wdate-time -D_FORTIFY_SOURCE=3  -UNDEBUG -Wall -pedantic -g -O0 -c registration.c -o registration.o
-#> gcc -shared -L/usr/lib/R/lib -Wl,-Bsymbolic-functions -flto=auto -ffat-lto-objects -Wl,-z,relro -o odin0b127e1d.so odin.o registration.o -L/usr/lib/R/lib -lR
-#> installing to /tmp/RtmpGCYKU4/devtools_install_6a23565abca5e/00LOCK-file6a235540081ef/00new/odin0b127e1d/libs
+#> gcc -shared -L/usr/lib/R/lib -Wl,-Bsymbolic-functions -flto=auto -ffat-lto-objects -Wl,-z,relro -o odind3ff41e0.so odin.o registration.o -L/usr/lib/R/lib -lR
+#> installing to /tmp/RtmpbAcQxs/devtools_install_1305c07bc7da55/00LOCK-file1305c0206b15bb/00new/odind3ff41e0/libs
 #> ** checking absolute paths in shared objects and dynamic libraries
-#> * DONE (odin0b127e1d)
-#> ℹ Loading odin0b127e1d
+#> * DONE (odind3ff41e0)
+#> ℹ Loading odind3ff41e0
 ```
 
 There are some utility functions to extract a subset of disease states
