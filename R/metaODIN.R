@@ -105,7 +105,7 @@ meta_sim <- function(N_pop, ts, tv,
     m_weekend_day[, ]    <- user()
     m_weekend_night[, ]  <- user()
 
-    m[, ] <- if((step %% 7 == 0) || (step %% 6 == 0)) (
+    m[, ] <- if((time %% 7 == 0) || (time %% 6 == 0)) (
       if(step %% 2 == 0) m_weekend_day[i,j] else m_weekend_night[i,j]
     ) else (
       if(step %% 2 == 0) m_weekday_day[i,j] else m_weekday_night[i,j]
