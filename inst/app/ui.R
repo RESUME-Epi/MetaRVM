@@ -512,22 +512,26 @@ ui <- tagList(
                fluidRow(
                  br(),
                  br(),
-                 column(3, wellPanel(checkboxGroupInput("ages", "Age categories",
+                 column(2, wellPanel(checkboxGroupInput("ages", "Age categories",
                                                          choices = NULL)
                                     ),
                         downloadButton("download", "Download zip", class = "custom-button")
                  ),
-                 column(3, wellPanel(checkboxGroupInput("races", "Race categories",
+                 column(2, wellPanel(checkboxGroupInput("races", "Race categories",
                                                          choices = NULL)
                                     )
                  ),
-                 column(3, wellPanel(checkboxGroupInput("hcezs", "HCEZ",
+                 column(2, wellPanel(checkboxGroupInput("hcezs", "HCEZ",
                                                          choices = NULL)
                                     )
                  ),
-                 column(3, wellPanel(checkboxGroupInput("disease_states", "Disease States",
+                 column(2, wellPanel(checkboxGroupInput("disease_states", "Disease States",
                                                         choices = NULL)
                                     )
+                 ),
+                 column(2, wellPanel(checkboxGroupInput("new_counts", "New Counts",
+                                                        choices = NULL)
+                 )
                  ),
                  br(),
                  br(),
