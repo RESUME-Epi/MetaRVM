@@ -348,25 +348,59 @@ server <- function(input, output, session) {
                               "Dead" = "grey",
                               "Vaccinated" = "darkgreen")
 
+      # Compute summary statistics (median and 90% interval)
+      summary_data <- long_out_daily %>%
+        dplyr::group_by(date, disease_state) %>%
+        dplyr::summarize(
+          median = median(total_value, na.rm = TRUE),
+          lower_90 = quantile(total_value, probs = 0.05, na.rm = TRUE),
+          upper_90 = quantile(total_value, probs = 0.95, na.rm = TRUE),
+          .groups = "drop"
+        )
+
+
+      # plotly::ggplotly(
+      #   ggplot2::ggplot(long_out_daily,
+      #                   aes(x = date, y = total_value, color = disease_state, group = instance)) +
+      #     ggplot2::geom_line(linewidth = 1, alpha = 0.7) +
+      #     ggplot2::scale_color_manual(values = compartment_colors) +
+      #     ggplot2::scale_x_date(
+      #       date_breaks = "1 week",  # Breaks every week
+      #       date_labels = "%b %d"   # Format labels as "Month Day" (e.g., Jan 01)
+      #     ) +
+      #     # ggplot2::scale_y_continuous(transform = "log") +
+      #     # ggplot2::ylim(0, max(long_out_daily$total_value[!long_out_daily$disease_state %in% c("Susceptible", "Recovered")])) +
+      #     ggplot2::labs(
+      #       # title = "Disease Compartments Over Time",
+      #       x = "Date",
+      #       y = "# of people",
+      #       color = "",
+      #     ) +
+      #     # ggthemes::theme_tufte() +
+      #     ggplot2::theme_bw() +
+      #     ggplot2::theme(
+      #       plot.title = element_text(hjust = 0.5),
+      #       legend.position = "right",
+      #       axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)
+      #     )
+      # )
 
       plotly::ggplotly(
-        ggplot2::ggplot(long_out_daily,
-                        aes(x = date, y = total_value, color = disease_state, group = instance)) +
-          ggplot2::geom_line(linewidth = 1, alpha = 0.7) +
+        ggplot2::ggplot(summary_data, aes(x = date, y = median, color = disease_state, fill = disease_state)) +
+          ggplot2::geom_ribbon(aes(ymin = lower_90, ymax = upper_90), alpha = 0.3, color = NA) +
+          ggplot2::geom_line(linewidth = 1) +
           ggplot2::scale_color_manual(values = compartment_colors) +
+          ggplot2::scale_fill_manual(values = compartment_colors) +
           ggplot2::scale_x_date(
-            date_breaks = "1 week",  # Breaks every week
-            date_labels = "%b %d"   # Format labels as "Month Day" (e.g., Jan 01)
+            date_breaks = "1 week",
+            date_labels = "%b %d"
           ) +
-          # ggplot2::scale_y_continuous(transform = "log") +
-          # ggplot2::ylim(0, max(long_out_daily$total_value[!long_out_daily$disease_state %in% c("Susceptible", "Recovered")])) +
           ggplot2::labs(
-            # title = "Disease Compartments Over Time",
             x = "Date",
             y = "# of people",
             color = "",
+            fill = ""
           ) +
-          # ggthemes::theme_tufte() +
           ggplot2::theme_bw() +
           ggplot2::theme(
             plot.title = element_text(hjust = 0.5),
@@ -384,6 +418,15 @@ server <- function(input, output, session) {
     output$new_infection_prop <- plotly::renderPlotly({
 
       df_combined <- daily_out_rates_sums(long_out, start_date, c("n_SE", "n_VE"))
+
+      # summary_data <- df_combined %>%
+      #   dplyr::group_by(date, disease_state) %>%
+      #   dplyr::summarize(
+      #     median = median(total_value, na.rm = TRUE),
+      #     lower_90 = quantile(total_value, probs = 0.05, na.rm = TRUE),
+      #     upper_90 = quantile(total_value, probs = 0.95, na.rm = TRUE),
+      #     .groups = "drop"
+      #   )
 
       plotly::ggplotly(
         ggplot2::ggplot(df_combined,
@@ -404,6 +447,30 @@ server <- function(input, output, session) {
             axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)
           )
       )
+
+      # plotly::ggplotly(
+      #   ggplot2::ggplot(summary_data, aes(x = date, y = median)) +
+      #     ggplot2::geom_ribbon(aes(ymin = lower_90, ymax = upper_90), alpha = 0.3, color = "orangered2") +
+      #     ggplot2::geom_line(linewidth = 1) +
+      #     # ggplot2::scale_color_manual(values = compartment_colors) +
+      #     # ggplot2::scale_fill_manual(values = compartment_colors) +
+      #     ggplot2::scale_x_date(
+      #       date_breaks = "1 week",
+      #       date_labels = "%b %d"
+      #     ) +
+      #     ggplot2::labs(
+      #       x = "Date",
+      #       y = "# of people",
+      #       color = "",
+      #       fill = ""
+      #     ) +
+      #     ggplot2::theme_bw() +
+      #     ggplot2::theme(
+      #       plot.title = element_text(hjust = 0.5),
+      #       legend.position = "right",
+      #       axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)
+      #     )
+      # )
     })
 
     output$new_infection_count <- plotly::renderPlotly({
