@@ -197,6 +197,7 @@ meta_sim <- function(N_pop, ts, tv,
     output(n_IsympR)      <- TRUE
     output(n_HR)          <- TRUE
     output(n_HD)          <- TRUE
+    output(n_IasympR)     <- TRUE
 
     ## =================================================
     ## User defined parameters - default in parentheses:
