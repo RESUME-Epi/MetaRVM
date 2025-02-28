@@ -9,7 +9,7 @@
 parse_config <- function(config_file){
 
   # read the yaml config file
-  yaml_data <- read_yaml(config_file)
+  yaml_data <- yaml::read_yaml(config_file)
 
   # read mandatory parameters
   pop_map_file <- yaml_data$population_data$mapping
@@ -52,18 +52,18 @@ parse_config <- function(config_file){
 
   n_pop <- nrow(pop_map)
 
-  if(class(ts) == "numeric") ts <- rep(ts, n_pop)
-  if(class(tv) == "numeric") tv <- rep(tv, n_pop)
-  if(class(ve) == "numeric") ve <- rep(ve, n_pop)
-  if(class(dv) == "integer") dv <- rep(dv, n_pop)
-  if(class(dp) == "integer") dp <- rep(dp, n_pop)
-  if(class(da) == "integer") da <- rep(da, n_pop)
-  if(class(ds) == "integer") ds <- rep(ds, n_pop)
-  if(class(dh) == "integer") dh <- rep(dh, n_pop)
-  if(class(dr) == "integer") dr <- rep(dr, n_pop)
-  if(class(pea) == "numeric") pea <- rep(pea, n_pop)
-  if(class(psr) == "numeric") psr <- rep(psr, n_pop)
-  if(class(phr) == "numeric") phr <- rep(phr, n_pop)
+  if(is(ts, "numeric")) ts <- rep(ts, n_pop)
+  if(is(tv, "numeric")) tv <- rep(tv, n_pop)
+  if(is(ve, "numeric")) ve <- rep(ve, n_pop)
+  if(is(dv, "integer")) dv <- rep(dv, n_pop)
+  if(is(dp, "integer")) dp <- rep(dp, n_pop)
+  if(is(da, "integer")) da <- rep(da, n_pop)
+  if(is(ds, "integer")) ds <- rep(ds, n_pop)
+  if(is(dh, "integer")) dh <- rep(dh, n_pop)
+  if(is(dr, "integer")) dr <- rep(dr, n_pop)
+  if(is(pea, "numeric")) pea <- rep(pea, n_pop)
+  if(is(psr, "numeric")) psr <- rep(psr, n_pop)
+  if(is(phr, "numeric")) phr <- rep(phr, n_pop)
 
   # read sub disease parameters and modify
   # disease parameters
@@ -113,4 +113,34 @@ parse_config <- function(config_file){
               psr = psr,
               phr = phr))
 
+}
+
+
+#' Title
+#'
+#' @param config_list A list of configurations
+#' @param N_pop Number of subpopulations
+#'
+#' @returns A random sample drawn from the distribution specified by the dist component
+#' @export
+#'
+#' @examples
+draw_sample <- function(config_list, N_pop){
+
+  if(is(config_list, "list")){
+
+    if(config_list$dist == "lognormal")
+      x <- rlnorm(1, meanlog = config_list$mu, sdlog = config_list$sd)
+
+    if(config_list$dist == "gamma")
+      x <- rgamma(1, shape = config_list$shape, rate = config_list$rate)
+
+    if(config_list$dist == "uniform")
+      x <- runif(1, min = config_list$min, max = config_list$max)
+
+    if(config_list$dist == "beta")
+      x <- rbeta(1, shape1 = config_list$shape1, shape2 = config_list$shape2)
+
+    return(rep(x, N_pop))
+  } else return(config_list)
 }

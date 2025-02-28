@@ -153,7 +153,7 @@ ui <- tagList(
                    br(),
                    br(),
                    # DiagrammeR::grVizOutput("compartment_plot"),
-                   img(src = "metaRVM.png", align = "center", height="90%", width="90%"),
+                   img(src = "GIRD-Vensim.svg", align = "center", height="90%", width="90%"),
                    br(),
                    br(),
                    br(),
@@ -218,13 +218,7 @@ ui <- tagList(
                    br(),
                    br(),
                    br(),
-                   p("The disease parameters can be set to subpopulation specific values. In such case instead of specifying the
-                     diseaes parameters in the yaml configuration file, a csv file needs to be provided having the values of the disease
-                     parameters for each compartments. Below are the examples of yaml configuration and the disease parameter csv file."),
-                   img(src = "example_config_vector.png", align = "center", height="90%", width="90%"),
-                   br(),
-                   br(),
-                   br(),
+                   p("The disease parameters can be set to subpopulation specific values via additional tags."),
                    img(src = "example_disease_parameter.png", align = "center", height="90%", width="90%"),
                    br(),
                    br(),

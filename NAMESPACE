@@ -2,6 +2,7 @@
 
 export(daily_out_rates_sums)
 export(daily_output)
+export(draw_sample)
 export(format_output)
 export(get_HCEZ)
 export(get_disease_state)
