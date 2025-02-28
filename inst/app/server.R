@@ -1029,7 +1029,7 @@ server <- function(input, output, session) {
         dplyr::mutate(date = start_date + time)
 
       summary_data <- cat_long_out %>%
-        dplyr::group_by(date, disease_state) %>%
+        dplyr::group_by(date, disease_state, !!sym(input$Category)) %>%
         dplyr::summarize(
           median = median(total_value, na.rm = TRUE),
           lower_90 = quantile(total_value, probs = 0.05, na.rm = TRUE),
@@ -1041,6 +1041,7 @@ server <- function(input, output, session) {
         ggplot2::ggplot(summary_data, aes(x = date, y = median, color = disease_state, fill = disease_state)) +
           ggplot2::geom_ribbon(aes(ymin = lower_90, ymax = upper_90), alpha = 0.3, color = NA) +
           ggplot2::geom_line(linewidth = 1, ) +
+          ggplot2::facet_wrap(vars(!!sym(input$Category)), scales = "free_y") +
           ggplot2::scale_color_manual(values = compartment_colors) +
           ggplot2::scale_fill_manual(values = compartment_colors) +
           ggplot2::scale_x_date(
