@@ -10,7 +10,7 @@ library(yaml)
 
 ui <- tagList(
 
-  # Add custom CSS for the title background
+  # Add custom CSS for the title background and to hide redundant legend entries
   tags$head(
     tags$style(HTML("
       .title-background {
@@ -19,6 +19,23 @@ ui <- tagList(
         padding: 10px; /* Padding around the text */
         text-align: center; /* Center the text */
       }
+    ")),
+    tags$script(HTML("
+      // Function to simplify plot legends and update legend titles
+      $(document).on('plotly_afterplot', function() {
+        // Find all plotly legends
+        $('.legend .traces').each(function(i, el) {
+          // Keep only the first legend group (color) and hide the second (fill)
+          if ($(el).index() > 0) {
+            $(el).hide();
+          }
+        });
+        
+        // Update legend titles for color
+        $('.legend .traces .legendtitle').filter(function() {
+          return !$(this).text();
+        }).text('Compartment');
+      });
     "))
   ),
 
@@ -317,6 +334,12 @@ ui <- tagList(
                   card(
                     div(class = "custom-card",
                         div(class = "custom-card-header", card_header(strong("Disease compartments over time"))),
+                        div(style = "display: flex; justify-content: flex-end; padding: 10px;",
+                            selectInput("conf_level", "Confidence Interval:",
+                                      choices = c("70%" = "70", "80%" = "80", "90%" = "90", "95%" = "95"),
+                                      selected = "90", width = "150px")),
+                        div(style = "text-align: center; padding: 5px; font-style: italic;", 
+                            textOutput("ci_display_text")),
                         div(class = "custom-card-body", plotly::plotlyOutput("seir_plot", height = "400px"))
                         # div(class = "custom-card-body", plotOutput("seir_plot", height = "500px"))
                     )
@@ -340,6 +363,8 @@ ui <- tagList(
                   card(
                     div(class = "custom-card",
                         div(class = "custom-card-header", card_header(strong("New Infections"))),
+                        div(style = "text-align: center; padding: 5px; font-style: italic;", 
+                            textOutput("ci_display_text_infections")),
                         column(6, plotly::plotlyOutput("new_infection_prop", height = "300px")),
                         column(6, plotly::plotlyOutput("new_infection_count", height = "300px"))
                     )
@@ -359,6 +384,8 @@ ui <- tagList(
                   card(
                     div(class = "custom-card",
                         div(class = "custom-card-header", card_header(strong("New Hospitalizations"))),
+                        div(style = "text-align: center; padding: 5px; font-style: italic;", 
+                            textOutput("ci_display_text_hosp")),
                         column(6, plotly::plotlyOutput("new_hosp_prop", height = "300px")),
                         column(6, plotly::plotlyOutput("new_hosp_count", height = "300px"))
                     )
@@ -378,6 +405,8 @@ ui <- tagList(
                   card(
                     div(class = "custom-card",
                         div(class = "custom-card-header", card_header(strong("New Deaths"))),
+                        div(style = "text-align: center; padding: 5px; font-style: italic;", 
+                            textOutput("ci_display_text_deaths")),
                         column(6, plotly::plotlyOutput("new_death_prop", height = "300px")),
                         column(6, plotly::plotlyOutput("new_death_count", height = "300px"))
                         # div(class = "custom-card-body", plotly::plotlyOutput("new_death_plot", height = "300px")),
@@ -399,6 +428,8 @@ ui <- tagList(
                   card(
                     div(class = "custom-card",
                         div(class = "custom-card-header", card_header(strong("New Vaccinations"))),
+                        div(style = "text-align: center; padding: 5px; font-style: italic;", 
+                            textOutput("ci_display_text_vac")),
                         column(6, plotly::plotlyOutput("new_vac_prop", height = "300px")),
                         column(6, plotly::plotlyOutput("new_vac_count", height = "300px"))
                     )
@@ -429,6 +460,8 @@ ui <- tagList(
                          card(
                            div(class = "custom-card",
                                div(class = "custom-card-header", card_header("Disease Compartments for a Zone")),
+                               div(style = "text-align: center; padding: 5px; font-style: italic;", 
+                                   textOutput("ci_display_text_zone")),
                                div(class = "custom-card-body", plotly::plotlyOutput("zone_simout", height = "500px"))
                            )
                          )
@@ -453,6 +486,8 @@ ui <- tagList(
                         card(
                           div(class = "custom-card",
                               div(class = "custom-card-header", card_header("By categories")),
+                              div(style = "text-align: center; padding: 5px; font-style: italic;", 
+                                 textOutput("ci_display_text_categories")),
                               div(class = "custom-card-body", plotOutput("cat_simout", height = "500px"))
                           )
                         )

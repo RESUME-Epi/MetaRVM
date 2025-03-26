@@ -12,6 +12,73 @@ library(yaml)
 
 server <- function(input, output, session) {
 
+  # Function to create a formatted title with the confidence interval
+  format_ci_title <- function(base_title = "") {
+    paste0(base_title, " (", input$conf_level, "% confidence interval)")
+  }
+
+  # Function to apply consistent legend formatting for all plots
+  apply_legend_format <- function(p) {
+    p <- p +
+      ggplot2::labs(color = "Compartment", fill = NULL) +
+      ggplot2::guides(fill = "none")
+    return(p)
+  }
+
+  # Custom plot function to create a plot with a single legend entry per disease state
+  create_compartment_plot <- function(summary_data, compartment_colors) {
+    p <- ggplot2::ggplot(summary_data, aes(x = date, y = median, color = disease_state)) +
+          ggplot2::geom_ribbon(aes(ymin = lower_90, ymax = upper_90, fill = disease_state),
+                              alpha = 0.3, color = NA, show.legend = FALSE) +
+          ggplot2::geom_line(linewidth = 1) +
+          ggplot2::scale_color_manual(values = compartment_colors, name = "Compartment") +
+          ggplot2::scale_fill_manual(values = compartment_colors) +
+          ggplot2::scale_x_date(
+            date_breaks = "1 week",
+            date_labels = "%b %d"
+          ) +
+          ggplot2::labs(
+            x = "Date",
+            y = "# of people"
+          ) +
+          ggplot2::theme_bw() +
+          ggplot2::theme(
+            plot.title = element_text(hjust = 0.5),
+            legend.position = "right",
+            axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)
+          )
+    return(p)
+  }
+
+  # Display confidence interval text for all plots
+  output$ci_display_text <- renderText({
+    paste0("Shaded areas represent ", input$conf_level, "% confidence intervals")
+  })
+
+  output$ci_display_text_infections <- renderText({
+    paste0("Shaded areas represent ", input$conf_level, "% confidence intervals")
+  })
+
+  output$ci_display_text_hosp <- renderText({
+    paste0("Shaded areas represent ", input$conf_level, "% confidence intervals")
+  })
+
+  output$ci_display_text_deaths <- renderText({
+    paste0("Shaded areas represent ", input$conf_level, "% confidence intervals")
+  })
+
+  output$ci_display_text_vac <- renderText({
+    paste0("Shaded areas represent ", input$conf_level, "% confidence intervals")
+  })
+
+  output$ci_display_text_zone <- renderText({
+    paste0("Shaded areas represent ", input$conf_level, "% confidence intervals")
+  })
+
+  output$ci_display_text_categories <- renderText({
+    paste0("Shaded areas represent ", input$conf_level, "% confidence intervals")
+  })
+
   output$yaml_content <- renderPrint({
     req(input$config)  # Ensure a file is uploaded
 
@@ -70,7 +137,8 @@ server <- function(input, output, session) {
   process_vac_data <- reactive({
     yaml_data <- parse_config(input$config$datapath)
     raw_vac_data <- yaml_data$vac
-    raw_vac_data$date <- as.Date(raw_vac_data$date)
+    raw_vac_data$date <- as.Date(raw_vac_data$date,
+                                 tryFormats = c("%Y-%m-%d", "%Y/%m/%d", "%m/%d/%Y"))
 
     date_filtered <- raw_vac_data %>%
       dplyr::filter(date >= as.Date(yaml_data$start_date)) %>%
@@ -348,48 +416,30 @@ server <- function(input, output, session) {
                               "Dead" = "grey",
                               "Vaccinated" = "darkgreen")
 
-      # Compute summary statistics (median and 90% interval)
+      # Get confidence level from input
+      conf_level <- as.numeric(input$conf_level)
+      lower_prob <- (100 - conf_level) / 200
+      upper_prob <- 1 - lower_prob
+
+      # Compute summary statistics (median and selected confidence interval)
       summary_data <- long_out_daily %>%
         dplyr::group_by(date, disease_state) %>%
         dplyr::summarize(
           median = median(total_value, na.rm = TRUE),
-          lower_90 = quantile(total_value, probs = 0.05, na.rm = TRUE),
-          upper_90 = quantile(total_value, probs = 0.95, na.rm = TRUE),
+          lower_90 = quantile(total_value, probs = lower_prob, na.rm = TRUE),
+          upper_90 = quantile(total_value, probs = upper_prob, na.rm = TRUE),
           .groups = "drop"
         )
 
-
-      # plotly::ggplotly(
-      #   ggplot2::ggplot(long_out_daily,
-      #                   aes(x = date, y = total_value, color = disease_state, group = instance)) +
-      #     ggplot2::geom_line(linewidth = 1, alpha = 0.7) +
-      #     ggplot2::scale_color_manual(values = compartment_colors) +
-      #     ggplot2::scale_x_date(
-      #       date_breaks = "1 week",  # Breaks every week
-      #       date_labels = "%b %d"   # Format labels as "Month Day" (e.g., Jan 01)
-      #     ) +
-      #     # ggplot2::scale_y_continuous(transform = "log") +
-      #     # ggplot2::ylim(0, max(long_out_daily$total_value[!long_out_daily$disease_state %in% c("Susceptible", "Recovered")])) +
-      #     ggplot2::labs(
-      #       # title = "Disease Compartments Over Time",
-      #       x = "Date",
-      #       y = "# of people",
-      #       color = "",
-      #     ) +
-      #     # ggthemes::theme_tufte() +
-      #     ggplot2::theme_bw() +
-      #     ggplot2::theme(
-      #       plot.title = element_text(hjust = 0.5),
-      #       legend.position = "right",
-      #       axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)
-      #     )
-      # )
+      # Create a label for the confidence interval
+      ci_label <- paste0(input$conf_level, "% confidence interval")
 
       plotly::ggplotly(
-        ggplot2::ggplot(summary_data, aes(x = date, y = median, color = disease_state, fill = disease_state)) +
-          ggplot2::geom_ribbon(aes(ymin = lower_90, ymax = upper_90), alpha = 0.3, color = NA) +
+        ggplot2::ggplot(summary_data, aes(x = date, y = median, color = disease_state)) +
+          ggplot2::geom_ribbon(aes(ymin = lower_90, ymax = upper_90, fill = disease_state),
+                               alpha = 0.3, color = NA, show.legend = FALSE) +
           ggplot2::geom_line(linewidth = 1) +
-          ggplot2::scale_color_manual(values = compartment_colors) +
+          ggplot2::scale_color_manual(values = compartment_colors, guide = "none") +
           ggplot2::scale_fill_manual(values = compartment_colors) +
           ggplot2::scale_x_date(
             date_breaks = "1 week",
@@ -419,34 +469,20 @@ server <- function(input, output, session) {
 
       df_combined <- daily_out_rates_sums(long_out, start_date, c("n_SE", "n_VE"))
 
+      # Get confidence level from input
+      conf_level <- as.numeric(input$conf_level)
+      lower_prob <- (100 - conf_level) / 200
+      upper_prob <- 1 - lower_prob
+
       summary_data <- df_combined %>%
         dplyr::group_by(date) %>%
         dplyr::summarize(
           median = median(d_rate, na.rm = TRUE),
-          lower_90 = quantile(d_rate, probs = 0.05, na.rm = TRUE),
-          upper_90 = quantile(d_rate, probs = 0.95, na.rm = TRUE),
+          lower_90 = quantile(d_rate, probs = lower_prob, na.rm = TRUE),
+          upper_90 = quantile(d_rate, probs = upper_prob, na.rm = TRUE),
           .groups = "drop"
         )
 
-      # plotly::ggplotly(
-      #   ggplot2::ggplot(df_combined,
-      #                   aes(x = date, group = instance)) +
-      #     ggplot2::geom_line(aes(y = d_rate), linewidth = 1, alpha = 1, color = "orangered2") +
-      #     ggplot2::labs(
-      #       # title = "New infection rate",
-      #       x = "Date",
-      #       y = "% of population") +
-      #     scale_x_date(
-      #       date_breaks = "1 week",  # Breaks every week
-      #       date_labels = "%b %d"   # Format labels as "Month Day" (e.g., Jan 01)
-      #     ) +
-      #     ggplot2::scale_y_continuous(labels = scales::percent) +
-      #     ggplot2::theme_bw() +
-      #     ggplot2::theme(
-      #       plot.title = element_text(hjust = 0.5),
-      #       axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)
-      #     )
-      # )
 
       plotly::ggplotly(
         ggplot2::ggplot(summary_data, aes(x = date, y = median)) +
@@ -477,12 +513,17 @@ server <- function(input, output, session) {
 
       df_combined <- daily_out_rates_sums(long_out, start_date, c("n_SE", "n_VE"))
 
+      # Get confidence level from input
+      conf_level <- as.numeric(input$conf_level)
+      lower_prob <- (100 - conf_level) / 200
+      upper_prob <- 1 - lower_prob
+
       summary_data <- df_combined %>%
         dplyr::group_by(date) %>%
         dplyr::summarize(
           median = median(d_sum, na.rm = TRUE),
-          lower_90 = quantile(d_sum, probs = 0.05, na.rm = TRUE),
-          upper_90 = quantile(d_sum, probs = 0.95, na.rm = TRUE),
+          lower_90 = quantile(d_sum, probs = lower_prob, na.rm = TRUE),
+          upper_90 = quantile(d_sum, probs = upper_prob, na.rm = TRUE),
           .groups = "drop"
         )
 
@@ -538,12 +579,17 @@ server <- function(input, output, session) {
       # prepare the data
       df_combined <- daily_out_rates_sums(long_out, start_date, c("n_IsympH"))
 
+      # Get confidence level from input
+      conf_level <- as.numeric(input$conf_level)
+      lower_prob <- (100 - conf_level) / 200
+      upper_prob <- 1 - lower_prob
+
       summary_data <- df_combined %>%
         dplyr::group_by(date) %>%
         dplyr::summarize(
           median = median(d_rate, na.rm = TRUE),
-          lower_90 = quantile(d_rate, probs = 0.05, na.rm = TRUE),
-          upper_90 = quantile(d_rate, probs = 0.95, na.rm = TRUE),
+          lower_90 = quantile(d_rate, probs = lower_prob, na.rm = TRUE),
+          upper_90 = quantile(d_rate, probs = upper_prob, na.rm = TRUE),
           .groups = "drop"
         )
 
@@ -637,12 +683,17 @@ server <- function(input, output, session) {
       # prepare the data
       df_combined <- daily_out_rates_sums(long_out, start_date, c("n_HD"))
 
+      # Get confidence level from input
+      conf_level <- as.numeric(input$conf_level)
+      lower_prob <- (100 - conf_level) / 200
+      upper_prob <- 1 - lower_prob
+
       summary_data <- df_combined %>%
         dplyr::group_by(date) %>%
         dplyr::summarize(
           median = median(d_rate, na.rm = TRUE),
-          lower_90 = quantile(d_rate, probs = 0.05, na.rm = TRUE),
-          upper_90 = quantile(d_rate, probs = 0.95, na.rm = TRUE),
+          lower_90 = quantile(d_rate, probs = lower_prob, na.rm = TRUE),
+          upper_90 = quantile(d_rate, probs = upper_prob, na.rm = TRUE),
           .groups = "drop"
         )
 
@@ -735,12 +786,17 @@ server <- function(input, output, session) {
       # prepare the data
       df_combined <- daily_out_rates_sums(long_out, start_date, c("n_SV"))
 
+      # Get confidence level from input
+      conf_level <- as.numeric(input$conf_level)
+      lower_prob <- (100 - conf_level) / 200
+      upper_prob <- 1 - lower_prob
+
       summary_data <- df_combined %>%
         dplyr::group_by(date) %>%
         dplyr::summarize(
           median = median(d_rate, na.rm = TRUE),
-          lower_90 = quantile(d_rate, probs = 0.05, na.rm = TRUE),
-          upper_90 = quantile(d_rate, probs = 0.95, na.rm = TRUE),
+          lower_90 = quantile(d_rate, probs = lower_prob, na.rm = TRUE),
+          upper_90 = quantile(d_rate, probs = upper_prob, na.rm = TRUE),
           .groups = "drop"
         )
 
@@ -909,12 +965,17 @@ server <- function(input, output, session) {
       filtered_data <- long_out_zones %>%
         dplyr::filter(hcez %in% selected_zone())
 
+      # Get confidence level from input
+      conf_level <- as.numeric(input$conf_level)
+      lower_prob <- (100 - conf_level) / 200
+      upper_prob <- 1 - lower_prob
+
       summary_data <- filtered_data %>%
         dplyr::group_by(date, disease_state) %>%
         dplyr::summarize(
           median = median(total_value, na.rm = TRUE),
-          lower_90 = quantile(total_value, probs = 0.05, na.rm = TRUE),
-          upper_90 = quantile(total_value, probs = 0.95, na.rm = TRUE),
+          lower_90 = quantile(total_value, probs = lower_prob, na.rm = TRUE),
+          upper_90 = quantile(total_value, probs = upper_prob, na.rm = TRUE),
           .groups = "drop"
         )
 
@@ -1028,12 +1089,17 @@ server <- function(input, output, session) {
         dplyr::summarize(total_value = sum(value), .groups = "drop") %>%
         dplyr::mutate(date = start_date + time)
 
+      # Get confidence level from input
+      conf_level <- as.numeric(input$conf_level)
+      lower_prob <- (100 - conf_level) / 200
+      upper_prob <- 1 - lower_prob
+
       summary_data <- cat_long_out %>%
         dplyr::group_by(date, disease_state, !!sym(input$Category)) %>%
         dplyr::summarize(
           median = median(total_value, na.rm = TRUE),
-          lower_90 = quantile(total_value, probs = 0.05, na.rm = TRUE),
-          upper_90 = quantile(total_value, probs = 0.95, na.rm = TRUE),
+          lower_90 = quantile(total_value, probs = lower_prob, na.rm = TRUE),
+          upper_90 = quantile(total_value, probs = upper_prob, na.rm = TRUE),
           .groups = "drop"
         )
 

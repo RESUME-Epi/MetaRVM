@@ -8,8 +8,13 @@
 #'
 #'
 #' @param N_pop Number of sub-populations
-#' @param beta_i Rate of transmission for susceptible, value between 0 and 1
-#' @param beta_v Rate of transmission for vaccinated, value between 0 and 1
+#' @param ts
+#' @param tv
+#' @param H0
+#' @param D0
+#' @param Ia0
+#' @param Ip0
+#' @param E0
 #' @param S0 A vector of initial number of susceptible people in N_pop subpopulations
 #' @param I0 A vector of initial number of infected people in N_pop subpopulations
 #' @param P0 A vector of population sizes for N_pop subpopulations
@@ -24,7 +29,7 @@
 #' @param vac_mat A matrix of order (length of tvac) x N_pop
 #' @param dv mean number of days in Vaccinated state before waning immunity completely
 #' @param de mean number of days in Exposed state
-#' @param pea Proportion of people becoming infectious presymptomatic from exposed
+#' @param pea Proportion of people becoming infectious asymptomatic from exposed
 #' @param dp mean number of days in Infectious presymptomatic state
 #' @param da mean number of days in Infectious presymptomatic state
 #' @param ds mean number of days in Infectious symptomatic state
@@ -36,6 +41,7 @@
 #' @param nsteps Number of discrete evolution in the simulation
 #' @param is.stoch 1 if the simulation is stochastic, 0 otherwise
 #' @param seed optional, for reproducibility, only application when is.stoch = 1
+
 #'
 #' @return A matrix of model output
 #' @export
@@ -43,7 +49,8 @@
 
 
 meta_sim <- function(N_pop, ts, tv,
-                     S0, I0, P0, V0, R0,
+                     # S0, I0, P0, V0, R0,
+                     S0, I0, P0, V0, R0, H0, D0, Ia0, Ip0, E0,
                      m_weekday_day, m_weekday_night, m_weekend_day, m_weekend_night,
                      delta_t,
                      tvac, vac_mat,
@@ -143,7 +150,7 @@ meta_sim <- function(N_pop, ts, tv,
     n_SE[]            <- sum(n_SE_eff[i, ]) # rowSums
     n_EI[]            <- if(E[i] == 0) 0 else (if(stoch == 1) rbinom(E[i], p_EIpresymp[i]) else E[i] * p_EIpresymp[i])
     n_EI[]            <- ceiling(n_EI[i])
-    n_EIpresymp[]     <- ceiling(n_EI[i] * etopa[i])
+    n_EIpresymp[]     <- ceiling(n_EI[i] * (1 - pea[i]))
     n_EIasymp[]       <- n_EI[i] - n_EIpresymp[i]
     n_preIsymp[]      <- if(I_presymp[i] == 0) 0 else (if(stoch == 1) rbinom(I_presymp[i], p_preIsymp[i]) else I_presymp[i] * p_preIsymp[i])
     n_preIsymp[]      <- ceiling(n_preIsymp[i])
@@ -151,11 +158,11 @@ meta_sim <- function(N_pop, ts, tv,
     n_IasympR[]       <- ceiling(n_IasympR[i])
     n_IsympRH[]       <- if(I_symp[i] == 0) 0 else (if(stoch == 1) rbinom(I_symp[i], p_IsympRH[i]) else I_symp[i] * p_IsympRH[i])
     n_IsympRH[]       <- ceiling(n_IsympRH[i])
-    n_IsympH[]        <- ceiling(n_IsympRH[i] * istohr[i])
+    n_IsympH[]        <- ceiling(n_IsympRH[i] * (1 - psr[i]))
     n_IsympR[]        <- n_IsympRH[i] - n_IsympH[i]
     n_HRD[]           <- if(H[i] == 0) 0 else (if(stoch == 1) rbinom(H[i], p_HRD[i]) else H[i] * p_HRD[i])
     n_HRD[]           <- ceiling(n_HRD[i])
-    n_HR[]            <- ceiling(n_HRD[i] * htor[i])
+    n_HR[]            <- ceiling(n_HRD[i] * phr[i])
     n_HD[]            <- n_HRD[i] - n_HR[i]
     n_RS[]            <- if(R[i] == 0) 0 else (if(stoch == 1) rbinom(R[i], p_RS[i]) else R[i] * p_RS[i])
     n_RS[]            <- ceiling(n_RS[i])
@@ -168,18 +175,18 @@ meta_sim <- function(N_pop, ts, tv,
     ## =================================================
     ## Initial states:
     initial(S[])            <- S_ini[i]
-    initial(E[])            <- 0
-    initial(I_presymp[])    <- 0
-    initial(I_asymp[])      <- 0
+    initial(E[])            <- E_ini[i]
+    initial(I_presymp[])    <- I_presymp_ini[i]
+    initial(I_asymp[])      <- I_asymp_ini[i]
     initial(I_symp[])       <- I_symp_ini[i]
     initial(I_all[])        <- I_symp_ini[i]
     initial(R[])            <- R_ini[i]
-    initial(H[])            <- 0
-    initial(D[])            <- 0
+    initial(H[])            <- H_ini[i]
+    initial(D[])            <- D_ini[i]
     initial(V[])            <- V_ini[i]
-    initial(cum_V[])        <- 0
+    initial(cum_V[])        <- V_ini[i]
     initial(P[])            <- P_ini[i]
-    initial(mob_pop[])      <- S_ini[i] + I_symp_ini[i]
+    initial(mob_pop[])      <- P_ini[i] - H_ini[i] - D_ini[i]
 
     ## =================================================
     ## additional output for debugging
@@ -201,11 +208,16 @@ meta_sim <- function(N_pop, ts, tv,
 
     ## =================================================
     ## User defined parameters - default in parentheses:
-    S_ini[]        <- user()
-    I_symp_ini[]   <- user()
-    V_ini[]        <- user()
-    P_ini[]        <- user()
-    R_ini[]        <- user()
+    S_ini[]         <- user()
+    I_symp_ini[]    <- user()
+    I_presymp_ini[] <- user()
+    I_asymp_ini[]   <- user()
+    V_ini[]         <- user()
+    P_ini[]         <- user()
+    R_ini[]         <- user()
+    E_ini[]         <- user()
+    H_ini[]         <- user()
+    D_ini[]         <- user()
 
     # beta_e         <- user(0.0165)
     beta_i[]         <- user()
@@ -225,11 +237,16 @@ meta_sim <- function(N_pop, ts, tv,
     ## =================================================
     # dimensions of arrays
     N_pop           <- user()
-    dim(S_ini)      <- N_pop
-    dim(I_symp_ini) <- N_pop
-    dim(V_ini)      <- N_pop
-    dim(P_ini)      <- N_pop
-    dim(R_ini)      <- N_pop
+    dim(S_ini)         <- N_pop
+    dim(E_ini)         <- N_pop
+    dim(I_symp_ini)    <- N_pop
+    dim(I_asymp_ini)   <- N_pop
+    dim(I_presymp_ini) <- N_pop
+    dim(V_ini)         <- N_pop
+    dim(P_ini)         <- N_pop
+    dim(R_ini)         <- N_pop
+    dim(H_ini)         <- N_pop
+    dim(D_ini)         <- N_pop
 
     dim(S)           <- N_pop
     dim(E)           <- N_pop
@@ -331,7 +348,12 @@ meta_sim <- function(N_pop, ts, tv,
                         beta_i = ts,
                         beta_v = tv,
                         S_ini = S0,
+                        E_ini = E0,
+                        I_asymp_ini = Ia0,
+                        I_presymp_ini = Ip0,
                         I_symp_ini = I0,
+                        H_ini = H0,
+                        D_ini = D0,
                         P_ini = P0,
                         V_ini = V0,
                         R_ini = R0,
@@ -344,13 +366,13 @@ meta_sim <- function(N_pop, ts, tv,
                         vac = vac_mat,
                         VtoS = 1/dv,
                         EtoIpresymp = 1/de,
-                        etopa = pea,
+                        pea = pea,
                         pretoIsymp = 1/dp,
                         IasymptoR = 1/da,
                         IsymptoRH = 1/ds,
-                        istohr = psr,
+                        psr = psr,
                         HtoRD = 1/dh,
-                        htor = phr,
+                        phr = phr,
                         RtoS = 1/dr,
                         vac_eff = ve)
 
