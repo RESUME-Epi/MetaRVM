@@ -4,9 +4,9 @@
 \alias{draw_sample}
 \title{Title}
 \usage{
-draw_sample(config_list, N_pop)
+draw_sample(config_list, N_pop, seed = NULL)
 
-draw_sample(config_list, N_pop)
+draw_sample(config_list, N_pop, seed = NULL)
 }
 \arguments{
 \item{config_list}{A list of configurations}
@@ -21,5 +21,5 @@ A random sample drawn from the distribution specified by the dist component
 \description{
 Title
 
-Title
+Function to draw samples for distributional parameters
 }

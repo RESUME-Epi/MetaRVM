@@ -17,38 +17,6 @@ server <- function(input, output, session) {
     paste0(base_title, " (", input$conf_level, "% confidence interval)")
   }
 
-  # Function to apply consistent legend formatting for all plots
-  apply_legend_format <- function(p) {
-    p <- p +
-      ggplot2::labs(color = "Compartment", fill = NULL) +
-      ggplot2::guides(fill = "none")
-    return(p)
-  }
-
-  # Custom plot function to create a plot with a single legend entry per disease state
-  create_compartment_plot <- function(summary_data, compartment_colors) {
-    p <- ggplot2::ggplot(summary_data, aes(x = date, y = median, color = disease_state)) +
-          ggplot2::geom_ribbon(aes(ymin = lower_90, ymax = upper_90, fill = disease_state),
-                              alpha = 0.3, color = NA, show.legend = FALSE) +
-          ggplot2::geom_line(linewidth = 1) +
-          ggplot2::scale_color_manual(values = compartment_colors, name = "Compartment") +
-          ggplot2::scale_fill_manual(values = compartment_colors) +
-          ggplot2::scale_x_date(
-            date_breaks = "1 week",
-            date_labels = "%b %d"
-          ) +
-          ggplot2::labs(
-            x = "Date",
-            y = "# of people"
-          ) +
-          ggplot2::theme_bw() +
-          ggplot2::theme(
-            plot.title = element_text(hjust = 0.5),
-            legend.position = "right",
-            axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)
-          )
-    return(p)
-  }
 
   # Display confidence interval text for all plots
   output$ci_display_text <- renderText({
@@ -96,73 +64,7 @@ server <- function(input, output, session) {
                            package = "MetaRVM"))
     })
   })
-  # hcz_geo <- read.csv(system.file("extdata", "Healthy_Chicago_Equity_Zones_20231129.csv", package = "MetaRVM"))
-
-
-  # read simulation inputs
-
-  config_yaml <- reactive({
-    req(input$config)
-    read_yaml(input$config$datapath)
-  })
-
-
-  # Read the CSV file for population data
-  population_data <- reactive({
-    yaml_data <- parse_config(input$config$datapath)
-    yaml_data$pop_init
-    # if(!is.null(yaml_data$pop_init)){
-    #   data.table::fread(yaml_data$population_data$initialization)
-    # } else {
-    #   data.table::fread(system.file("extdata", "pop_init_150.csv", package = "MetaRVM"))
-    # }
-  })
-
-  # Display the population data table in the UI
-  output$population_table <- DT::renderDT({
-    population_data()
-  })
-
-  vac_data <- reactive({
-    yaml_data <- parse_config(input$config$datapath)
-    yaml_data$vac
-    # if(!is.null(yaml_data$vac)){
-    #   data.table::fread(yaml_data$vac)
-    # } else {
-    #   data.table::fread(system.file("extdata", "vac_dates_150.csv", package = "MetaRVM"))
-    # }
-  })
-
-  # process vaccination data to align with ODIN requirement
-  process_vac_data <- reactive({
-    yaml_data <- parse_config(input$config$datapath)
-    raw_vac_data <- yaml_data$vac
-    raw_vac_data$date <- as.Date(raw_vac_data$date,
-                                 tryFormats = c("%Y-%m-%d", "%Y/%m/%d", "%m/%d/%Y"))
-
-    date_filtered <- raw_vac_data %>%
-      dplyr::filter(date >= as.Date(yaml_data$start_date)) %>%
-      dplyr::mutate(t = (date - as.Date(yaml_data$start_date)) / 0.5) %>%
-      dplyr::select(-c(date)) %>%
-      select(last_col(), everything())
-
-    date_filtered
-  })
-
-  # Display the population data table in the UI
-  output$vac_table <- DT::renderDT({
-    process_vac_data()
-    # vac_data()
-  })
-
-  # pop_mapping_data <- reactive({
-  #   if(!is.null(input$population_map)){
-  #     data.table::fread(input$population_map$datapath)
-  #   } else {
-  #     system.file("extdata", ".csv", package = "MetaRVM")
-  #   }
-  # })
-
+  hcz_geo <- read.csv(system.file("extdata", "Healthy_Chicago_Equity_Zones_20231129.csv", package = "MetaRVM"))
 
   # Compartment plot (unchanged)
   output$compartment_plot <- DiagrammeR::renderGrViz({
@@ -214,67 +116,8 @@ server <- function(input, output, session) {
   })
 
 
-  # Read the mixing matrices
-  # read_m1 <- reactive({
-  #   yaml_data <- parse_config(input$config$datapath)
-  #   if(!is.null(yaml_data$mixing_matrix$weekday_day)){
-  #     read.csv(yaml_data$mixing_matrix$weekday_day, header = F)
-  #   } else {
-  #     read.csv(system.file("extdata", "m_weekday_day_150.csv", package = "MetaRVM"), header = F)
-  #   }
-  # })
-  # read_m2 <- reactive({
-  #   yaml_data <- parse_config(input$config$datapath)
-  #   if(!is.null(yaml_data$mixing_matrix$weekday_night)){
-  #     read.csv(yaml_data$mixing_matrix$weekday_night, header = F)
-  #   } else {
-  #     read.csv(system.file("extdata", "m_weekday_night_150.csv", package = "MetaRVM"), header = F)
-  #   }
-  # })
-  # read_m3 <- reactive({
-  #   yaml_data <- parse_config(input$config$datapath)
-  #   if(!is.null(yaml_data$mixing_matrix$weekend_day)){
-  #     read.csv(yaml_data$mixing_matrix$weekend_day, header = F)
-  #   } else {
-  #     read.csv(system.file("extdata", "m_weekend_day_150.csv", package = "MetaRVM"), header = F)
-  #   }
-  # })
-  # read_m4 <- reactive({
-  #   yaml_data <- parse_config(input$config$datapath)
-  #   if(!is.null(yaml_data$mixing_matrix$weekend_night)){
-  #     read.csv(yaml_data$mixing_matrix$weekend_night, header = F)
-  #   } else {
-  #     read.csv(system.file("extdata", "m_weekend_night_150.csv", package = "MetaRVM"), header = F)
-  #   }
-  # })
-
-  # Display the mixing matrices in the UI
-  # output$m1 <- DT::renderDT({
-  #   read_m1()
-  # })
-  # output$m2 <- DT::renderDT({
-  #   read_m2()
-  # })
-  # output$m3 <- DT::renderDT({
-  #   read_m3()
-  # })
-  # output$m4 <- DT::renderDT({
-  #   read_m4()
-  # })
-
   output$tab <- renderText({
     input$navbar
-  })
-
-  # Read the population mapping table
-  read_pop_map <- reactive({
-    yaml_data <- parse_config(input$config$datapath)
-    yaml_data$pop_map
-    # if(!is.null(yaml_data$population_data$mapping)){
-    #   read.csv(yaml_data$population_data$mapping, header = T)
-    # } else {
-    #   read.csv(system.file("extdata", "pop_mapping_150.csv", package = "MetaRVM"), header = T) ## TODO: change
-    # }
   })
 
   ## ---------------------------------------------------------------------------
@@ -282,121 +125,12 @@ server <- function(input, output, session) {
   # Run SEIR meta-population simulation when the button is clicked
   observeEvent(input$simulate, {
 
-    yaml_data <- parse_config(input$config$datapath)
-    delta_t <- 0.5
+    model_config <- parse_config(input$config$datapath)
+    start_date <- model_config$start_date
+    pop_map_df <- model_config$pop_map
 
-    # Extract population data
-    pop_df <- yaml_data$pop_init
-    N_pop <- nrow(pop_df)
-    vac_df <- process_vac_data()
-    P_ini <- pop_df[, N]
-    S_ini <- pop_df[, S0]
-    I_symp_ini <- pop_df[, I0]
-    V_ini <- pop_df[, V0]
-    R_ini <- pop_df[, R0]
-
-    read_hcz_geo$invoke()
-
-    ## fill in the missing time in vac data
-    complete_time <- data.table::data.table(t = seq(0, yaml_data$sim_length / delta_t))
-
-    ## merge
-    vac_df <- merge(complete_time, vac_df, by = "t", all.x = TRUE)
-    vac_df[is.na(vac_df)] <- 0
-
-    tt <- vac_df[, t]
-    vac <- as.matrix(vac_df[, -1])
-
-    m1 <- yaml_data$m_wd_d
-    m2 <- yaml_data$m_wd_n
-    m3 <- yaml_data$m_we_d
-    m4 <- yaml_data$m_we_n
-
-    pop_map_df <- yaml_data$pop_map
-
-    # seed <- input$seed
-    # nrep <- input$rep
-    start_date <- as.Date(yaml_data$start_date)
-    nrep <- 1
-    nsteps <- yaml_data$sim_length / delta_t
-    if(!is.null(yaml_data$nsim)) nsim <- yaml_data$nsim else nsim <- 1
-
-
-    # check if the model output should be deterministic
-    # is.stoch <- ifelse(input$choice == "stoch", 1, 0)
-    is.stoch <- 0
-
-    if(is.stoch){
-      if(!is.na(input$seed)) set.seed(input$seed) else set.seed(1)
-    }
-
-    out <- data.frame()
-    for (ii in 1:nsim){
-
-      # read disease parameters
-      ts <- draw_sample(yaml_data$ts, N_pop)
-      tv <- draw_sample(yaml_data$tv, N_pop)
-      ve <- draw_sample(yaml_data$ve, N_pop)
-      dv <- draw_sample(yaml_data$dv, N_pop)
-      de <- draw_sample(yaml_data$de, N_pop)
-      dp <- draw_sample(yaml_data$dp, N_pop)
-      da <- draw_sample(yaml_data$da, N_pop)
-      ds <- draw_sample(yaml_data$ds, N_pop)
-      dh <- draw_sample(yaml_data$dh, N_pop)
-      dr <- draw_sample(yaml_data$dr, N_pop)
-      pea <- draw_sample(yaml_data$pea, N_pop)
-      psr <- draw_sample(yaml_data$psr, N_pop)
-      phr <- draw_sample(yaml_data$phr, N_pop)
-
-      o <- meta_sim(is.stoch = is.stoch,
-                    nsteps = nsteps,
-                    N_pop = N_pop,
-                    # beta_e = beta_e,
-                    ts = ts,
-                    tv = tv,
-                    S0 = S_ini,
-                    I0 = I_symp_ini,
-                    P0 = P_ini,
-                    V0 = V_ini,
-                    R0 = R_ini,
-                    m_weekday_day = as.matrix(m1),
-                    m_weekday_night = as.matrix(m2),
-                    m_weekend_day = as.matrix(m3),
-                    m_weekend_night = as.matrix(m4),
-                    delta_t = delta_t,
-                    tvac = tt,
-                    vac_mat = vac,
-                    dv = dv,
-                    de = de,
-                    pea = pea,
-                    dp = dp,
-                    da = da,
-                    ds = ds,
-                    psr = psr,
-                    dh = dh,
-                    phr = phr,
-                    dr = dr,
-                    ve = ve)
-
-      tmp <- data.frame(o)
-      out <- rbind(out, cbind(tmp, ii))
-    }
-    colnames(out)[ncol(out)] <- "instance"
-
-    ## -------------------------------------------------------------------------
-    ## -------------------------------------------------------------------------
-    # long_out <- out %>%
-    #   tidyr::pivot_longer(
-    #     cols = -c("step", "time", "rep"),               # Exclude 'time' from being pivoted
-    #     names_to = c("disease_state", "population_id"),  # Create new columns for disease state and subpopulation
-    #     names_pattern = "([A-Za-z_]+)\\.(\\d+)\\.",  # Regex to extract the disease state and subpopulation ID
-    #     values_to = "value"          # Column to store the actual values
-    #   )
-
-    ## some post processed data for plotting
-    long_out <- format_output(out)
+    long_out <- metaRVM(input$config$datapath)
     long_out_daily <- daily_output(long_out, start_date)
-    # long_out_rates <- daily_out_rates_sums(long_out, start_date)
 
     # Display the output data table in the UI
     output$out_table <- DT::renderDT({
@@ -406,59 +140,9 @@ server <- function(input, output, session) {
     ## ===============================================
     # summarized SEIR plot
     output$seir_plot <- plotly::renderPlotly({
-      compartment_colors <- c("Susceptible" = "steelblue3",
-                              "Exposed" = "tan1",
-                              "Presymptomatic" = "salmon3",
-                              "Asymptomatic" = "orangered2",
-                              "Symptomatic" = "red4",
-                              "Hospitalized" = "mediumpurple",
-                              "Recovered" = "green",
-                              "Dead" = "grey",
-                              "Vaccinated" = "darkgreen")
-
-      # Get confidence level from input
-      conf_level <- as.numeric(input$conf_level)
-      lower_prob <- (100 - conf_level) / 200
-      upper_prob <- 1 - lower_prob
-
-      # Compute summary statistics (median and selected confidence interval)
-      summary_data <- long_out_daily %>%
-        dplyr::group_by(date, disease_state) %>%
-        dplyr::summarize(
-          median = median(total_value, na.rm = TRUE),
-          lower_90 = quantile(total_value, probs = lower_prob, na.rm = TRUE),
-          upper_90 = quantile(total_value, probs = upper_prob, na.rm = TRUE),
-          .groups = "drop"
-        )
-
-      # Create a label for the confidence interval
-      ci_label <- paste0(input$conf_level, "% confidence interval")
-
-      plotly::ggplotly(
-        ggplot2::ggplot(summary_data, aes(x = date, y = median, color = disease_state)) +
-          ggplot2::geom_ribbon(aes(ymin = lower_90, ymax = upper_90, fill = disease_state),
-                               alpha = 0.3, color = NA, show.legend = FALSE) +
-          ggplot2::geom_line(linewidth = 1) +
-          ggplot2::scale_color_manual(values = compartment_colors, guide = "none") +
-          ggplot2::scale_fill_manual(values = compartment_colors) +
-          ggplot2::scale_x_date(
-            date_breaks = "1 week",
-            date_labels = "%b %d"
-          ) +
-          ggplot2::labs(
-            x = "Date",
-            y = "# of people",
-            color = "",
-            fill = ""
-          ) +
-          ggplot2::theme_bw() +
-          ggplot2::theme(
-            plot.title = element_text(hjust = 0.5),
-            legend.position = "right",
-            axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)
-          )
-      )
-
+      plot_metaRVM(long_out_daily,
+                   conf_level = as.numeric(input$conf_level),
+                   value_column = "total_value")
     })
 
 
@@ -467,418 +151,131 @@ server <- function(input, output, session) {
     # new infection
     output$new_infection_prop <- plotly::renderPlotly({
 
-      df_combined <- daily_out_rates_sums(long_out, start_date, c("n_SE", "n_VE"))
+      columns_to_plot <- c("n_SE", "n_VE")
+      color <- "orangered2"
 
-      # Get confidence level from input
-      conf_level <- as.numeric(input$conf_level)
-      lower_prob <- (100 - conf_level) / 200
-      upper_prob <- 1 - lower_prob
+      df_combined <- daily_out_rates_sums(long_out, start_date, columns_to_plot)
+      df_combined$disease_state <- "X"
 
-      summary_data <- df_combined %>%
-        dplyr::group_by(date) %>%
-        dplyr::summarize(
-          median = median(d_rate, na.rm = TRUE),
-          lower_90 = quantile(d_rate, probs = lower_prob, na.rm = TRUE),
-          upper_90 = quantile(d_rate, probs = upper_prob, na.rm = TRUE),
-          .groups = "drop"
-        )
-
-
-      plotly::ggplotly(
-        ggplot2::ggplot(summary_data, aes(x = date, y = median)) +
-          ggplot2::geom_ribbon(aes(ymin = lower_90, ymax = upper_90), alpha = 0.3, fill = "orangered2") +
-          ggplot2::geom_line(linewidth = 1, color = "orangered2") +
-          # ggplot2::scale_color_manual(values = compartment_colors) +
-          # ggplot2::scale_fill_manual(values = compartment_colors) +
-          ggplot2::scale_x_date(
-            date_breaks = "1 week",
-            date_labels = "%b %d"
-          ) +
-          ggplot2::labs(
-            x = "Date",
-            y = "% of population",
-            color = "",
-            fill = ""
-          ) +
-          ggplot2::theme_bw() +
-          ggplot2::theme(
-            plot.title = element_text(hjust = 0.5),
-            legend.position = "right",
-            axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)
-          )
-      )
+      plot_compartment(df_combined,
+                       conf_level = as.numeric(input$conf_level),
+                       value_column = "d_rate",
+                       color = color,
+                       plot_type = "line")
     })
 
     output$new_infection_count <- plotly::renderPlotly({
 
-      df_combined <- daily_out_rates_sums(long_out, start_date, c("n_SE", "n_VE"))
+      columns_to_plot <- c("n_SE", "n_VE")
+      color <- "orangered2"
 
-      # Get confidence level from input
-      conf_level <- as.numeric(input$conf_level)
-      lower_prob <- (100 - conf_level) / 200
-      upper_prob <- 1 - lower_prob
+      df_combined <- daily_out_rates_sums(long_out, start_date, columns_to_plot)
+      df_combined$disease_state <- "X"
 
-      summary_data <- df_combined %>%
-        dplyr::group_by(date) %>%
-        dplyr::summarize(
-          median = median(d_sum, na.rm = TRUE),
-          lower_90 = quantile(d_sum, probs = lower_prob, na.rm = TRUE),
-          upper_90 = quantile(d_sum, probs = upper_prob, na.rm = TRUE),
-          .groups = "drop"
-        )
+      plot_compartment(df_combined,
+                       conf_level = as.numeric(input$conf_level),
+                       value_column = "d_rate",
+                       color = color,
+                       plot_type = "bar")
 
-      plotly::ggplotly(
-        ggplot2::ggplot(summary_data,
-                        aes(x = date)) +
-          ggplot2::geom_col(aes(y = median), linewidth = 0.5, alpha = 0.5, color = "orangered2") +
-          ggplot2::labs(
-            # title = "New infection rate",
-            x = "Date",
-            y = "# of people") +
-          scale_x_date(
-            date_breaks = "1 week",  # Breaks every week
-            date_labels = "%b %d"   # Format labels as "Month Day" (e.g., Jan 01)
-          ) +
-          ggplot2::theme_bw() +
-          ggplot2::theme(
-            plot.title = element_text(hjust = 0.5),
-            axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)
-          )
-      )
 
-      # plotly::ggplotly(
-      #   ggplot2::ggplot(summary_data, aes(x = date, y = median)) +
-      #     ggplot2::geom_ribbon(aes(ymin = lower_90, ymax = upper_90), alpha = 0.3, color = "orangered2") +
-      #     ggplot2::geom_line(linewidth = 1, color = "orangered2") +
-      #     # ggplot2::scale_color_manual(values = compartment_colors) +
-      #     # ggplot2::scale_fill_manual(values = compartment_colors) +
-      #     ggplot2::scale_x_date(
-      #       date_breaks = "1 week",
-      #       date_labels = "%b %d"
-      #     ) +
-      #     ggplot2::labs(
-      #       x = "Date",
-      #       y = "# of population",
-      #       color = "",
-      #       fill = ""
-      #     ) +
-      #     ggplot2::theme_bw() +
-      #     ggplot2::theme(
-      #       plot.title = element_text(hjust = 0.5),
-      #       legend.position = "right",
-      #       axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)
-      #     )
-      # )
     })
 
     ## =========================================================================
     # new hospitalizations
     output$new_hosp_prop <- plotly::renderPlotly({
 
+      columns_to_plot <- c("n_IsympH")
+      color <- "mediumpurple"
 
-      # prepare the data
-      df_combined <- daily_out_rates_sums(long_out, start_date, c("n_IsympH"))
+      df_combined <- daily_out_rates_sums(long_out, start_date, columns_to_plot)
+      df_combined$disease_state <- "X"
 
-      # Get confidence level from input
-      conf_level <- as.numeric(input$conf_level)
-      lower_prob <- (100 - conf_level) / 200
-      upper_prob <- 1 - lower_prob
+      plot_compartment(df_combined,
+                       conf_level = as.numeric(input$conf_level),
+                       value_column = "d_rate",
+                       color = color,
+                       plot_type = "line")
 
-      summary_data <- df_combined %>%
-        dplyr::group_by(date) %>%
-        dplyr::summarize(
-          median = median(d_rate, na.rm = TRUE),
-          lower_90 = quantile(d_rate, probs = lower_prob, na.rm = TRUE),
-          upper_90 = quantile(d_rate, probs = upper_prob, na.rm = TRUE),
-          .groups = "drop"
-        )
-
-      # plotly::ggplotly(
-      #   ggplot2::ggplot(df_combined,
-      #                   aes(x = date, y = d_rate, group = instance)) +
-      #     ggplot2::geom_line(linewidth = 1, alpha = 1, color = "mediumpurple") +
-      #     scale_x_date(
-      #       date_breaks = "1 week",  # Breaks every week
-      #       date_labels = "%b %d"   # Format labels as "Month Day" (e.g., Jan 01)
-      #     ) +
-      #     # scale_color_manual(values = compartment_colors) +
-      #     ggplot2::labs(
-      #       # title = "New hospitalization rate",
-      #       x = "Date",
-      #       y = "% of proportions") +
-      #     ggplot2::scale_y_continuous(labels = scales::percent) +
-      #     ggplot2::theme_bw() +
-      #     ggplot2::theme(
-      #       plot.title = element_text(hjust = 0.5),
-      #       axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)
-      #     )
-      # )
-
-      plotly::ggplotly(
-        ggplot2::ggplot(summary_data, aes(x = date, y = median)) +
-          ggplot2::geom_ribbon(aes(ymin = lower_90, ymax = upper_90), alpha = 0.3, fill = "mediumpurple") +
-          ggplot2::geom_line(linewidth = 1, color = "mediumpurple") +
-          # ggplot2::scale_color_manual(values = compartment_colors) +
-          # ggplot2::scale_fill_manual(values = compartment_colors) +
-          ggplot2::scale_x_date(
-            date_breaks = "1 week",
-            date_labels = "%b %d"
-          ) +
-          ggplot2::labs(
-            x = "Date",
-            y = "% of population",
-            color = "",
-            fill = ""
-          ) +
-          ggplot2::theme_bw() +
-          ggplot2::theme(
-            plot.title = element_text(hjust = 0.5),
-            legend.position = "right",
-            axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)
-          )
-      )
     })
 
     output$new_hosp_count <- plotly::renderPlotly({
 
+      columns_to_plot <- c("n_IsympH")
+      color <- "mediumpurple"
 
-      # prepare the data
-      df_combined <- daily_out_rates_sums(long_out, start_date, c("n_IsympH"))
+      df_combined <- daily_out_rates_sums(long_out, start_date, columns_to_plot)
+      df_combined$disease_state <- "X"
 
-      summary_data <- df_combined %>%
-        dplyr::group_by(date) %>%
-        dplyr::summarize(
-          median = median(d_rate, na.rm = TRUE),
-          lower_90 = quantile(d_rate, probs = 0.05, na.rm = TRUE),
-          upper_90 = quantile(d_rate, probs = 0.95, na.rm = TRUE),
-          .groups = "drop"
-        )
-
-      plotly::ggplotly(
-        ggplot2::ggplot(summary_data,
-                        aes(x = date, y = median)) +
-          ggplot2::geom_col(linewidth = 1, alpha = 1, color = "mediumpurple") +
-          scale_x_date(
-            date_breaks = "1 week",  # Breaks every week
-            date_labels = "%b %d"   # Format labels as "Month Day" (e.g., Jan 01)
-          ) +
-          # scale_color_manual(values = compartment_colors) +
-          ggplot2::labs(
-            # title = "New hospitalization rate",
-            x = "Date",
-            y = "# of people") +
-          ggplot2::theme_bw() +
-          ggplot2::theme(
-            plot.title = element_text(hjust = 0.5),
-            axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)
-          )
-      )
+      plot_compartment(df_combined,
+                       conf_level = as.numeric(input$conf_level),
+                       value_column = "d_rate",
+                       color = color,
+                       plot_type = "bar")
     })
 
     ## =========================================================================
     # new deaths
     output$new_death_prop <- plotly::renderPlotly({
 
+      columns_to_plot <- c("n_HD")
+      color <- "black"
 
-      # prepare the data
-      df_combined <- daily_out_rates_sums(long_out, start_date, c("n_HD"))
+      df_combined <- daily_out_rates_sums(long_out, start_date, columns_to_plot)
+      df_combined$disease_state <- "X"
 
-      # Get confidence level from input
-      conf_level <- as.numeric(input$conf_level)
-      lower_prob <- (100 - conf_level) / 200
-      upper_prob <- 1 - lower_prob
-
-      summary_data <- df_combined %>%
-        dplyr::group_by(date) %>%
-        dplyr::summarize(
-          median = median(d_rate, na.rm = TRUE),
-          lower_90 = quantile(d_rate, probs = lower_prob, na.rm = TRUE),
-          upper_90 = quantile(d_rate, probs = upper_prob, na.rm = TRUE),
-          .groups = "drop"
-        )
-
-      # plotly::ggplotly(
-      #   ggplot2::ggplot(df_combined,
-      #                   aes(x = date, y = d_rate, group = instance)) +
-      #     ggplot2::geom_line(linewidth = 1, alpha = 1, color = "grey") +
-      #     scale_x_date(
-      #       date_breaks = "1 week",  # Breaks every week
-      #       date_labels = "%b %d"   # Format labels as "Month Day" (e.g., Jan 01)
-      #     ) +
-      #     # scale_color_manual(values = compartment_colors) +
-      #     ggplot2::labs(
-      #       # title = "New deaths rate",
-      #       x = "Date",
-      #       y = "% of proportions") +
-      #     ggplot2::scale_y_continuous(labels = scales::percent) +
-      #     ggplot2::theme_bw() +
-      #     ggplot2::theme(
-      #       plot.title = element_text(hjust = 0.5),
-      #       axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)
-      #     )
-      # )
-
-      plotly::ggplotly(
-        ggplot2::ggplot(summary_data, aes(x = date, y = median)) +
-          ggplot2::geom_ribbon(aes(ymin = lower_90, ymax = upper_90), alpha = 0.3, fill = "grey") +
-          ggplot2::geom_line(linewidth = 1, color = "black") +
-          # ggplot2::scale_color_manual(values = compartment_colors) +
-          # ggplot2::scale_fill_manual(values = compartment_colors) +
-          ggplot2::scale_x_date(
-            date_breaks = "1 week",
-            date_labels = "%b %d"
-          ) +
-          ggplot2::labs(
-            x = "Date",
-            y = "% of population",
-            color = "",
-            fill = ""
-          ) +
-          ggplot2::theme_bw() +
-          ggplot2::theme(
-            plot.title = element_text(hjust = 0.5),
-            legend.position = "right",
-            axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)
-          )
-      )
+      plot_compartment(df_combined,
+                       conf_level = as.numeric(input$conf_level),
+                       value_column = "d_rate",
+                       color = color,
+                       plot_type = "line")
     })
 
     output$new_death_count <- plotly::renderPlotly({
 
-      # prepare the data
-      df_combined <- daily_out_rates_sums(long_out, start_date, c("n_HD"))
+      columns_to_plot <- c("n_HD")
+      color <- "black"
 
-      summary_data <- df_combined %>%
-        dplyr::group_by(date) %>%
-        dplyr::summarize(
-          median = median(d_rate, na.rm = TRUE),
-          lower_90 = quantile(d_rate, probs = 0.05, na.rm = TRUE),
-          upper_90 = quantile(d_rate, probs = 0.95, na.rm = TRUE),
-          .groups = "drop"
-        )
+      df_combined <- daily_out_rates_sums(long_out, start_date, columns_to_plot)
+      df_combined$disease_state <- "X"
 
-      plotly::ggplotly(
-        ggplot2::ggplot(summary_data,
-                        aes(x = date, y = median)) +
-          ggplot2::geom_col(linewidth = 1, alpha = 1, color = "grey") +
-          scale_x_date(
-            date_breaks = "1 week",  # Breaks every week
-            date_labels = "%b %d"   # Format labels as "Month Day" (e.g., Jan 01)
-          ) +
-          # scale_color_manual(values = compartment_colors) +
-          ggplot2::labs(
-            # title = "New deaths rate",
-            x = "Date",
-            y = "# of people") +
-          ggplot2::theme_bw() +
-          ggplot2::theme(
-            plot.title = element_text(hjust = 0.5),
-            axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)
-          )
-      )
+      plot_compartment(df_combined,
+                       conf_level = as.numeric(input$conf_level),
+                       value_column = "d_rate",
+                       color = color,
+                       plot_type = "bar")
     })
 
     ## =========================================================================
     # new vaccinations
     output$new_vac_prop <- plotly::renderPlotly({
 
+      columns_to_plot <- c("n_SV")
+      color <- "darkgreen"
 
-      # prepare the data
-      df_combined <- daily_out_rates_sums(long_out, start_date, c("n_SV"))
+      df_combined <- daily_out_rates_sums(long_out, start_date, columns_to_plot)
+      df_combined$disease_state <- "X"
 
-      # Get confidence level from input
-      conf_level <- as.numeric(input$conf_level)
-      lower_prob <- (100 - conf_level) / 200
-      upper_prob <- 1 - lower_prob
-
-      summary_data <- df_combined %>%
-        dplyr::group_by(date) %>%
-        dplyr::summarize(
-          median = median(d_rate, na.rm = TRUE),
-          lower_90 = quantile(d_rate, probs = lower_prob, na.rm = TRUE),
-          upper_90 = quantile(d_rate, probs = upper_prob, na.rm = TRUE),
-          .groups = "drop"
-        )
-
-      # plotly::ggplotly(
-      #   ggplot2::ggplot(df_combined,
-      #                   aes(x = date, y = d_rate, group = instance)) +
-      #     ggplot2::geom_line(linewidth = 1, alpha = 1, color = "darkgreen") +
-      #     scale_x_date(
-      #       date_breaks = "1 week",  # Breaks every week
-      #       date_labels = "%b %d"   # Format labels as "Month Day" (e.g., Jan 01)
-      #     ) +
-      #     # scale_color_manual(values = compartment_colors) +
-      #     ggplot2::labs(
-      #       # title = "New vaccination",
-      #       x = "Time",
-      #       y = "proportions") +
-      #     ggplot2::scale_y_continuous(labels = scales::percent) +
-      #     ggplot2::theme_bw() +
-      #     ggplot2::theme(
-      #       plot.title = element_text(hjust = 0.5),
-      #       axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)
-      #     )
-      # )
-
-      plotly::ggplotly(
-        ggplot2::ggplot(summary_data, aes(x = date, y = median)) +
-          ggplot2::geom_ribbon(aes(ymin = lower_90, ymax = upper_90), alpha = 0.3, fill = "darkgreen") +
-          ggplot2::geom_line(linewidth = 1, color = "darkgreen") +
-          # ggplot2::scale_color_manual(values = compartment_colors) +
-          # ggplot2::scale_fill_manual(values = compartment_colors) +
-          ggplot2::scale_x_date(
-            date_breaks = "1 week",
-            date_labels = "%b %d"
-          ) +
-          ggplot2::labs(
-            x = "Date",
-            y = "% of population",
-            color = "",
-            fill = ""
-          ) +
-          ggplot2::theme_bw() +
-          ggplot2::theme(
-            plot.title = element_text(hjust = 0.5),
-            legend.position = "right",
-            axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)
-          )
-      )
+      plot_compartment(df_combined,
+                       conf_level = as.numeric(input$conf_level),
+                       value_column = "d_rate",
+                       color = color,
+                       plot_type = "line")
     })
 
     output$new_vac_count <- plotly::renderPlotly({
 
-      # prepare the data
-      df_combined <- daily_out_rates_sums(long_out, start_date, c("n_SV"))
+      columns_to_plot <- c("n_SV")
+      color <- "darkgreen"
 
-      summary_data <- df_combined %>%
-        dplyr::group_by(date) %>%
-        dplyr::summarize(
-          median = median(d_rate, na.rm = TRUE),
-          lower_90 = quantile(d_rate, probs = 0.05, na.rm = TRUE),
-          upper_90 = quantile(d_rate, probs = 0.95, na.rm = TRUE),
-          .groups = "drop"
-        )
+      df_combined <- daily_out_rates_sums(long_out, start_date, columns_to_plot)
+      df_combined$disease_state <- "X"
 
-      plotly::ggplotly(
-        ggplot2::ggplot(summary_data,
-                        aes(x = date, y = median)) +
-          ggplot2::geom_col(alpha = 1, color = "darkgreen") +
-          scale_x_date(
-            date_breaks = "1 week",  # Breaks every week
-            date_labels = "%b %d"   # Format labels as "Month Day" (e.g., Jan 01)
-          ) +
-          # scale_color_manual(values = compartment_colors) +
-          ggplot2::labs(
-            # title = "New vaccination",
-            x = "Time",
-            y = "# of people") +
-          ggplot2::theme_bw() +
-          ggplot2::theme(
-            plot.title = element_text(hjust = 0.5),
-            axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)
-          )
-      )
+      plot_compartment(df_combined,
+                       conf_level = as.numeric(input$conf_level),
+                       value_column = "d_rate",
+                       color = color,
+                       plot_type = "bar")
     })
 
 
@@ -893,7 +290,7 @@ server <- function(input, output, session) {
 
           # Read HCZ geometry
           # hcz_geo <- read.csv(system.file("extdata", "Healthy_Chicago_Equity_Zones_20231129.csv", package = "MetaRVM"))
-          hcz_geo <- read_hcz_geo$result()
+          # hcz_geo <- read_hcz_geo$result()
           hcz_sf <<- sf::st_as_sf(hcz_geo, wkt = "Geometry", crs = 4326)
           hcz_names <<- hcz_geo$Equity.Zone
 
@@ -954,289 +351,47 @@ server <- function(input, output, session) {
     })
 
     # Render the ggplot based on the selected zone
-    long_out_zones <- zone_summary(long_out, pop_map_df, start_date)
-
     output$zone_simout <- plotly::renderPlotly({
       req(selected_zone())  # Make sure a zone is selected
 
       # Map borough name to sub_population_id
       zone_id <- which(hcz_names == selected_zone())
 
+      long_out_zones <- cat_summary(long_out, pop_map_df, start_date,
+                                     cat = "hcez")
       filtered_data <- long_out_zones %>%
         dplyr::filter(hcez %in% selected_zone())
 
-      # Get confidence level from input
-      conf_level <- as.numeric(input$conf_level)
-      lower_prob <- (100 - conf_level) / 200
-      upper_prob <- 1 - lower_prob
+      plot_metaRVM(filtered_data,
+                   conf_level = as.numeric(input$conf_level),
+                   value_column = "total_value")
 
-      summary_data <- filtered_data %>%
-        dplyr::group_by(date, disease_state) %>%
-        dplyr::summarize(
-          median = median(total_value, na.rm = TRUE),
-          lower_90 = quantile(total_value, probs = lower_prob, na.rm = TRUE),
-          upper_90 = quantile(total_value, probs = upper_prob, na.rm = TRUE),
-          .groups = "drop"
-        )
-
-
-      # Plot the simulation output for the selected zone
-
-      compartment_colors <- c("Susceptible" = "steelblue3",
-                              "Exposed" = "tan1",
-                              "Presymptomatic" = "salmon3",
-                              "Asymptomatic" = "orangered2",
-                              "Symptomatic" = "red4",
-                              "Hospitalized" = "mediumpurple",
-                              "Recovered" = "green",
-                              "Dead" = "grey",
-                              "Vaccinated" = "darkgreen")
-      # plotly::ggplotly(
-      #   ggplot2::ggplot(filtered_data, # %>%
-      #                     # dplyr::mutate(disease_state = factor(disease_state,
-      #                     #                                      levels = c("S", "E", "H", "D",
-      #                     #                                                 "I_presymp", "I_asymp",
-      #                     #                                                 "I_symp", "R", "V"))) %>%
-      #                     # dplyr::group_by(date, disease_state, rep) %>%
-      #                     # dplyr::summarize(total_value = value, .groups = "drop"),
-      #                   aes(x = date, y = total_value, color = disease_state, group = instance)) +
-      #     ggplot2::geom_line(linewidth = 1, alpha = 1) +
-      #     ggplot2::scale_color_manual(values = compartment_colors) +
-      #     ggplot2::labs(
-      #       title = selected_zone(),
-      #       x = "Date",
-      #       y = "# of people",
-      #       color = "Compartment",
-      #     ) +
-      #     scale_x_date(
-      #       date_breaks = "1 week",  # Breaks every week
-      #       date_labels = "%b %d"   # Format labels as "Month Day" (e.g., Jan 01)
-      #     ) +
-      #     ggplot2::theme_bw() +
-      #     ggplot2::theme(
-      #       plot.title = element_text(hjust = 0.5),
-      #       legend.position = "right",
-      #       axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)
-      #     )
-      # )
-
-      plotly::ggplotly(
-        ggplot2::ggplot(summary_data, aes(x = date, y = median, color = disease_state, fill = disease_state)) +
-          ggplot2::geom_ribbon(aes(ymin = lower_90, ymax = upper_90), alpha = 0.3, color = NA) +
-          ggplot2::geom_line(linewidth = 1) +
-          ggplot2::scale_color_manual(values = compartment_colors) +
-          ggplot2::scale_fill_manual(values = compartment_colors) +
-          ggplot2::scale_x_date(
-            date_breaks = "1 week",
-            date_labels = "%b %d"
-          ) +
-          ggplot2::labs(
-            x = "Date",
-            y = "# of people",
-            color = "",
-            fill = ""
-          ) +
-          ggplot2::theme_bw() +
-          ggplot2::theme(
-            plot.title = element_text(hjust = 0.5),
-            legend.position = "right",
-            axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)
-          )
-      )
     })
 
     ## -------------------------------------------------------------------------
     ## -------------------------------------------------------------------------
     ## caterogy-wise plot
 
-    # output$cat_simout <- plotly::renderPlotly({
     output$cat_simout <- renderCachedPlot({
 
-
-      compartment_colors <- c("Susceptible" = "steelblue3",
-                              "Exposed" = "tan1",
-                              "Presymptomatic" = "salmon3",
-                              "Asymptomatic" = "orangered2",
-                              "Symptomatic" = "red4",
-                              "Hospitalized" = "mediumpurple",
-                              "Recovered" = "green",
-                              "Dead" = "grey",
-                              "Vaccinated" = "darkgreen")
-
-
-      # merge long output with population map
-      df_long <- merge(long_out, pop_map_df, by = "population_id")
-
-      cat_long_out <- df_long %>%
-        dplyr::filter(time %% 1 == 0) %>%
-        dplyr::filter(disease_state %in% c("S", "E", "H", "D",
-                                           "I_presymp", "I_asymp",
-                                           "I_symp", "R", "V")) %>%
-        dplyr::mutate(disease_state = factor(disease_state,
-                                             levels = c("S", "E", "H", "D",
-                                                        "I_presymp", "I_asymp",
-                                                        "I_symp", "R", "V"),
-                                             labels = c("Susceptible",
-                                                        "Exposed",
-                                                        "Hospitalized",
-                                                        "Dead",
-                                                        "Presymptomatic",
-                                                        "Asymptomatic",
-                                                        "Symptomatic",
-                                                        "Recovered",
-                                                        "Vaccinated"))) %>%
-        dplyr::group_by(time, disease_state, instance, !!sym(input$Category)) %>%
-        dplyr::summarize(total_value = sum(value), .groups = "drop") %>%
-        dplyr::mutate(date = start_date + time)
-
-      # Get confidence level from input
-      conf_level <- as.numeric(input$conf_level)
-      lower_prob <- (100 - conf_level) / 200
-      upper_prob <- 1 - lower_prob
-
-      summary_data <- cat_long_out %>%
-        dplyr::group_by(date, disease_state, !!sym(input$Category)) %>%
-        dplyr::summarize(
-          median = median(total_value, na.rm = TRUE),
-          lower_90 = quantile(total_value, probs = lower_prob, na.rm = TRUE),
-          upper_90 = quantile(total_value, probs = upper_prob, na.rm = TRUE),
-          .groups = "drop"
-        )
-
-      # plotly::ggplotly(
-        ggplot2::ggplot(summary_data, aes(x = date, y = median, color = disease_state, fill = disease_state)) +
-          ggplot2::geom_ribbon(aes(ymin = lower_90, ymax = upper_90), alpha = 0.3, color = NA) +
-          ggplot2::geom_line(linewidth = 1, ) +
-          ggplot2::facet_wrap(vars(!!sym(input$Category)), scales = "free_y") +
-          ggplot2::scale_color_manual(values = compartment_colors) +
-          ggplot2::scale_fill_manual(values = compartment_colors) +
-          ggplot2::scale_x_date(
-            date_breaks = "1 week",
-            date_labels = "%b %d"
-          ) +
-          ggplot2::labs(
-                # title = "Disease Compartments Over Time",
-                x = "Date",
-                y = "# of people",
-                fill = "Compartment"
-              ) +
-          ggplot2::guides(color="none") +
-              ggplot2::theme_bw() +
-              ggplot2::theme(
-                plot.title = element_text(hjust = 0.5),
-                legend.position = "right",
-                legend.spacing = unit(1.5, "cm"),            # Increase spacing between legend items
-                # legend.spacing.y = unit(2, "cm"),
-                # legend.title.align = 0.5,                  # Align the legend title in the center
-                legend.box.margin = margin(10, 10, 10, 10), # Add margin around the legend box
-                legend.key.size = unit(3, "lines"),      # Increase size of legend keys (symbols)
-                legend.text = element_text(size = 15),     # Adjust legend text size
-                legend.title = element_text(size = 20, margin = margin(b = 10), hjust = 0.5),     # Adjust legend title size
-                axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1, size = 10),
-                axis.text.y = element_text(size = 15),
-                axis.title = element_text(size = 15),
-                strip.text = element_text(size = 20))
-      # )
-
-      # plotly::ggplotly(
-        # ggplot2::ggplot(summary_data,
-        #                 aes(x = date, y = total_value, color = disease_state)) +
-        #   ggplot2::facet_wrap(vars(!!sym(input$Category)), scales = "free_y") +
-        #   ggplot2::geom_line(linewidth = 1, alpha = 0.5) +
-        #   ggplot2::scale_color_manual(values = compartment_colors) +
-        #   scale_x_date(
-        #     date_breaks = "1 week",  # Breaks every week
-        #     date_labels = "%b %d"   # Format labels as "Month Day" (e.g., Jan 01)
-        #   ) +
-        #   ggplot2::labs(
-        #     # title = "Disease Compartments Over Time",
-        #     x = "Date",
-        #     y = "# of people",
-        #     color = "Compartment",
-        #   ) +
-        #   ggplot2::theme_bw() +
-        #   ggplot2::theme(
-        #     plot.title = element_text(hjust = 0.5),
-        #     legend.position = "right",
-        #     legend.spacing = unit(1.5, "cm"),            # Increase spacing between legend items
-        #     # legend.spacing.y = unit(2, "cm"),
-        #     # legend.title.align = 0.5,                  # Align the legend title in the center
-        #     legend.box.margin = margin(10, 10, 10, 10), # Add margin around the legend box
-        #     legend.key.size = unit(3, "lines"),      # Increase size of legend keys (symbols)
-        #     legend.text = element_text(size = 15),     # Adjust legend text size
-        #     legend.title = element_text(size = 20, margin = margin(b = 10), hjust = 0.5),     # Adjust legend title size
-        #     axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1, size = 10),
-        #     axis.text.y = element_text(size = 15),
-        #     axis.title = element_text(size = 15),
-        #     strip.text = element_text(size = 20)
-        #   )
-      # )
+      plot_metaRVM_by_cateory(long_out,
+                              conf_level = as.numeric(input$conf_level),
+                              model_config$pop_map,
+                              model_config$start_date,
+                              input$Category)
     }, cacheKeyExpr = { input$Category })
 
-    # output$stacked_simout <- plotly::renderPlotly({
     output$stacked_simout <- renderCachedPlot({
 
-      # merge long output with population map
-      df_long <- merge(long_out, pop_map_df, by = "population_id")
-
-      cat_long_out <- df_long %>%
-        dplyr::filter(time %% 1 == 0) %>%
-        dplyr::filter(disease_state %in% c("S", "E", "H", "D",
-                                           "I_presymp", "I_asymp",
-                                           "I_symp", "R", "V")) %>%
-        dplyr::mutate(disease_state = factor(disease_state,
-                                             levels = c("S", "E", "H", "D",
-                                                        "I_presymp", "I_asymp",
-                                                        "I_symp", "R", "V"),
-                                             labels = c("Susceptible",
-                                                        "Exposed",
-                                                        "Hospitalized",
-                                                        "Dead",
-                                                        "Presymptomatic",
-                                                        "Asymptomatic",
-                                                        "Symptomatic",
-                                                        "Recovered",
-                                                        "Vaccinated"))) %>%
-        dplyr::group_by(time, disease_state, instance, !!sym(input$Category)) %>%
-        dplyr::summarize(total_value = sum(value), .groups = "drop") %>%
-        dplyr::mutate(date = start_date + time)
-
-      # plotly::ggplotly(
-        ggplot2::ggplot(cat_long_out,
-                        aes(x = date, y = total_value, fill = !!sym(input$Category))) +
-          ggplot2::facet_wrap(~ disease_state, scales = "free_y") +
-          ggplot2::geom_bar(position="stack", stat="identity") +
-          viridis::scale_fill_viridis(discrete = T) +
-          scale_x_date(
-            date_breaks = "1 week",  # Breaks every week
-            date_labels = "%b %d"   # Format labels as "Month Day" (e.g., Jan 01)
-          ) +
-          ggplot2::labs(
-            # title = "Disease Compartments Over Time",
-            x = "Date",
-            y = "# of people",
-            color = "Compartment",
-          ) +
-          ggplot2::theme_bw() +
-          ggplot2::theme(
-            plot.title = element_text(hjust = 0.5),
-            legend.position = "right",
-            legend.spacing = unit(1.5, "cm"),            # Increase spacing between legend items
-            # legend.spacing.y = unit(5, "cm"),
-            # legend.title.align = 0.5,                  # Align the legend title in the center
-            legend.box.margin = margin(10, 10, 10, 10), # Add margin around the legend box
-            legend.key.size = unit(3, "lines"),      # Increase size of legend keys (symbols)
-            legend.text = element_text(size = 15),     # Adjust legend text size
-            legend.title = element_text(size = 20, margin = margin(b = 10), hjust = 0.5),     # Adjust legend title size
-            axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1, size = 10),
-            axis.text.y = element_text(size = 15),
-            axis.title = element_text(size = 15),
-            strip.text = element_text(size = 20)
-          )
-      # )
+      plot_metaRVM_by_cateory_by_compartment(long_out,
+                                             conf_level = as.numeric(input$conf_level),
+                                             model_config$pop_map,
+                                             model_config$start_date,
+                                             input$Category)
     }, cacheKeyExpr = { input$Category })
 
-
+    ## -------------------------------------------------------------------------
+    ## -------------------------------------------------------------------------
     ## subset simulation output, display, download
 
     age_choices <- unique(pop_map_df$age)
@@ -1251,6 +406,7 @@ server <- function(input, output, session) {
                                                                       "Exposed",
                                                                       "Hospitalized",
                                                                       "Dead",
+                                                                      "Infectious",
                                                                       "Presymptomatic",
                                                                       "Asymptomatic",
                                                                       "Symptomatic",
@@ -1279,7 +435,7 @@ server <- function(input, output, session) {
     # Download filtered results
     output$download <- downloadHandler(
 
-      yaml_data <- config_yaml(),
+      yaml_data <- parse_config(input$config$datapath),
 
       filename = function() {
         # paste("out_", Sys.Date(), ".zip", sep = "")
@@ -1287,8 +443,10 @@ server <- function(input, output, session) {
       },
       content = function(file) {
 
-        sim_input <- paste("in_", yaml_data$run_id, ".yaml")
-        sim_output <- paste("out_", yaml_data$run_id, ".csv", sep = "")
+        tmp <- sample(10000, 1)
+
+        sim_input <- paste("in_", tmp, ".yaml")
+        sim_output <- paste("out_", tmp, ".csv", sep = "")
 
         write_yaml(yaml_data, sim_input)
         write.csv(sub_out(), sim_output, row.names = FALSE)

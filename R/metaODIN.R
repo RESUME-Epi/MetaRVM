@@ -50,14 +50,19 @@
 
 meta_sim <- function(N_pop, ts, tv,
                      # S0, I0, P0, V0, R0,
-                     S0, I0, P0, V0, R0, H0, D0, Ia0, Ip0, E0,
+                     S0, I0, P0, V0, R0,
+                     H0 = 0, D0 = 0, Ia0 = 0, Ip0 = 0, E0 = 0,
                      m_weekday_day, m_weekday_night, m_weekend_day, m_weekend_night,
                      delta_t,
                      tvac, vac_mat,
                      dv, de, pea, dp,
                      da, ds, psr, dh,
                      phr, dr, ve,
-                     nsteps, is.stoch = FALSE, seed = NULL){
+                     nsteps,
+                     is.stoch = FALSE,
+                     seed = NULL,
+                     do_chk = FALSE,
+                     chk_file_name = NULL){
 
   metaODIN <- odin::odin({
 
@@ -229,9 +234,9 @@ meta_sim <- function(N_pop, ts, tv,
     EtoIpresymp[]    <- user()
     RtoS[]           <- user()
     VtoS[]           <- user()
-    etopa[]          <- user()
-    htor[]           <- user()
-    istohr[]         <- user()
+    pea[]            <- user()
+    phr[]            <- user()
+    psr[]            <- user()
     vac_eff[]        <- user()
 
     ## =================================================
@@ -272,9 +277,9 @@ meta_sim <- function(N_pop, ts, tv,
     dim(HtoRD)          <- N_pop
     dim(RtoS)           <- N_pop
     dim(VtoS)           <- N_pop
-    dim(etopa)          <- N_pop
-    dim(htor)           <- N_pop
-    dim(istohr)         <- N_pop
+    dim(pea)            <- N_pop
+    dim(phr)            <- N_pop
+    dim(psr)            <- N_pop
     dim(vac_eff)        <- N_pop
 
     dim(p_EIpresymp)    <- N_pop
@@ -377,5 +382,62 @@ meta_sim <- function(N_pop, ts, tv,
                         vac_eff = ve)
 
   out <- model$run(step = 0:nsteps)
-  return(out)
+  out_df <- data.frame(out)
+
+  long_out <- out_df %>%
+    tidyr::pivot_longer(
+      cols = -c("step", "time"),               # Exclude 'time' from being pivoted
+      names_to = c("disease_state", "population_id"),  # Create new columns for disease state and subpopulation
+      names_pattern = "([A-Za-z_]+)\\.(\\d+)\\.",  # Regex to extract the disease state and subpopulation ID
+      values_to = "value")          # Column to store the actual values
+
+  long_out <- data.table::data.table(long_out)
+
+  # Checkpointing
+  if(do_chk){
+    chk <- list()
+
+    chk[["N_pop"]] <- model_config$N_pop
+    chk[["delta_t"]] <- model_config$delta_t
+
+    chk[["m_weekday_day"]] <- model_config$m_wd_d
+    chk[["m_weekday_night"]] <- model_config$m_wd_n
+    chk[["m_weekend_day"]] <- model_config$m_we_d
+    chk[["m_weekend_night"]] <- model_config$m_we_n
+
+    chk[["ts"]] <- model_config$ts
+    chk[["tv"]] <- model_config$tv
+    chk[["ve"]] <- model_config$ve
+    chk[["dv"]] <- model_config$dv
+    chk[["de"]] <- model_config$de
+    chk[["dp"]] <- model_config$dp
+    chk[["da"]] <- model_config$da
+    chk[["ds"]] <- model_config$ds
+    chk[["dh"]] <- model_config$dh
+    chk[["dr"]] <- model_config$dr
+    chk[["pea"]] <- model_config$pea
+    chk[["psr"]] <- model_config$psr
+    chk[["phr"]] <- model_config$phr
+
+    chk[["vac_time_id"]] <- model_config$vac_time_id
+    chk[["vac_counts"]] <- model_config$vac_counts
+
+    chk[["S"]] <- long_out[(long_out$step == model_config$sim_length) & (long_out$disease_state == "S"), c("value")]
+    chk[["E"]] <- long_out[(long_out$step == model_config$sim_length) & (long_out$disease_state == "E"), c("value")]
+    chk[["Ia"]] <- long_out[(long_out$step == model_config$sim_length) & (long_out$disease_state == "I_asymp"), c("value")]
+    chk[["Ip"]] <- long_out[(long_out$step == model_config$sim_length) & (long_out$disease_state == "I_presymp"), c("value")]
+    chk[["Is"]] <- long_out[(long_out$step == model_config$sim_length) & (long_out$disease_state == "I_symp"), c("value")]
+    chk[["H"]] <- long_out[(long_out$step == model_config$sim_length) & (long_out$disease_state == "H"), c("value")]
+    chk[["D"]] <- long_out[(long_out$step == model_config$sim_length) & (long_out$disease_state == "D"), c("value")]
+    chk[["P"]] <- long_out[(long_out$step == model_config$sim_length) & (long_out$disease_state == "P"), c("value")]
+    chk[["V"]] <- long_out[(long_out$step == model_config$sim_length) & (long_out$disease_state == "V"), c("value")]
+    chk[["R"]] <- long_out[(long_out$step == model_config$sim_length) & (long_out$disease_state == "R"), c("value")]
+
+    if(!is.null(chk_file_name)) {
+      saveRDS(chk, file = chk_file_name)
+    }
+  }
+
+
+  return(long_out)
 }

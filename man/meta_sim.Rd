@@ -13,6 +13,11 @@ meta_sim(
   P0,
   V0,
   R0,
+  H0 = 0,
+  D0 = 0,
+  Ia0 = 0,
+  Ip0 = 0,
+  E0 = 0,
   m_weekday_day,
   m_weekday_night,
   m_weekend_day,
@@ -33,7 +38,9 @@ meta_sim(
   ve,
   nsteps,
   is.stoch = FALSE,
-  seed = NULL
+  seed = NULL,
+  do_chk = FALSE,
+  chk_file_name = NULL
 )
 }
 \arguments{
@@ -67,7 +74,7 @@ meta_sim(
 
 \item{de}{mean number of days in Exposed state}
 
-\item{pea}{Proportion of people becoming infectious presymptomatic from exposed}
+\item{pea}{Proportion of people becoming infectious asymptomatic from exposed}
 
 \item{dp}{mean number of days in Infectious presymptomatic state}
 
@@ -90,10 +97,6 @@ meta_sim(
 \item{is.stoch}{1 if the simulation is stochastic, 0 otherwise}
 
 \item{seed}{optional, for reproducibility, only application when is.stoch = 1}
-
-\item{beta_i}{Rate of transmission for susceptible, value between 0 and 1}
-
-\item{beta_v}{Rate of transmission for vaccinated, value between 0 and 1}
 }
 \value{
 A matrix of model output

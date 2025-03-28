@@ -29,6 +29,7 @@ Imports:
     odin,
     plotly,
     promises,
+    purrr,
     RColorBrewer,
     sf,
     shiny,
