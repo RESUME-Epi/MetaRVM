@@ -1,5 +1,5 @@
 
-#'
+#' Aggregate outcome plot
 #'
 #' @param long_out_daily
 #' @param conf_level
@@ -55,7 +55,7 @@ plot_metaRVM <- function(long_out_daily,
 
 }
 
-#' Title
+#' @title Plot of a specific compartment
 #'
 #' @param long_out_daily
 #' @param conf_level

@@ -2,7 +2,7 @@
 % Please edit documentation in R/plots.R
 \name{plot_compartment}
 \alias{plot_compartment}
-\title{Title}
+\title{Plot of a specific compartment}
 \usage{
 plot_compartment(
   long_out_daily,
@@ -17,5 +17,5 @@ plot_compartment(
 \item{...}{}
 }
 \description{
-Title
+Plot of a specific compartment
 }

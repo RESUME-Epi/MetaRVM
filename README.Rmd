@@ -25,7 +25,7 @@ This is a compartmental model simulation code for generic respiratory virus dise
 
 ## Model
 
-![Model schematics](man/figures/metaRVM.png)
+![Model schematics](man/figures/GIRD-Vensim.svg)
 
 ## Installation
 
@@ -165,7 +165,7 @@ out$instance <- 1
 long_out_daily <- daily_output(out, start_date = as.Date("2023-09-01"))
 plot_metaRVM(long_out_daily,
                    conf_level = 90,
-                   value_column = "total_value")
+                   value_column = "total_value", is.plotly = FALSE)
 ```
 
 
