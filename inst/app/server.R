@@ -8,6 +8,7 @@ library(leaflet)
 library(future)
 library(promises)
 library(yaml)
+library(shinyjs)
 # future::plan(multisession)
 
 server <- function(input, output, session) {
@@ -52,9 +53,23 @@ server <- function(input, output, session) {
 
     # Read the uploaded YAML file
     yaml_data <- read_yaml(input$config$datapath)
+    model_config <- parse_config(input$config$datapath)
 
-    # Print the YAML content
-    cat(as.yaml(yaml_data))
+    if(any(abs(rowSums(model_config$m_wd_d) - 1) > 1e-10) |
+       any(abs(rowSums(model_config$m_wd_n) - 1) > 1e-10) |
+       any(abs(rowSums(model_config$m_we_d) - 1) > 1e-10) |
+       any(abs(rowSums(model_config$m_we_n) - 1) > 1e-10)){
+      # Show the error modal dialog
+      showModal(modalDialog(
+        title = "Error",
+        "One or more mixing matrices have row sums not equal to 1.",
+        easyClose = TRUE,
+        footer = modalButton("Close")
+      ))
+    } else {
+      # Print the YAML content
+      cat(as.yaml(yaml_data))
+    }
   })
 
   # permanently load shapefile

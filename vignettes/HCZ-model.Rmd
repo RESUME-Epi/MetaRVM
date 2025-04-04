@@ -16,6 +16,7 @@ knitr::opts_chunk$set(
 
 ```{r setup}
 library(MetaRVM)
+library(ggplot2)
 ```
 
 We will create some sample input for this model run. (This data sets are also provided as part of the package).
@@ -77,15 +78,14 @@ out <- meta_sim(N_pop = N_pop,
                 S0 = pop_zones$S0,
                 I0 = pop_zones$I0,
                 P0 = pop_zones$N,
-                V0 = pop_zones$V0,
                 R0 = pop_zones$R0,
                 m_weekday_day = m_weekday_day,
                 m_weekend_day = m_weekend_day,
                 m_weekday_night = m_weekday_night,
                 m_weekend_night = m_weekend_night,
                 delta_t = 0.5,
-                tvac = vac_zones[, 1],
-                vac_mat = as.matrix(vac_zones[, 2:7]),
+                # tvac = vac_zones[, 1],
+                vac_mat = as.matrix(vac_zones),
                 dv = 50,
                 de = 3,
                 pea = 0.5,
@@ -94,7 +94,7 @@ out <- meta_sim(N_pop = N_pop,
                 ds = 2,
                 psr = 0.5,
                 dh = 3,
-                phr = 2,
+                phr = 0.9,
                 dr = 50,
                 ve = 0.5,
                 nsteps = 100,
@@ -103,56 +103,13 @@ out <- meta_sim(N_pop = N_pop,
 
 # head(out)
 ```
-
-There are some utility functions to extract a subset of disease states from the output data frame. For example, if we want to extract all infectious compartments, we can do this by the utility function `get_disease_state`.
-
-```{r}
-out_I <- get_disease_state(data.frame(out), disease_states = c("I_presymp", "I_asymp", "I_symp"))
-```
-
-## Vizualizations
-
-These are some easy way to create visualizations on the output of the simulation. These functionalities will be added later as functions to the package.
-
 #### Aggregate level plot
 
 ```{r}
-library(ggplot2)
-library(dplyr)
-
-compartment_colors <- c("S" = "steelblue3",
-                              "E" = "tan1",
-                              "I_presymp" = "salmon3",
-                              "I_asymp" = "orangered2",
-                              "I_symp" = "red4",
-                              "H" = "mediumpurple",
-                              "R" = "green",
-                              "D" = "grey",
-                              "V" = "darkgreen")
-
-long_out <- get_disease_state(data.frame(out))
-
-ggplot(long_out %>% filter(disease_state %in% c("S", "E", "H", "D",
-                                                "I_presymp", "I_asymp",
-                                                "I_symp", "R", "V")) %>%
-                          mutate(disease_state = factor(disease_state,
-                                                        levels = c("S", "E", "H", "D",
-                                                                   "I_presymp", "I_asymp",
-                                                                   "I_symp", "R", "V"))) %>%
-                          group_by(step, disease_state) %>%
-                          summarize(total_value = sum(value), .groups = "drop"),
-       aes(x = step, y = total_value, color = disease_state)) +
-          geom_line(linewidth = 0.5, alpha = 0.5) +
-          scale_color_manual(values = compartment_colors) +
-          labs(
-            title = "Disease Compartments Over Time",
-            x = "steps",
-            y = "Counts",
-            color = "Compartment",
-          ) +
-          theme_bw() +
-          theme(
-            plot.title = element_text(hjust = 0.5),
-            legend.position = "right"
-          )
+# covert to daily counts and long format
+out$instance <- 1
+long_out_daily <- daily_output(out, start_date = as.Date("2023-09-01"))
+plot_metaRVM(long_out_daily,
+                   conf_level = 90,
+                   value_column = "total_value")
 ```

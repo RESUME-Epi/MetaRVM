@@ -2,13 +2,23 @@
 % Please edit documentation in R/parse_config.R
 \name{process_vac_data}
 \alias{process_vac_data}
-\title{Title}
+\title{Read and prepare vaccination data}
 \usage{
 process_vac_data(vac_dt, sim_start_date, sim_length, delta_t)
 }
 \arguments{
-\item{delta_t}{}
+\item{vac_dt}{A data.table of vaccination schedule}
+
+\item{sim_start_date}{A calendar date in the format yyyy-mm-dd}
+
+\item{sim_length}{Number of calendar days that the simulation runs for}
+
+\item{delta_t}{Step size in the simulation}
+}
+\value{
+A data.table
 }
 \description{
-Title
+This function takes the vaccination schedule given by a data.table and prepares
+it according to the required structure needed in \code{meta_sim()} function
 }

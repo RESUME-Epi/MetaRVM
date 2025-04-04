@@ -9,6 +9,9 @@ metaRVM(yaml_config)
 \arguments{
 \item{yaml_config}{}
 }
+\value{
+A long format data.table of simulation output
+}
 \description{
 Title
 }

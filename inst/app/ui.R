@@ -7,8 +7,11 @@ library(shinydashboard)
 library(shinythemes)
 library(bslib)
 library(yaml)
+library(shinyjs)
 
 ui <- tagList(
+
+  useShinyjs(),
 
   # Add custom CSS for the title background and to hide redundant legend entries
   tags$head(
@@ -486,11 +489,11 @@ ui <- tagList(
                                                          choices = NULL)
                                     )
                  ),
-                 column(2, wellPanel(checkboxGroupInput("disease_states", "Disease States",
+                 column(3, wellPanel(checkboxGroupInput("disease_states", "Disease States",
                                                         choices = NULL)
                                     )
                  ),
-                 column(2, wellPanel(checkboxGroupInput("new_counts", "New Counts",
+                 column(3, wellPanel(checkboxGroupInput("new_counts", "New Counts",
                                                         choices = NULL)
                  )
                  ),

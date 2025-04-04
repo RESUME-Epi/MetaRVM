@@ -7,7 +7,7 @@
 daily_out_rates_sums(long_out, start_date, disease_states)
 }
 \arguments{
-\item{start_date}{}
+\item{disease_states}{}
 }
 \description{
 Title

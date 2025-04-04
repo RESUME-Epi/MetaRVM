@@ -7,7 +7,7 @@
 summarize_out(long_out_daily, conf_level, value_column)
 }
 \arguments{
-\item{conf_level}{}
+\item{value_column}{}
 }
 \description{
 Title

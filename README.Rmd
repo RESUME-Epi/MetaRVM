@@ -42,6 +42,7 @@ This is a basic example which shows how to run the simulation from R command lin
 
 ```{r example}
 library(MetaRVM)
+library(ggplot2)
 ```
 
 We will create some data sets that will be used for this demonstration. This is a meta-population model, i.e., the total population is divided in several sub-populations (based on some common attributes such as zones, age-groups, races etc.). The mixing pattern within and between these sub-populations are dictated by a mixing matrix, which will be explained later. In summary, to run the meta-population simulation, we need 
@@ -76,14 +77,15 @@ The vaccination data has the time indices when the vaccination occured in the fi
 
 ```{r}
 ## Vaccine profile
-tt <- seq(0, 100, by = 14)
+sim_length <- 100
+tt <- seq(0, sim_length, by = 1)
 nt <- length(tt)
 vol <- sample(1:10, (nt-1)*N_pop, replace = TRUE)
 
 vac_zones <- cbind(tt, rbind(pop_zones$V0, matrix(vol, nrow = nt-1)))
 colnames(vac_zones) <- c("t", paste0("v", 1:N_pop))
 
-vac_zones
+head(vac_zones)
 ```
 
 
@@ -120,15 +122,13 @@ out <- meta_sim(N_pop = N_pop,
                 S0 = pop_zones$S0,
                 I0 = pop_zones$I0,
                 P0 = pop_zones$N,
-                V0 = pop_zones$V0,
                 R0 = pop_zones$R0,
                 m_weekday_day = m_weekday_day,
                 m_weekend_day = m_weekend_day,
                 m_weekday_night = m_weekday_night,
                 m_weekend_night = m_weekend_night,
                 delta_t = 0.5,
-                tvac = vac_zones[, 1],
-                vac_mat = as.matrix(vac_zones[, 2:7]),
+                vac_mat = as.matrix(vac_zones),
                 dv = 50,
                 de = 3,
                 pea = 0.5,
@@ -143,60 +143,29 @@ out <- meta_sim(N_pop = N_pop,
                 nsteps = 100,
                 is.stoch = 0,
                 seed = NULL)
+
+head(out, n = 20)
 ```
 
-There are some utility functions to extract a subset of disease states from the output data frame. For example, if we want to extract all infectious compartments, we can do this by the utility function `get_disease_state`. We can further subset the output by HCE zone id.
-
-```{r}
-out_I <- get_disease_state(data.frame(out), disease_states = c("I_presymp", "I_asymp", "I_symp"))
-out_I_hce2 <- get_HCEZ(data.frame(out), disease_states = c("I_presymp", "I_asymp", "I_symp"), HCEZ_id = 2)
-```
 
 ## Vizualizations
 
-These are some easy way to create visualizations on the output of the simulation. These functionalities will be added later as functions to the package.
+These are some easy ways to create visualizations on the output of the simulation. These functionalities will be added later as functions to the package.
 
 #### Aggregate level plot
 
 ```{r}
-library(ggplot2)
-library(dplyr)
+# covert to daily counts and long format
+# The daily_output() function requires an instance column in the out data.table
+# instance column is used to create summaries if there are multiple simulations
+# occuring.
 
-compartment_colors <- c("S" = "steelblue3",
-                              "E" = "tan1",
-                              "I_presymp" = "salmon3",
-                              "I_asymp" = "orangered2",
-                              "I_symp" = "red4",
-                              "H" = "mediumpurple",
-                              "R" = "green",
-                              "D" = "grey",
-                              "V" = "darkgreen")
+out$instance <- 1
 
-long_out <- get_disease_state(data.frame(out))
-
-ggplot(long_out %>% filter(disease_state %in% c("S", "E", "H", "D",
-                                                "I_presymp", "I_asymp",
-                                                "I_symp", "R", "V")) %>%
-                          mutate(disease_state = factor(disease_state,
-                                                        levels = c("S", "E", "H", "D",
-                                                                   "I_presymp", "I_asymp",
-                                                                   "I_symp", "R", "V"))) %>%
-                          group_by(step, disease_state) %>%
-                          summarize(total_value = sum(value), .groups = "drop"),
-       aes(x = step, y = total_value, color = disease_state)) +
-          geom_line(linewidth = 0.5, alpha = 0.5) +
-          scale_color_manual(values = compartment_colors) +
-          labs(
-            title = "Disease Compartments Over Time",
-            x = "steps",
-            y = "Counts",
-            color = "Compartment",
-          ) +
-          theme_bw() +
-          theme(
-            plot.title = element_text(hjust = 0.5),
-            legend.position = "right"
-          )
+long_out_daily <- daily_output(out, start_date = as.Date("2023-09-01"))
+plot_metaRVM(long_out_daily,
+                   conf_level = 90,
+                   value_column = "total_value")
 ```
 
 

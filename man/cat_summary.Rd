@@ -4,10 +4,10 @@
 \alias{cat_summary}
 \title{Title}
 \usage{
-cat_summary(long_out, pop_map_df, start_date, cat)
+cat_summary(long_out, pop_map_df, start_date, category, conf_level)
 }
 \arguments{
-\item{start_date}{}
+\item{conf_level}{}
 }
 \description{
 Title

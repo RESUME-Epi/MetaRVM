@@ -1,11 +1,14 @@
-#' Title
+#' Function to read and parse model inputs from yaml file
 #'
-#' @param config_file A yaml configuration file
+#' @param config_file A yaml configuration file.
+#'
+#' @details
+#' Additional details...
+#'
 #'
 #' @returns a named list of (key, value) pairs of the parameters
 #' @export
 #'
-#' @examples
 parse_config <- function(config_file){
 
   # read the yaml config file
@@ -132,19 +135,19 @@ parse_config <- function(config_file){
   ## check if mixing matrices are present
   if(!is.null(yaml_data$mixing_matrix$weekday_day)){
     m_wd_d_file <- yaml_data$mixing_matrix$weekday_day
-    m_wd_d <- as.matrix(read.csv(m_wd_d_file, header = F))
+    m_wd_d <- as.matrix(utils::read.csv(m_wd_d_file, header = F))
   }
   if(!is.null(yaml_data$mixing_matrix$weekday_night)){
     m_wd_n_file <- yaml_data$mixing_matrix$weekday_night
-    m_wd_n <- as.matrix(read.csv(m_wd_n_file, header = F))
+    m_wd_n <- as.matrix(utils::read.csv(m_wd_n_file, header = F))
   }
   if(!is.null(yaml_data$mixing_matrix$weekend_day)){
     m_we_d_file <- yaml_data$mixing_matrix$weekend_day
-    m_we_d <- as.matrix(read.csv(m_we_d_file, header = F))
+    m_we_d <- as.matrix(utils::read.csv(m_we_d_file, header = F))
   }
   if(!is.null(yaml_data$mixing_matrix$weekend_night)){
     m_we_n_file <- yaml_data$mixing_matrix$weekend_night
-    m_we_n <- as.matrix(read.csv(m_we_n_file, header = F))
+    m_we_n <- as.matrix(utils::read.csv(m_we_n_file, header = F))
   }
 
 
@@ -238,6 +241,7 @@ parse_config <- function(config_file){
               R_ini = R_ini,
               vac_time_id = vac_time_id,
               vac_counts = vac_counts,
+              vac_mat = cbind(vac_time_id, vac_counts),
               m_wd_d = m_wd_d,
               m_wd_n = m_wd_n,
               m_we_d = m_we_d,
@@ -271,16 +275,19 @@ parse_config <- function(config_file){
 #   paste0(path.expand("~/my_data/data_"), num, ".Rda")
 # }
 
-#' Title
+#' Read and prepare vaccination data
 #'
-#' @param vac_dt
-#' @param sim_start_date
-#' @param sim_length
-#' @param delta_t
+#' @description
+#' This function takes the vaccination schedule given by a data.table and prepares
+#' it according to the required structure needed in `meta_sim()` function
 #'
-#' @returns
+#' @param vac_dt A data.table of vaccination schedule
+#' @param sim_start_date A calendar date in the format yyyy-mm-dd
+#' @param sim_length Number of calendar days that the simulation runs for
+#' @param delta_t Step size in the simulation
 #'
-#' @examples
+#' @returns A data.table
+#'
 process_vac_data <- function(vac_dt, sim_start_date, sim_length, delta_t) {
 
   vac_dt$date <- as.Date(vac_dt$date,
@@ -290,7 +297,7 @@ process_vac_data <- function(vac_dt, sim_start_date, sim_length, delta_t) {
     dplyr::filter(date >= as.Date(sim_start_date)) %>%
     dplyr::mutate(t = (date - as.Date(sim_start_date)) / 0.5) %>%
     dplyr::select(-c(date)) %>%
-    dplyr::select(last_col(), everything())
+    dplyr::select(dplyr::last_col(), dplyr::everything())
 
   ## fill in the missing time in vac data
   complete_time <- data.table::data.table(t = seq(0, sim_length / delta_t))
@@ -308,27 +315,27 @@ process_vac_data <- function(vac_dt, sim_start_date, sim_length, delta_t) {
 #'
 #' @param config_list A list of configurations
 #' @param N_pop Number of subpopulations
+#' @param seed
 #'
 #' @returns A random sample drawn from the distribution specified by the dist component
 #'
-#' @examples
 draw_sample <- function(config_list, N_pop, seed = NULL){
 
-  if(is(config_list, "list")){
+  if(methods::is(config_list, "list")){
 
     if(!is.null(seed)) set.seed(seed)
 
     if(config_list$dist == "lognormal")
-      x <- rlnorm(1, meanlog = config_list$mu, sdlog = config_list$sd)
+      x <- stats::rlnorm(1, meanlog = config_list$mu, sdlog = config_list$sd)
 
     if(config_list$dist == "gamma")
-      x <- rgamma(1, shape = config_list$shape, rate = config_list$rate)
+      x <- stats::rgamma(1, shape = config_list$shape, rate = config_list$rate)
 
     if(config_list$dist == "uniform")
-      x <- runif(1, min = config_list$min, max = config_list$max)
+      x <- stats::runif(1, min = config_list$min, max = config_list$max)
 
     if(config_list$dist == "beta")
-      x <- rbeta(1, shape1 = config_list$shape1, shape2 = config_list$shape2)
+      x <- stats::rbeta(1, shape1 = config_list$shape1, shape2 = config_list$shape2)
 
     return(rep(x, N_pop))
   } else return(config_list)

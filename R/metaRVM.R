@@ -4,10 +4,9 @@
 #'
 #' @param yaml_config
 #'
-#' @returns
+#' @returns A long format data.table of simulation output
 #' @export
 #'
-#' @examples
 metaRVM <- function(yaml_config){
 
   # parse config
@@ -26,7 +25,7 @@ metaRVM <- function(yaml_config){
                   S0 = model_config$S_ini,
                   I0 = model_config$I_symp_ini,
                   P0 = model_config$P_ini,
-                  V0 = model_config$V_ini,
+                  # V0 = model_config$V_ini,
                   R0 = model_config$R_ini,
                   H0 = model_config$H_ini,
                   D0 = model_config$D_ini,
@@ -38,8 +37,8 @@ metaRVM <- function(yaml_config){
                   m_weekend_day = model_config$m_we_d,
                   m_weekend_night = model_config$m_we_n,
                   delta_t = model_config$delta_t,
-                  tvac = model_config$vac_time_id,
-                  vac_mat = model_config$vac_counts,
+                  # tvac = model_config$vac_time_id,
+                  vac_mat = model_config$vac_mat,
                   ts = model_config$ts[ii, ],
                   tv = model_config$tv[ii, ],
                   dv = model_config$dv[ii, ],
