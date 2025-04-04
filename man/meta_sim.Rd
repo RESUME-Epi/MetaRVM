@@ -11,14 +11,17 @@ meta_sim(
   S0,
   I0,
   P0,
-  V0,
   R0,
+  H0 = rep(0, N_pop),
+  D0 = rep(0, N_pop),
+  Ia0 = rep(0, N_pop),
+  Ip0 = rep(0, N_pop),
+  E0 = rep(0, N_pop),
   m_weekday_day,
   m_weekday_night,
   m_weekend_day,
   m_weekend_night,
   delta_t,
-  tvac,
   vac_mat,
   dv,
   de,
@@ -33,11 +36,17 @@ meta_sim(
   ve,
   nsteps,
   is.stoch = FALSE,
-  seed = NULL
+  seed = NULL,
+  do_chk = FALSE,
+  chk_file_name = NULL
 )
 }
 \arguments{
 \item{N_pop}{Number of sub-populations}
+
+\item{ts}{A scalar or vector, transmission rate for susceptible population}
+
+\item{tv}{A scalar or vector, transmission rate for vaccinated population}
 
 \item{S0}{A vector of initial number of susceptible people in N_pop subpopulations}
 
@@ -45,9 +54,17 @@ meta_sim(
 
 \item{P0}{A vector of population sizes for N_pop subpopulations}
 
-\item{V0}{A vector of initial number of vaccinated people in N_pop subpopulations}
-
 \item{R0}{A vector of initial number of recovered people in N_pop subpopulations}
+
+\item{H0}{A vector of initial number of hospitalized people in N_pop subpopulations}
+
+\item{D0}{A vector of initial number of dead people in N_pop subpopulations}
+
+\item{Ia0}{A vector of initial number of Infectious asymptomatic people in N_pop subpopulations}
+
+\item{Ip0}{A vector of initial number of Infectious presymptomatic people in N_pop subpopulations}
+
+\item{E0}{A vector of initial number of Exposed people in N_pop subpopulations}
 
 \item{m_weekday_day}{mixing matrix for weekday 6 am - 6 pm}
 
@@ -59,15 +76,14 @@ meta_sim(
 
 \item{delta_t}{A positive real number indicating the discrete time increment}
 
-\item{tvac}{A vector of time indices for vaccination}
-
-\item{vac_mat}{A matrix of order (length of tvac) x N_pop}
+\item{vac_mat}{A matrix of order nsteps x (1 + N_pop), first column in time indices
+and the rest are vaccination counts in N_pop strata.}
 
 \item{dv}{mean number of days in Vaccinated state before waning immunity completely}
 
 \item{de}{mean number of days in Exposed state}
 
-\item{pea}{Proportion of people becoming infectious presymptomatic from exposed}
+\item{pea}{Proportion of people becoming infectious asymptomatic from exposed}
 
 \item{dp}{mean number of days in Infectious presymptomatic state}
 
@@ -91,12 +107,12 @@ meta_sim(
 
 \item{seed}{optional, for reproducibility, only application when is.stoch = 1}
 
-\item{beta_i}{Rate of transmission for susceptible, value between 0 and 1}
+\item{do_chk}{boolean, if the model needs to be checkpointed}
 
-\item{beta_v}{Rate of transmission for vaccinated, value between 0 and 1}
+\item{chk_file_name}{if do_chk is TRUE, a file name}
 }
 \value{
-A matrix of model output
+A data.table of model output in long format
 }
 \description{
 The main simulator which compiles and run an ODIN model in the background

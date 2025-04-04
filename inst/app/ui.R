@@ -7,10 +7,13 @@ library(shinydashboard)
 library(shinythemes)
 library(bslib)
 library(yaml)
+library(shinyjs)
 
 ui <- tagList(
 
-  # Add custom CSS for the title background
+  useShinyjs(),
+
+  # Add custom CSS for the title background and to hide redundant legend entries
   tags$head(
     tags$style(HTML("
       .title-background {
@@ -19,6 +22,23 @@ ui <- tagList(
         padding: 10px; /* Padding around the text */
         text-align: center; /* Center the text */
       }
+    ")),
+    tags$script(HTML("
+      // Function to simplify plot legends and update legend titles
+      $(document).on('plotly_afterplot', function() {
+        // Find all plotly legends
+        $('.legend .traces').each(function(i, el) {
+          // Keep only the first legend group (color) and hide the second (fill)
+          if ($(el).index() > 0) {
+            $(el).hide();
+          }
+        });
+
+        // Update legend titles for color
+        $('.legend .traces .legendtitle').filter(function() {
+          return !$(this).text();
+        }).text('Compartment');
+      });
     "))
   ),
 
@@ -240,83 +260,21 @@ ui <- tagList(
                    card(
                      div(class = "custom-card-body",
                          verbatimTextOutput("yaml_content")))),
-            # column(4, wellPanel(
-            #             h4("File inputs"),
-            #             fileInput("population_data", "Population and initialization data",
-            #                       accept = c("text/csv", "text/comma-separated-values,text/plain", ".csv")),
-            #             fileInput("vac_data", "Vaccination data",
-            #                       accept = c("text/csv", "text/comma-separated-values,text/plain", ".csv")),
-            #             fileInput("mix_mat1", "Weekday Day-time mixing matrix"),
-            #             fileInput("mix_mat2", "Weekday Night-time mixing matrix"),
-            #             fileInput("mix_mat3", "Weekend Day-time mixing matrix"),
-            #             fileInput("mix_mat4", "Weekend Night-time mixing matrix"),
-            #             fileInput("population_map", "Demographic Mapping",
-            #                       accept = c("text/csv", "text/comma-separated-values,text/plain", ".csv")),
-            #             actionButton("simulate", "Simulate", class = "custom-button")
-            # )),
 
-            # disease parameter inputs
-
-           # column(4, wellPanel(
-           #                h4("Disease Parameters"),
-           #                h5("Rates"),
-           #                numericInput("beta_i", "Transmissibility for susceptibles", value = 0.5, min = 0, step = 0.001),
-           #                numericInput("beta_v", "Transmissibility for vaccinated", value = 0.1, min = 0, step = 0.001),
-           #                numericInput("vac_eff", "Vaccination efficacy", value = 0.5, min = 0, step = 0.01),
-           #                hr(),
-           #                h5("Mean duration (in days)"),
-           #                numericInput("VtoS", "Vaccinated to Susceptible", value = 50, min = 1, step = 1),
-           #                numericInput("EtoIpresymp", "Exposed to Infectious asymptomatic or presymptomatic", value = 2, min = 1, step = 1),
-           #                numericInput("pretoIsymp", "Infectious presymptomatic to symptomatic", value = 10, min = 1, step = 1),
-           #                numericInput("IasymptoR", "Infectious asymptomatic to Recovered", value = 10, min = 1, step = 1),
-           #                numericInput("IsymptoRH", "Infectious symptomatic to Recovered or Hospitalized", value = 2, min = 1, step = 1),
-           #                numericInput("HtoRD", "Hospitalized to Recovered or Dead", value = 3, min = 1, step = 1),
-           #                numericInput("RtoS", "Recovered to Susceptible", value = 50, min = 1, step = 1))
-           #      ),
-           # column(4, wellPanel(
-           #              h4("Proportions"),
-           #              numericInput("etopa", "Proportion of asymptomatic among asymptomatic + presymptomatic", value = 0.5, min = 0, step = 0.001),
-           #              numericInput("istohr", "Proportion of recovered among recovered+hospitalized from symptomatic", value = 0.5, min = 0, step = 0.001),
-           #              numericInput("htor", "Proportion of recovered among recovered+dead from hospitalized", value = 0.7, min = 0, step = 0.001),
-           #              br(),
-           #              br(),
-           #
-           #              # numericInput("seed", "Random seed (optional):", value = NA),
-           #              # radioButtons("choice", "Model type:",
-           #              #              choices = list("Deterministic" = "det", "Stochastic" = "stoch")
-           #              ),
-           #        h4("Settings"),
-           #              dateInput(
-           #                inputId = "start_date",        # Unique ID for the input
-           #                label = "Start date  (must be a Monday)", # Label for the input
-           #                value = "2024-09-30",      # Default value (current date)
-           #                min = "2020-01-01",      # Minimum date selectable
-           #                max = "2030-12-31",      # Maximum date selectable
-           #                format = "yyyy-mm-dd",   # Format for the displayed date
-           #                startview = "month",     # Default view (month)
-           #                weekstart = 1            # Week starts on Monday
-           #              ),
-           #              numericInput("dt", "Model time step:", value = 0.5, min = 0, step = .5),
-           #              numericInput("days", "Simulation Length:", value = 100, min = 1),
-           #              # numericInput("rep", "Number of replicates", value = 1, min = 1, step = 1))
-           #        ),
            br(),
             br(),
             br(),
-            # column(12,
-            #        shinydashboard::box(
-            #          title = "Disease Compartments Over Time",
-            #          status = "primary",
-            #          solidHeader = TRUE,
-            #          collapsible = TRUE,
-            #          width = 12,  # Full width
-            #          class = "custom-box",
-            #          plotly::plotlyOutput("seir_plot", height = "500px"))
-            #        ),
+
            column(12,
                   card(
                     div(class = "custom-card",
                         div(class = "custom-card-header", card_header(strong("Disease compartments over time"))),
+                        div(style = "display: flex; justify-content: flex-end; padding: 10px;",
+                            selectInput("conf_level", "Confidence Interval:",
+                                      choices = c("70%" = 70, "80%" = 80, "90%" = 90, "95%" = 95),
+                                      selected = 90, width = "150px")),
+                        div(style = "text-align: center; padding: 5px; font-style: italic;",
+                            textOutput("ci_display_text")),
                         div(class = "custom-card-body", plotly::plotlyOutput("seir_plot", height = "400px"))
                         # div(class = "custom-card-body", plotOutput("seir_plot", height = "500px"))
                     )
@@ -340,6 +298,8 @@ ui <- tagList(
                   card(
                     div(class = "custom-card",
                         div(class = "custom-card-header", card_header(strong("New Infections"))),
+                        div(style = "text-align: center; padding: 5px; font-style: italic;",
+                            textOutput("ci_display_text_infections")),
                         column(6, plotly::plotlyOutput("new_infection_prop", height = "300px")),
                         column(6, plotly::plotlyOutput("new_infection_count", height = "300px"))
                     )
@@ -359,6 +319,8 @@ ui <- tagList(
                   card(
                     div(class = "custom-card",
                         div(class = "custom-card-header", card_header(strong("New Hospitalizations"))),
+                        div(style = "text-align: center; padding: 5px; font-style: italic;",
+                            textOutput("ci_display_text_hosp")),
                         column(6, plotly::plotlyOutput("new_hosp_prop", height = "300px")),
                         column(6, plotly::plotlyOutput("new_hosp_count", height = "300px"))
                     )
@@ -378,6 +340,8 @@ ui <- tagList(
                   card(
                     div(class = "custom-card",
                         div(class = "custom-card-header", card_header(strong("New Deaths"))),
+                        div(style = "text-align: center; padding: 5px; font-style: italic;",
+                            textOutput("ci_display_text_deaths")),
                         column(6, plotly::plotlyOutput("new_death_prop", height = "300px")),
                         column(6, plotly::plotlyOutput("new_death_count", height = "300px"))
                         # div(class = "custom-card-body", plotly::plotlyOutput("new_death_plot", height = "300px")),
@@ -399,6 +363,8 @@ ui <- tagList(
                   card(
                     div(class = "custom-card",
                         div(class = "custom-card-header", card_header(strong("New Vaccinations"))),
+                        div(style = "text-align: center; padding: 5px; font-style: italic;",
+                            textOutput("ci_display_text_vac")),
                         column(6, plotly::plotlyOutput("new_vac_prop", height = "300px")),
                         column(6, plotly::plotlyOutput("new_vac_count", height = "300px"))
                     )
@@ -429,6 +395,8 @@ ui <- tagList(
                          card(
                            div(class = "custom-card",
                                div(class = "custom-card-header", card_header("Disease Compartments for a Zone")),
+                               div(style = "text-align: center; padding: 5px; font-style: italic;",
+                                   textOutput("ci_display_text_zone")),
                                div(class = "custom-card-body", plotly::plotlyOutput("zone_simout", height = "500px"))
                            )
                          )
@@ -453,6 +421,8 @@ ui <- tagList(
                         card(
                           div(class = "custom-card",
                               div(class = "custom-card-header", card_header("By categories")),
+                              div(style = "text-align: center; padding: 5px; font-style: italic;",
+                                 textOutput("ci_display_text_categories")),
                               div(class = "custom-card-body", plotOutput("cat_simout", height = "500px"))
                           )
                         )
@@ -519,11 +489,11 @@ ui <- tagList(
                                                          choices = NULL)
                                     )
                  ),
-                 column(2, wellPanel(checkboxGroupInput("disease_states", "Disease States",
+                 column(3, wellPanel(checkboxGroupInput("disease_states", "Disease States",
                                                         choices = NULL)
                                     )
                  ),
-                 column(2, wellPanel(checkboxGroupInput("new_counts", "New Counts",
+                 column(3, wellPanel(checkboxGroupInput("new_counts", "New Counts",
                                                         choices = NULL)
                  )
                  ),

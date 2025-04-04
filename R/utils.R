@@ -76,7 +76,6 @@ get_HCEZ <- function(out, HCEZ_id = 1:6,
 #' @return a tall output table
 #' @export
 #'
-#' @examples
 #'
 format_output <- function(out){
   long_out <- out %>%
@@ -94,10 +93,8 @@ format_output <- function(out){
 #' @param long_out
 #' @param start_date
 #'
-#' @return
 #' @export
 #'
-#' @examples
 daily_output <- function(long_out, start_date){
 
   long_out_daily <- long_out %>%
@@ -119,19 +116,90 @@ daily_output <- function(long_out, start_date){
                                                     "Recovered",
                                                     "Vaccinated"))) %>%
     dplyr::group_by(time, disease_state, instance) %>%
+    dplyr::summarize(total_value = sum(value), .groups = "drop")
+
+
+  long_out_new_counts_daily <- long_out %>%
+    dplyr::filter(disease_state %in% c("n_SE", "n_SV", "n_VE", "n_EI",
+                                       "n_EIpresymp", "n_preIsymp", "n_IsympRH",
+                                       "n_IsympH", "n_IsympR", "n_HR", "n_HD",
+                                       "n_IasympR")) %>%
+    dplyr::mutate(disease_state = factor(disease_state,
+                                         levels = c("n_SE", "n_SV", "n_VE", "n_EI",
+                                                    "n_EIpresymp", "n_preIsymp", "n_IsympRH",
+                                                    "n_IsympH", "n_IsympR", "n_HR", "n_HD",
+                                                    "n_IasympR"),
+                                         # labels = c("n_SE", "n_SV", "n_VE", "n_EI",
+                                         #            "n_EIpresymp", "n_preIsymp", "n_IsympRH",
+                                         #            "n_IsympH", "n_IsympR", "n_HR", "n_HD",
+                                         #            "n_IasympR")
+                                         labels = c("New Exposed (S)",
+                                                    "New Vaccinated",
+                                                    "New Exposed (V)",
+                                                    "New Infectious",
+                                                    "New Infectious presymptomatic",
+                                                    "New Infectious symptomatic",
+                                                    "New Recovered/Hospitalized (symp)",
+                                                    "New Hospitalized (symp)",
+                                                    "New Recovered (symp)",
+                                                    "New Recovered (H)",
+                                                    "New Dead",
+                                                    "New Recovered (asymp)")
+                                         ),
+                  time_integer = floor(time)) %>%
+    dplyr::group_by(time_integer, disease_state, instance) %>%
     dplyr::summarize(total_value = sum(value), .groups = "drop") %>%
-    dplyr::mutate(date = start_date + time)
+    dplyr::rename(time = time_integer)
+
+
+  long_out_daily <- rbind(long_out_daily, long_out_new_counts_daily)
+
+
+  if (!is.null(start_date)) {
+    long_out_daily <- long_out_daily %>%
+      dplyr::mutate(date = start_date + time)
+  }
 
   return(long_out_daily)
 }
+
+# ==============================================================================
+
+#' Title
+#'
+#' @param long_out_daily
+#' @param conf_level
+#' @param value_column
+#'
+#' @export
+#'
+summarize_out <- function(long_out_daily, conf_level, value_column){
+
+  lower_prob <- (100 - conf_level) / 200
+  upper_prob <- 1 - lower_prob
+
+  summary_out <- long_out_daily %>%
+    dplyr::group_by(date, disease_state) %>%
+    dplyr::summarize(
+      median = stats::median(.data[[value_column]], na.rm = TRUE),
+      lower_bound = stats::quantile(.data[[value_column]], probs = lower_prob, na.rm = TRUE),
+      upper_bound = stats::quantile(.data[[value_column]], probs = upper_prob, na.rm = TRUE),
+      .groups = "drop"
+    )
+
+  return(summary_out)
+
+}
+
+
 
 # ==============================================================================
 #' Title
 #'
 #' @param long_out
 #' @param start_date
+#' @param disease_states
 #'
-#' @return
 #' @export
 #'
 #' @examples
@@ -146,18 +214,21 @@ daily_out_rates_sums <- function(long_out, start_date, disease_states){
   # )
 
   df_states <- long_out %>%
-    dplyr::filter(time %% 1 == 0) %>%
+    # dplyr::filter(time %% 1 == 0) %>%
     dplyr::filter(disease_state %in% disease_states) %>%
-    # dplyr::mutate(group = group_map[disease_state]) %>%
-    dplyr::group_by(time, instance) %>%
-    dplyr::summarise(d_sum = sum(value), .groups = "drop") %>% ungroup()
+    dplyr::mutate(time_integer = floor(time)) %>%
+    dplyr::group_by(time_integer, instance) %>%
+    dplyr::summarise(d_sum = sum(value), .groups = "drop") %>%
+    dplyr::rename(time = time_integer) %>% dplyr::ungroup()
 
   df_pop <- long_out %>%
-    dplyr::filter(time %% 1 == 0) %>%
+    # dplyr::filter(time %% 1 == 0) %>%
     dplyr::filter(disease_state == "P") %>%    # Filter for P compartment (total population)
-    dplyr::group_by(time, instance) %>%
-    dplyr::select(time, instance, P = value) %>%
-    dplyr::summarise(P_sum = sum(P), .groups = "drop") %>% ungroup()
+    dplyr::mutate(time_integer = floor(time)) %>%
+    dplyr::group_by(time_integer, instance) %>%
+    dplyr::select(time_integer, instance, P = value) %>%
+    dplyr::summarise(P_sum = sum(P), .groups = "drop") %>%
+    dplyr::rename(time = time_integer) %>% dplyr::ungroup()
 
   df_combined <- df_states %>%
     dplyr::left_join(df_pop, by = c("time", "instance")) %>%
@@ -178,28 +249,25 @@ daily_out_rates_sums <- function(long_out, start_date, disease_states){
 #' @param zones
 #' @param disease_states
 #'
-#' @return
 #' @export
 #'
-#' @examples
-subset_simout <- function(long_out, start_date, pop_map_df, agecats, racecats, zones, disease_states){
+subset_simout <- function(long_out, start_date, pop_map_df, agecats, racecats,
+                          zones, disease_states){
 
   # merge with population mapping
   df_long <- merge(long_out, pop_map_df, by = "population_id")
 
-  long_out_sub <- df_long %>%
+  # process census counts
+
+  long_out_daily <- df_long %>%
     dplyr::filter(time %% 1 == 0) %>%
     dplyr::filter(disease_state %in% c("S", "E", "H", "D",
                                        "I_presymp", "I_asymp",
-                                       "I_symp", "R", "V", "n_SE", "n_VE",
-                                       "n_IsympH", "n_IsympR", "n_HR",
-                                       "n_IasympR", "n_HD")) %>%
+                                       "I_symp", "R", "V")) %>%
     dplyr::mutate(disease_state = factor(disease_state,
                                          levels = c("S", "E", "H", "D",
                                                     "I_presymp", "I_asymp",
-                                                    "I_symp", "R", "V", "n_SE",
-                                                    "n_VE", "n_IsympH", "n_IsympR",
-                                                    "n_HR", "n_IasympR", "n_HD"),
+                                                    "I_symp", "R", "V"),
                                          labels = c("Susceptible",
                                                     "Exposed",
                                                     "Hospitalized",
@@ -208,20 +276,62 @@ subset_simout <- function(long_out, start_date, pop_map_df, agecats, racecats, z
                                                     "Asymptomatic",
                                                     "Symptomatic",
                                                     "Recovered",
-                                                    "Vaccinated",
-                                                    "New Exposed (S)",
-                                                    "New Exposed (V)",
-                                                    "New Hopitalized",
-                                                    "New Recovered (Is)",
-                                                    "New Recovered (H)",
-                                                    "New Recovered (Ia)",
-                                                    "New Dead"))) %>%
+                                                    "Vaccinated"))) %>%
     dplyr::filter(age %in% agecats) %>%
     dplyr::filter(race %in% racecats) %>%
     dplyr::filter(hcez %in% zones) %>%
     dplyr::filter(disease_state %in% disease_states) %>%
     dplyr::mutate(date = start_date + time) %>%
-    dplyr::select(c(population_id, date, disease_state, value, age, race, hcez))
+    dplyr::select(c(instance, date, disease_state,
+                    value, age, race, hcez))
+
+  # process new counts, these needed to be sumed up to daily values
+
+  long_out_new_counts_daily <- df_long %>%
+    dplyr::filter(disease_state %in% c("n_SE", "n_SV", "n_VE", "n_EI",
+                                       "n_EIpresymp", "n_preIsymp", "n_IsympRH",
+                                       "n_IsympH", "n_IsympR", "n_HR", "n_HD",
+                                       "n_IasympR")) %>%
+    dplyr::mutate(disease_state = factor(disease_state,
+                                         levels = c("n_SE", "n_SV", "n_VE", "n_EI",
+                                                    "n_EIpresymp", "n_preIsymp", "n_IsympRH",
+                                                    "n_IsympH", "n_IsympR", "n_HR", "n_HD",
+                                                    "n_IasympR"),
+                                         # labels = c("n_SE", "n_SV", "n_VE", "n_EI",
+                                         #            "n_EIpresymp", "n_preIsymp", "n_IsympRH",
+                                         #            "n_IsympH", "n_IsympR", "n_HR", "n_HD",
+                                         #            "n_IasympR")
+                                         labels = c("New Exposed (S)",
+                                                    "New Vaccinated",
+                                                    "New Exposed (V)",
+                                                    "New Infectious",
+                                                    "New Infectious presymptomatic",
+                                                    "New Infectious symptomatic",
+                                                    "New Recovered/Hospitalized (Is)",
+                                                    "New Hospitalized",
+                                                    "New Recovered (Is)",
+                                                    "New Recovered (H)",
+                                                    "New Dead",
+                                                    "New Recovered (Ia)")
+                                         ),
+                  time_integer = floor(time)) %>%
+    dplyr::filter(age %in% agecats) %>%
+    dplyr::filter(race %in% racecats) %>%
+    dplyr::filter(hcez %in% zones) %>%
+    dplyr::filter(disease_state %in% disease_states) %>%
+    dplyr::group_by(time_integer, disease_state, instance, age,
+                    race, hcez) %>%
+    dplyr::summarize(total_value = sum(value), .groups = "drop") %>%
+    dplyr::rename(time = time_integer, value = total_value) %>%
+    dplyr::mutate(date = start_date + time) %>%
+    dplyr::select(c(instance, date, disease_state,
+                    value, age, race, hcez))
+
+
+  long_out_sub <- rbind(long_out_daily, long_out_new_counts_daily)
+
+  return(long_out_sub)
+
 }
 
 #' Title
@@ -229,16 +339,18 @@ subset_simout <- function(long_out, start_date, pop_map_df, agecats, racecats, z
 #' @param long_out
 #' @param pop_map_df
 #' @param start_date
+#' @param category
+#' @param conf_level
 #'
-#' @return
 #' @export
 #'
-#' @examples
-zone_summary <- function(long_out, pop_map_df, start_date){
+cat_summary <- function(long_out, pop_map_df, start_date, category,
+                        conf_level){
+
   # merge with population mapping
   df_long <- merge(long_out, pop_map_df, by = "population_id")
 
-  zone_data <- df_long %>%
+  cat_data <- df_long %>%
     # dplyr::filter(population_id == zone_id) %>%
     dplyr::filter(time %% 1 == 0) %>%
     dplyr::filter(disease_state %in% c("S", "E", "H", "D",
@@ -257,11 +369,12 @@ zone_summary <- function(long_out, pop_map_df, start_date){
                                                     "Symptomatic",
                                                     "Recovered",
                                                     "Vaccinated"))) %>%
-    dplyr::group_by(time, disease_state, hcez, instance) %>%
+    dplyr::group_by(time, disease_state, instance, !!dplyr::sym(category)) %>%
     dplyr::summarize(total_value = sum(value), .groups = "drop") %>%
     dplyr::mutate(date = start_date + time)
 
-  return(zone_data)
+
+  return(cat_data)
 }
 
 

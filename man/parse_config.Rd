@@ -2,16 +2,19 @@
 % Please edit documentation in R/parse_config.R
 \name{parse_config}
 \alias{parse_config}
-\title{Title}
+\title{Function to read and parse model inputs from yaml file}
 \usage{
 parse_config(config_file)
 }
 \arguments{
-\item{config_file}{A yaml configuration file}
+\item{config_file}{A yaml configuration file.}
 }
 \value{
 a named list of (key, value) pairs of the parameters
 }
 \description{
-Title
+Function to read and parse model inputs from yaml file
+}
+\details{
+Additional details...
 }

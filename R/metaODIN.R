@@ -8,23 +8,27 @@
 #'
 #'
 #' @param N_pop Number of sub-populations
-#' @param beta_i Rate of transmission for susceptible, value between 0 and 1
-#' @param beta_v Rate of transmission for vaccinated, value between 0 and 1
+#' @param ts A scalar or vector, transmission rate for susceptible population
+#' @param tv A scalar or vector, transmission rate for vaccinated population
+#' @param H0 A vector of initial number of hospitalized people in N_pop subpopulations
+#' @param D0 A vector of initial number of dead people in N_pop subpopulations
+#' @param Ia0 A vector of initial number of Infectious asymptomatic people in N_pop subpopulations
+#' @param Ip0 A vector of initial number of Infectious presymptomatic people in N_pop subpopulations
+#' @param E0 A vector of initial number of Exposed people in N_pop subpopulations
 #' @param S0 A vector of initial number of susceptible people in N_pop subpopulations
 #' @param I0 A vector of initial number of infected people in N_pop subpopulations
 #' @param P0 A vector of population sizes for N_pop subpopulations
-#' @param V0 A vector of initial number of vaccinated people in N_pop subpopulations
 #' @param R0 A vector of initial number of recovered people in N_pop subpopulations
 #' @param m_weekday_day mixing matrix for weekday 6 am - 6 pm
 #' @param m_weekday_night mixing matrix for weekday 6 pm - 6 am
 #' @param m_weekend_day mixing matrix for weekend 6 am - 6 pm
 #' @param m_weekend_night mixing matrix for weekend 6 pm - 6 am
 #' @param delta_t A positive real number indicating the discrete time increment
-#' @param tvac A vector of time indices for vaccination
-#' @param vac_mat A matrix of order (length of tvac) x N_pop
+#' @param vac_mat A matrix of order nsteps x (1 + N_pop), first column in time indices
+#'                and the rest are vaccination counts in N_pop strata.
 #' @param dv mean number of days in Vaccinated state before waning immunity completely
 #' @param de mean number of days in Exposed state
-#' @param pea Proportion of people becoming infectious presymptomatic from exposed
+#' @param pea Proportion of people becoming infectious asymptomatic from exposed
 #' @param dp mean number of days in Infectious presymptomatic state
 #' @param da mean number of days in Infectious presymptomatic state
 #' @param ds mean number of days in Infectious symptomatic state
@@ -36,21 +40,34 @@
 #' @param nsteps Number of discrete evolution in the simulation
 #' @param is.stoch 1 if the simulation is stochastic, 0 otherwise
 #' @param seed optional, for reproducibility, only application when is.stoch = 1
+#' @param do_chk boolean, if the model needs to be checkpointed
+#' @param chk_file_name if do_chk is TRUE, a file name
 #'
-#' @return A matrix of model output
+#' @return A data.table of model output in long format
 #' @export
 #'
 
 
 meta_sim <- function(N_pop, ts, tv,
-                     S0, I0, P0, V0, R0,
+                     # S0, I0, P0, V0, R0,
+                     S0, I0, P0, R0,
+                     H0 = rep(0, N_pop),
+                     D0 = rep(0, N_pop),
+                     Ia0 = rep(0, N_pop),
+                     Ip0 = rep(0, N_pop),
+                     E0 = rep(0, N_pop),
                      m_weekday_day, m_weekday_night, m_weekend_day, m_weekend_night,
                      delta_t,
-                     tvac, vac_mat,
+                     # tvac,
+                     vac_mat,
                      dv, de, pea, dp,
                      da, ds, psr, dh,
                      phr, dr, ve,
-                     nsteps, is.stoch = FALSE, seed = NULL){
+                     nsteps,
+                     is.stoch = FALSE,
+                     seed = NULL,
+                     do_chk = FALSE,
+                     chk_file_name = NULL){
 
   metaODIN <- odin::odin({
 
@@ -116,7 +133,8 @@ meta_sim <- function(N_pop, ts, tv,
     eff_prod[, ]    <- m[i, j] * mob_pop[i]
     P_eff[]         <- sum(eff_prod[, i]) # colSums
 
-    S_eff_prod[, ]  <- m[i, j] * S[i]
+    # first remove vaccinated people from S
+    S_eff_prod[, ]  <- m[i, j] * (S[i] - n_SV_eff[i])
     # S_eff[]         <- sum(S_eff_prod[, i]) # colSums
 
     V_eff_prod[, ]  <- m[i, j] * V[i]
@@ -139,55 +157,57 @@ meta_sim <- function(N_pop, ts, tv,
     ## =================================================
     ## Draws from binomial distributions for numbers changing between
     ## compartments:
-    n_SE_eff[, ]      <- ceiling(if(S[i] <= 0) 0 else (if(stoch == 1) rbinom(S_eff_prod[j, i], p_SE[i]) else S_eff_prod[j, i] * p_SE[i]))
+    n_SE_eff[, ]      <- if(S[i] <= 0) 0 else (if(stoch == 1) rbinom(S_eff_prod[j, i], p_SE[i]) else S_eff_prod[j, i] * p_SE[i])
     n_SE[]            <- sum(n_SE_eff[i, ]) # rowSums
     n_EI[]            <- if(E[i] == 0) 0 else (if(stoch == 1) rbinom(E[i], p_EIpresymp[i]) else E[i] * p_EIpresymp[i])
-    n_EI[]            <- ceiling(n_EI[i])
-    n_EIpresymp[]     <- ceiling(n_EI[i] * etopa[i])
+    # n_EI[]            <- n_EI[i]
+    n_EIpresymp[]     <- n_EI[i] * (1 - pea[i])
     n_EIasymp[]       <- n_EI[i] - n_EIpresymp[i]
     n_preIsymp[]      <- if(I_presymp[i] == 0) 0 else (if(stoch == 1) rbinom(I_presymp[i], p_preIsymp[i]) else I_presymp[i] * p_preIsymp[i])
-    n_preIsymp[]      <- ceiling(n_preIsymp[i])
+    # n_preIsymp[]      <- ceiling(n_preIsymp[i])
     n_IasympR[]       <- if(I_asymp[i] == 0) 0 else (if(stoch == 1) rbinom(I_asymp[i], p_IasympR[i]) else I_asymp[i] * p_IasympR[i])
-    n_IasympR[]       <- ceiling(n_IasympR[i])
+    # n_IasympR[]       <- ceiling(n_IasympR[i])
     n_IsympRH[]       <- if(I_symp[i] == 0) 0 else (if(stoch == 1) rbinom(I_symp[i], p_IsympRH[i]) else I_symp[i] * p_IsympRH[i])
-    n_IsympRH[]       <- ceiling(n_IsympRH[i])
-    n_IsympH[]        <- ceiling(n_IsympRH[i] * istohr[i])
+    # n_IsympRH[]       <- ceiling(n_IsympRH[i])
+    n_IsympH[]        <- n_IsympRH[i] * (1 - psr[i])
     n_IsympR[]        <- n_IsympRH[i] - n_IsympH[i]
     n_HRD[]           <- if(H[i] == 0) 0 else (if(stoch == 1) rbinom(H[i], p_HRD[i]) else H[i] * p_HRD[i])
-    n_HRD[]           <- ceiling(n_HRD[i])
-    n_HR[]            <- ceiling(n_HRD[i] * htor[i])
+    # n_HRD[]           <- ceiling(n_HRD[i])
+    n_HR[]            <- n_HRD[i] * phr[i]
     n_HD[]            <- n_HRD[i] - n_HR[i]
     n_RS[]            <- if(R[i] == 0) 0 else (if(stoch == 1) rbinom(R[i], p_RS[i]) else R[i] * p_RS[i])
-    n_RS[]            <- ceiling(n_RS[i])
+    # n_RS[]            <- ceiling(n_RS[i])
     n_VE_eff[, ]      <- if(stoch == 1) rbinom(V_eff_prod[j, i], p_VE[i]) else V_eff_prod[j, i] * p_VE[i]
     n_VE[]            <- sum(n_VE_eff[i, ]) # rowSums
-    n_VE[]            <- ceiling(n_VE[i])
+    # n_VE[]            <- ceiling(n_VE[i])
     n_VS[]            <- if(stoch == 1) rbinom(V[i] - n_VE[i], p_VS[i]) else (V[i] - n_VE[i]) * p_VS[i]
-    n_VS[]            <- ceiling(n_VS[i])
+    # n_VS[]            <- ceiling(n_VS[i])
 
     ## =================================================
     ## Initial states:
     initial(S[])            <- S_ini[i]
-    initial(E[])            <- 0
-    initial(I_presymp[])    <- 0
-    initial(I_asymp[])      <- 0
+    initial(E[])            <- E_ini[i]
+    initial(I_presymp[])    <- I_presymp_ini[i]
+    initial(I_asymp[])      <- I_asymp_ini[i]
     initial(I_symp[])       <- I_symp_ini[i]
     initial(I_all[])        <- I_symp_ini[i]
     initial(R[])            <- R_ini[i]
-    initial(H[])            <- 0
-    initial(D[])            <- 0
+    initial(H[])            <- H_ini[i]
+    initial(D[])            <- D_ini[i]
     initial(V[])            <- V_ini[i]
-    initial(cum_V[])        <- 0
+    initial(cum_V[])        <- V_ini[i]
     initial(P[])            <- P_ini[i]
-    initial(mob_pop[])      <- S_ini[i] + I_symp_ini[i]
+    initial(mob_pop[])      <- P_ini[i] - H_ini[i] - D_ini[i]
 
     ## =================================================
     ## additional output for debugging
     output(p_SE)          <- TRUE
     output(p_VE)          <- TRUE
+    output(p_HRD)         <- TRUE
     output(I_eff)         <- TRUE
     output(n_SE)          <- TRUE
     output(n_SV)          <- TRUE
+    output(n_VS)          <- TRUE
     output(n_VE)          <- TRUE
     output(n_EI)          <- TRUE
     output(n_EIpresymp)   <- TRUE
@@ -195,17 +215,25 @@ meta_sim <- function(N_pop, ts, tv,
     output(n_IsympRH)     <- TRUE
     output(n_IsympH)      <- TRUE
     output(n_IsympR)      <- TRUE
+    output(n_HRD)         <- TRUE
     output(n_HR)          <- TRUE
     output(n_HD)          <- TRUE
     output(n_IasympR)     <- TRUE
+    # output(S_eff_prod)    <- TRUE
+    # output(n_SE_eff)      <- TRUE
 
     ## =================================================
     ## User defined parameters - default in parentheses:
-    S_ini[]        <- user()
-    I_symp_ini[]   <- user()
-    V_ini[]        <- user()
-    P_ini[]        <- user()
-    R_ini[]        <- user()
+    S_ini[]         <- user()
+    I_symp_ini[]    <- user()
+    I_presymp_ini[] <- user()
+    I_asymp_ini[]   <- user()
+    V_ini[]         <- user()
+    P_ini[]         <- user()
+    R_ini[]         <- user()
+    E_ini[]         <- user()
+    H_ini[]         <- user()
+    D_ini[]         <- user()
 
     # beta_e         <- user(0.0165)
     beta_i[]         <- user()
@@ -217,19 +245,24 @@ meta_sim <- function(N_pop, ts, tv,
     EtoIpresymp[]    <- user()
     RtoS[]           <- user()
     VtoS[]           <- user()
-    etopa[]          <- user()
-    htor[]           <- user()
-    istohr[]         <- user()
+    pea[]            <- user()
+    phr[]            <- user()
+    psr[]            <- user()
     vac_eff[]        <- user()
 
     ## =================================================
     # dimensions of arrays
     N_pop           <- user()
-    dim(S_ini)      <- N_pop
-    dim(I_symp_ini) <- N_pop
-    dim(V_ini)      <- N_pop
-    dim(P_ini)      <- N_pop
-    dim(R_ini)      <- N_pop
+    dim(S_ini)         <- N_pop
+    dim(E_ini)         <- N_pop
+    dim(I_symp_ini)    <- N_pop
+    dim(I_asymp_ini)   <- N_pop
+    dim(I_presymp_ini) <- N_pop
+    dim(V_ini)         <- N_pop
+    dim(P_ini)         <- N_pop
+    dim(R_ini)         <- N_pop
+    dim(H_ini)         <- N_pop
+    dim(D_ini)         <- N_pop
 
     dim(S)           <- N_pop
     dim(E)           <- N_pop
@@ -255,9 +288,9 @@ meta_sim <- function(N_pop, ts, tv,
     dim(HtoRD)          <- N_pop
     dim(RtoS)           <- N_pop
     dim(VtoS)           <- N_pop
-    dim(etopa)          <- N_pop
-    dim(htor)           <- N_pop
-    dim(istohr)         <- N_pop
+    dim(pea)            <- N_pop
+    dim(phr)            <- N_pop
+    dim(psr)            <- N_pop
     dim(vac_eff)        <- N_pop
 
     dim(p_EIpresymp)    <- N_pop
@@ -324,6 +357,13 @@ meta_sim <- function(N_pop, ts, tv,
   if(length(phr) == 1) phr <- rep(phr, N_pop)
 
 
+  nsteps <- nsteps - 1
+
+  ## prepare vaccination input
+  tvac <- vac_mat[-nsteps, 1]
+  vac_mat <- vac_mat[-1, -1]
+
+  V0 <- vac_mat[1, ]
 
 
   model <- metaODIN$new(stoch = is.stoch,
@@ -331,7 +371,12 @@ meta_sim <- function(N_pop, ts, tv,
                         beta_i = ts,
                         beta_v = tv,
                         S_ini = S0,
+                        E_ini = E0,
+                        I_asymp_ini = Ia0,
+                        I_presymp_ini = Ip0,
                         I_symp_ini = I0,
+                        H_ini = H0,
+                        D_ini = D0,
                         P_ini = P0,
                         V_ini = V0,
                         R_ini = R0,
@@ -344,16 +389,74 @@ meta_sim <- function(N_pop, ts, tv,
                         vac = vac_mat,
                         VtoS = 1/dv,
                         EtoIpresymp = 1/de,
-                        etopa = pea,
+                        pea = pea,
                         pretoIsymp = 1/dp,
                         IasymptoR = 1/da,
                         IsymptoRH = 1/ds,
-                        istohr = psr,
+                        psr = psr,
                         HtoRD = 1/dh,
-                        htor = phr,
+                        phr = phr,
                         RtoS = 1/dr,
                         vac_eff = ve)
 
   out <- model$run(step = 0:nsteps)
-  return(out)
+  out_df <- data.frame(out)
+
+  long_out <- out_df %>%
+    tidyr::pivot_longer(
+      cols = -c("step", "time"),               # Exclude 'time' from being pivoted
+      names_to = c("disease_state", "population_id"),  # Create new columns for disease state and subpopulation
+      names_pattern = "([A-Za-z_]+)\\.(\\d+)\\.",  # Regex to extract the disease state and subpopulation ID
+      values_to = "value")          # Column to store the actual values
+
+  long_out <- data.table::data.table(long_out)
+
+  # Checkpointing
+  if(do_chk){
+    chk <- list()
+
+    chk[["N_pop"]] <- N_pop
+    chk[["delta_t"]] <- delta_t
+
+    chk[["m_weekday_day"]] <- m_weekday_day
+    chk[["m_weekday_night"]] <- m_weekday_night
+    chk[["m_weekend_day"]] <- m_weekend_day
+    chk[["m_weekend_night"]] <- m_weekend_night
+
+    chk[["ts"]] <- ts
+    chk[["tv"]] <- tv
+    chk[["ve"]] <- ve
+    chk[["dv"]] <- dv
+    chk[["de"]] <- de
+    chk[["dp"]] <- dp
+    chk[["da"]] <- da
+    chk[["ds"]] <- ds
+    chk[["dh"]] <- dh
+    chk[["dr"]] <- dr
+    chk[["pea"]] <- pea
+    chk[["psr"]] <- psr
+    chk[["phr"]] <- phr
+
+    chk[["vac_time_id"]] <- tvac
+    chk[["vac_counts"]] <- vac_mat
+
+    chk[["S"]] <- long_out[(long_out$step == nsteps) & (long_out$disease_state == "S"), c("value")]
+    chk[["E"]] <- long_out[(long_out$step == nsteps) & (long_out$disease_state == "E"), c("value")]
+    chk[["Ia"]] <- long_out[(long_out$step == nsteps) & (long_out$disease_state == "I_asymp"), c("value")]
+    chk[["Ip"]] <- long_out[(long_out$step == nsteps) & (long_out$disease_state == "I_presymp"), c("value")]
+    chk[["Is"]] <- long_out[(long_out$step == nsteps) & (long_out$disease_state == "I_symp"), c("value")]
+    chk[["H"]] <- long_out[(long_out$step == nsteps) & (long_out$disease_state == "H"), c("value")]
+    chk[["D"]] <- long_out[(long_out$step == nsteps) & (long_out$disease_state == "D"), c("value")]
+    chk[["P"]] <- long_out[(long_out$step == nsteps) & (long_out$disease_state == "P"), c("value")]
+    chk[["V"]] <- long_out[(long_out$step == nsteps) & (long_out$disease_state == "V"), c("value")]
+    chk[["R"]] <- long_out[(long_out$step == nsteps) & (long_out$disease_state == "R"), c("value")]
+
+    if(!is.null(chk_file_name)) {
+      saveRDS(chk, file = chk_file_name)
+    }
+  }
+
+
+  return(long_out)
+  # return(out_df)
 }

@@ -14,7 +14,7 @@ virus diseases.
 ## Model
 
 <figure>
-<img src="man/figures/metaRVM.png" alt="Model schematics" />
+<img src="man/figures/GIRD-Vensim.svg" alt="Model schematics" />
 <figcaption aria-hidden="true">Model schematics</figcaption>
 </figure>
 
@@ -35,6 +35,7 @@ command line.
 
 ``` r
 library(MetaRVM)
+library(ggplot2)
 ```
 
 We will create some data sets that will be used for this demonstration.
@@ -69,12 +70,12 @@ pop_zones$S0 <- pop_zones$N - pop_zones$I0 - pop_zones$V0 - pop_zones$R0
 
 pop_zones
 #>      N   S0 I0 V0  R0
-#> 1 1062  812 88  7 155
-#> 2 1158  923 47  4 184
-#> 3 1481 1302 10  3 166
-#> 4 1354 1168 69 10 107
-#> 5 1251  998 63  8 182
-#> 6 1138  914 42  9 173
+#> 1 1294 1082 58  2 152
+#> 2 1416 1160 92 10 154
+#> 3 1039  900 25  1 113
+#> 4 1235 1063 55  7 110
+#> 5 1289 1076 43  3 167
+#> 6 1398 1163 86  8 141
 ```
 
 #### Vaccination
@@ -86,23 +87,22 @@ left to right.
 
 ``` r
 ## Vaccine profile
-tt <- seq(0, 100, by = 14)
+sim_length <- 100
+tt <- seq(0, sim_length, by = 1)
 nt <- length(tt)
 vol <- sample(1:10, (nt-1)*N_pop, replace = TRUE)
 
 vac_zones <- cbind(tt, rbind(pop_zones$V0, matrix(vol, nrow = nt-1)))
 colnames(vac_zones) <- c("t", paste0("v", 1:N_pop))
 
-vac_zones
-#>       t v1 v2 v3 v4 v5 v6
-#> [1,]  0  7  4  3 10  8  9
-#> [2,] 14  1  3  9  2  7  3
-#> [3,] 28  7  8  8  9  7  2
-#> [4,] 42  2  2  4  3  7  3
-#> [5,] 56  7  5  6  1  4  5
-#> [6,] 70  5 10 10  7  5 10
-#> [7,] 84  8  6  9  6  7  7
-#> [8,] 98 10  1  6  4  8  4
+head(vac_zones)
+#>      t v1 v2 v3 v4 v5 v6
+#> [1,] 0  2 10  1  7  3  8
+#> [2,] 1  7  5  4  5  1  6
+#> [3,] 2  2  9  1 10  7  1
+#> [4,] 3  8  8  6  9 10  3
+#> [5,] 4  5  4  3  9  4  9
+#> [6,] 5  8  4  9  8  6  2
 ```
 
 ``` r
@@ -137,15 +137,13 @@ out <- meta_sim(N_pop = N_pop,
                 S0 = pop_zones$S0,
                 I0 = pop_zones$I0,
                 P0 = pop_zones$N,
-                V0 = pop_zones$V0,
                 R0 = pop_zones$R0,
                 m_weekday_day = m_weekday_day,
                 m_weekend_day = m_weekend_day,
                 m_weekday_night = m_weekday_night,
                 m_weekend_night = m_weekend_night,
                 delta_t = 0.5,
-                tvac = vac_zones[, 1],
-                vac_mat = as.matrix(vac_zones[, 2:7]),
+                vac_mat = as.matrix(vac_zones),
                 dv = 50,
                 de = 3,
                 pea = 0.5,
@@ -162,89 +160,69 @@ out <- meta_sim(N_pop = N_pop,
                 seed = NULL)
 #> Loading required namespace: pkgbuild
 #> Generating model in c
-#> ℹ Re-compiling odind60a1e19 (debug build)
+#> ℹ Re-compiling odin1b45cb2c (debug build)
 #> ── R CMD INSTALL ───────────────────────────────────────────────────────────────
-#> * installing *source* package ‘odind60a1e19’ ...
+#> * installing *source* package ‘odin1b45cb2c’ ...
 #> ** using staged installation
 #> ** libs
 #> using C compiler: ‘gcc (Ubuntu 13.3.0-6ubuntu2~24.04) 13.3.0’
 #> gcc -I"/usr/share/R/include" -DNDEBUG       -fpic  -g -O2 -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -ffile-prefix-map=/build/r-base-FPSnzf/r-base-4.3.3=. -fstack-protector-strong -fstack-clash-protection -Wformat -Werror=format-security -fcf-protection -fdebug-prefix-map=/build/r-base-FPSnzf/r-base-4.3.3=/usr/src/r-base-4.3.3-2build2 -Wdate-time -D_FORTIFY_SOURCE=3  -UNDEBUG -Wall -pedantic -g -O0 -c odin.c -o odin.o
 #> gcc -I"/usr/share/R/include" -DNDEBUG       -fpic  -g -O2 -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -ffile-prefix-map=/build/r-base-FPSnzf/r-base-4.3.3=. -fstack-protector-strong -fstack-clash-protection -Wformat -Werror=format-security -fcf-protection -fdebug-prefix-map=/build/r-base-FPSnzf/r-base-4.3.3=/usr/src/r-base-4.3.3-2build2 -Wdate-time -D_FORTIFY_SOURCE=3  -UNDEBUG -Wall -pedantic -g -O0 -c registration.c -o registration.o
-#> gcc -shared -L/usr/lib/R/lib -Wl,-Bsymbolic-functions -flto=auto -ffat-lto-objects -Wl,-z,relro -o odind60a1e19.so odin.o registration.o -L/usr/lib/R/lib -lR
-#> installing to /tmp/Rtmpwr1Ufg/devtools_install_131118663b7c97/00LOCK-file13111812675a94/00new/odind60a1e19/libs
+#> gcc -shared -L/usr/lib/R/lib -Wl,-Bsymbolic-functions -flto=auto -ffat-lto-objects -Wl,-z,relro -o odin1b45cb2c.so odin.o registration.o -L/usr/lib/R/lib -lR
+#> installing to /tmp/Rtmp8YQ8wA/devtools_install_71b6316030028/00LOCK-file71b634ab24be3/00new/odin1b45cb2c/libs
 #> ** checking absolute paths in shared objects and dynamic libraries
-#> * DONE (odind60a1e19)
-#> ℹ Loading odind60a1e19
-```
+#> * DONE (odin1b45cb2c)
+#> ℹ Loading odin1b45cb2c
 
-There are some utility functions to extract a subset of disease states
-from the output data frame. For example, if we want to extract all
-infectious compartments, we can do this by the utility function
-`get_disease_state`. We can further subset the output by HCE zone id.
-
-``` r
-out_I <- get_disease_state(data.frame(out), disease_states = c("I_presymp", "I_asymp", "I_symp"))
-out_I_hce2 <- get_HCEZ(data.frame(out), disease_states = c("I_presymp", "I_asymp", "I_symp"), HCEZ_id = 2)
+head(out, n = 20)
+#>      step  time disease_state population_id value
+#>     <num> <num>        <char>        <char> <num>
+#>  1:     0     0             S             1  1082
+#>  2:     0     0             S             2  1160
+#>  3:     0     0             S             3   900
+#>  4:     0     0             S             4  1063
+#>  5:     0     0             S             5  1076
+#>  6:     0     0             S             6  1163
+#>  7:     0     0             E             1     0
+#>  8:     0     0             E             2     0
+#>  9:     0     0             E             3     0
+#> 10:     0     0             E             4     0
+#> 11:     0     0             E             5     0
+#> 12:     0     0             E             6     0
+#> 13:     0     0     I_presymp             1     0
+#> 14:     0     0     I_presymp             2     0
+#> 15:     0     0     I_presymp             3     0
+#> 16:     0     0     I_presymp             4     0
+#> 17:     0     0     I_presymp             5     0
+#> 18:     0     0     I_presymp             6     0
+#> 19:     0     0       I_asymp             1     0
+#> 20:     0     0       I_asymp             2     0
+#>      step  time disease_state population_id value
 ```
 
 ## Vizualizations
 
-These are some easy way to create visualizations on the output of the
+These are some easy ways to create visualizations on the output of the
 simulation. These functionalities will be added later as functions to
 the package.
 
 #### Aggregate level plot
 
 ``` r
-library(ggplot2)
-library(dplyr)
-#> 
-#> Attaching package: 'dplyr'
-#> The following objects are masked from 'package:stats':
-#> 
-#>     filter, lag
-#> The following objects are masked from 'package:base':
-#> 
-#>     intersect, setdiff, setequal, union
+# covert to daily counts and long format
+# The daily_output() function requires an instance column in the out data.table
+# instance column is used to create summaries if there are multiple simulations
+# occuring.
 
-compartment_colors <- c("S" = "steelblue3",
-                              "E" = "tan1",
-                              "I_presymp" = "salmon3",
-                              "I_asymp" = "orangered2",
-                              "I_symp" = "red4",
-                              "H" = "mediumpurple",
-                              "R" = "green",
-                              "D" = "grey",
-                              "V" = "darkgreen")
+out$instance <- 1
 
-long_out <- get_disease_state(data.frame(out))
-
-ggplot(long_out %>% filter(disease_state %in% c("S", "E", "H", "D",
-                                                "I_presymp", "I_asymp",
-                                                "I_symp", "R", "V")) %>%
-                          mutate(disease_state = factor(disease_state,
-                                                        levels = c("S", "E", "H", "D",
-                                                                   "I_presymp", "I_asymp",
-                                                                   "I_symp", "R", "V"))) %>%
-                          group_by(step, disease_state) %>%
-                          summarize(total_value = sum(value), .groups = "drop"),
-       aes(x = step, y = total_value, color = disease_state)) +
-          geom_line(linewidth = 0.5, alpha = 0.5) +
-          scale_color_manual(values = compartment_colors) +
-          labs(
-            title = "Disease Compartments Over Time",
-            x = "steps",
-            y = "Counts",
-            color = "Compartment",
-          ) +
-          theme_bw() +
-          theme(
-            plot.title = element_text(hjust = 0.5),
-            legend.position = "right"
-          )
+long_out_daily <- daily_output(out, start_date = as.Date("2023-09-01"))
+plot_metaRVM(long_out_daily,
+                   conf_level = 90,
+                   value_column = "total_value", is.plotly = FALSE)
 ```
 
-<img src="man/figures/README-unnamed-chunk-5-1.png" width="100%" />
+<img src="man/figures/README-unnamed-chunk-4-1.png" width="100%" />
 
 To run this simulation interactively, use the provided shiny app
 
