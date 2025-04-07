@@ -12,9 +12,22 @@
 plot_metaRVM <- function(long_out_daily,
                          conf_level,
                          value_column,
+                         compartments = NULL,
+                         compartment_colors = NULL,
                          is.plotly = TRUE){
 
-  compartment_colors <- c("Susceptible" = "steelblue3",
+  if(is.null(compartments)) compartments <- c("Susceptible",
+                                             "Exposed",
+                                             "Presymptomatic",
+                                             "Asymptomatic",
+                                             "Symptomatic",
+                                             "Hospitalized",
+                                             "Recovered",
+                                             "Dead",
+                                             "Vaccinated")
+
+  if(is.null(compartment_colors)){
+    compartment_colors <- c("Susceptible" = "steelblue3",
                           "Exposed" = "tan1",
                           "Presymptomatic" = "salmon3",
                           "Asymptomatic" = "orangered2",
@@ -23,9 +36,11 @@ plot_metaRVM <- function(long_out_daily,
                           "Recovered" = "green",
                           "Dead" = "grey",
                           "Vaccinated" = "darkgreen")
+  }
 
   # Compute summary statistics (median and selected confidence interval)
   summary_out <- summarize_out(long_out_daily, conf_level, value_column)
+  summary_out <- summary_out %>% filter(disease_state %in% compartments)
 
   p <- ggplot2::ggplot(summary_out, ggplot2::aes(x = date, y = median)) +
     ggplot2::geom_ribbon(ggplot2::aes(ymin = lower_bound, ymax = upper_bound, fill = disease_state),
