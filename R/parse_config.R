@@ -337,6 +337,9 @@ draw_sample <- function(config_list, N_pop, seed = NULL){
     if(config_list$dist == "beta")
       x <- stats::rbeta(1, shape1 = config_list$shape1, shape2 = config_list$shape2)
 
+    if(config_list$dist == "gaussian")
+      x <- stats::rnorm(1, mean = config_list$mean, sd = config_list$sd)
+
     return(rep(x, N_pop))
   } else return(config_list)
 }
