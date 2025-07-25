@@ -4,7 +4,14 @@
 \alias{plot_metaRVM}
 \title{Aggregate outcome plot}
 \usage{
-plot_metaRVM(long_out_daily, conf_level, value_column, is.plotly = TRUE)
+plot_metaRVM(
+  long_out_daily,
+  conf_level,
+  value_column,
+  compartments = NULL,
+  compartment_colors = NULL,
+  is.plotly = TRUE
+)
 }
 \arguments{
 \item{is.plotly}{}

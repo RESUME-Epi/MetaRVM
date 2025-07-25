@@ -14,6 +14,14 @@ parse_config <- function(config_file){
   # read the yaml config file
   yaml_data <- yaml::read_yaml(config_file)
 
+  # check random seed
+  if(!is.null(yaml_data$simulation_config$random_seed)){
+    random_seed <- yaml_data$simulation_config$randmom_seed
+    set.seed(random_seed)
+  } else {
+    random_seed <- NULL
+  }
+
   # =====================================================
   # read mandatory parameters
 
@@ -32,9 +40,8 @@ parse_config <- function(config_file){
   nsim <- ifelse(!is.null(yaml_data$simulation_config$nsim),
                  yaml_data$simulation_config$nsim, 1)
 
-  if(!is.null(yaml_data$simulation_config$random_seed)){
-    random_seed <- yaml_data$simulation_config$randmom_seed
-  }
+
+
   if(!is.null(yaml_data$simulation_config$chk_dir)){
     chk_dir <- yaml_data$simulation_config$chk_dir
 
@@ -208,20 +215,20 @@ parse_config <- function(config_file){
   }
 
   ## Stochastic parameters
-  ts <- do.call(rbind, (purrr::map(1:nsim, ~ draw_sample(ts, N_pop, random_seed))))
-  tv <- do.call(rbind, (purrr::map(1:nsim, ~ draw_sample(tv, N_pop, random_seed))))
-  ve <- do.call(rbind, (purrr::map(1:nsim, ~ draw_sample(ve, N_pop, random_seed))))
-  dv <- do.call(rbind, (purrr::map(1:nsim, ~ draw_sample(dv, N_pop, random_seed))))
-  de <- do.call(rbind, (purrr::map(1:nsim, ~ draw_sample(de, N_pop, random_seed))))
-  dp <- do.call(rbind, (purrr::map(1:nsim, ~ draw_sample(dp, N_pop, random_seed))))
-  da <- do.call(rbind, (purrr::map(1:nsim, ~ draw_sample(da, N_pop, random_seed))))
-  ds <- do.call(rbind, (purrr::map(1:nsim, ~ draw_sample(ds, N_pop, random_seed))))
-  dh <- do.call(rbind, (purrr::map(1:nsim, ~ draw_sample(dh, N_pop, random_seed))))
-  dr <- do.call(rbind, (purrr::map(1:nsim, ~ draw_sample(dr, N_pop, random_seed))))
-  pea <- do.call(rbind, (purrr::map(1:nsim, ~ draw_sample(pea, N_pop, random_seed))))
-  psr <- do.call(rbind, (purrr::map(1:nsim, ~ draw_sample(psr, N_pop, random_seed))))
-  phr <- do.call(rbind, (purrr::map(1:nsim, ~ draw_sample(phr, N_pop, random_seed))))
 
+  ts <- do.call(rbind, (purrr::map(1:nsim, ~ draw_sample(ts, N_pop))))
+  tv <- do.call(rbind, (purrr::map(1:nsim, ~ draw_sample(tv, N_pop))))
+  ve <- do.call(rbind, (purrr::map(1:nsim, ~ draw_sample(ve, N_pop))))
+  dv <- do.call(rbind, (purrr::map(1:nsim, ~ draw_sample(dv, N_pop))))
+  de <- do.call(rbind, (purrr::map(1:nsim, ~ draw_sample(de, N_pop))))
+  dp <- do.call(rbind, (purrr::map(1:nsim, ~ draw_sample(dp, N_pop))))
+  da <- do.call(rbind, (purrr::map(1:nsim, ~ draw_sample(da, N_pop))))
+  ds <- do.call(rbind, (purrr::map(1:nsim, ~ draw_sample(ds, N_pop))))
+  dh <- do.call(rbind, (purrr::map(1:nsim, ~ draw_sample(dh, N_pop))))
+  dr <- do.call(rbind, (purrr::map(1:nsim, ~ draw_sample(dr, N_pop))))
+  pea <- do.call(rbind, (purrr::map(1:nsim, ~ draw_sample(pea, N_pop))))
+  psr <- do.call(rbind, (purrr::map(1:nsim, ~ draw_sample(psr, N_pop))))
+  phr <- do.call(rbind, (purrr::map(1:nsim, ~ draw_sample(phr, N_pop))))
 
 
   ## TODO: check for mixing matrix consistency (rowsum = 1)
@@ -291,7 +298,7 @@ parse_config <- function(config_file){
 process_vac_data <- function(vac_dt, sim_start_date, sim_length, delta_t) {
 
   vac_dt$date <- as.Date(vac_dt$date,
-                         tryFormats = c("%Y-%m-%d", "%Y/%m/%d", "%m/%d/%Y"))
+                         tryFormats = c("%m/%d/%Y"))
 
   date_filtered <- vac_dt %>%
     dplyr::filter(date >= as.Date(sim_start_date)) %>%

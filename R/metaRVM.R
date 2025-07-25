@@ -9,6 +9,9 @@
 #'
 metaRVM <- function(yaml_config){
 
+  ## TODO: use Generic Function to call metaRVM on yaml config
+  ## or model_config.
+
   # parse config
   model_config <- parse_config(yaml_config)
 

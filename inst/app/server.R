@@ -13,6 +13,10 @@ library(shinyjs)
 
 server <- function(input, output, session) {
 
+  observeEvent(input$reset, {
+    session$reload()  # Forces a full session reload
+  })
+
   # Function to create a formatted title with the confidence interval
   format_ci_title <- function(base_title = "") {
     paste0(base_title, " (", input$conf_level, "% confidence interval)")
@@ -54,6 +58,107 @@ server <- function(input, output, session) {
     # Read the uploaded YAML file
     yaml_data <- read_yaml(input$config$datapath)
     model_config <- parse_config(input$config$datapath)
+
+
+    ## Check the consistency in the model inputs
+
+    # Check the dimensions (number of subpopulations)
+    # of each input file
+
+    # npop <- model_config$N_pop # assume this is true
+    #
+    # npop_vac <- ncol(model_config$vac_mat) - 1
+    # npop_m_wd_d <- nrow(model_config$m_wd_d)
+    # npop_m_wd_n <- nrow(model_config$m_wd_n)
+    # npop_m_we_d <- nrow(model_config$m_we_d)
+    # npop_m_we_n <- nrow(model_config$m_we_n)
+    #
+    # # Check if S0 + I0 + V0 + R0 = N
+    # chk_N <- sum(model_config$P_ini - (model_config$S_ini +
+    #                                    model_config$I_symp_ini +
+    #                                    model_config$R_ini +
+    #                                    model_config$V_ini))
+    #
+    # # Check if mixing matrices rowsums are 1
+    # chk_m_wd_d <- abs(rowSums(model_config$m_wd_d) - 1) > 1e-10
+    # chk_m_wd_n <- abs(rowSums(model_config$m_wd_n) - 1) > 1e-10
+    # chk_m_we_d <- abs(rowSums(model_config$m_we_d) - 1) > 1e-10
+    # chk_m_we_n <- abs(rowSums(model_config$m_we_n) - 1) > 1e-10
+
+    # if(npop != npop_vac){
+    #   showModal(modalDialog(
+    #     title = "Error",
+    #     paste0("Vaccination data does not have ", npop, " subpopulations"),
+    #     easyClose = TRUE,
+    #     footer = modalButton("Close")
+    #   ))
+    #   } else if(npop != npop_m_wd_d){
+    #   showModal(modalDialog(
+    #     title = "Error",
+    #     paste0("Weekday daytime mixing matrix does not have ", npop, " rows"),
+    #     easyClose = TRUE,
+    #     footer = modalButton("Close")
+    #   ))
+    #   } else if(npop != npop_m_wd_n){
+    #   showModal(modalDialog(
+    #     title = "Error",
+    #     paste0("Weekday nighttime mixing matrix does not have ", npop, " rows"),
+    #     easyClose = TRUE,
+    #     footer = modalButton("Close")
+    #   ))
+    #   } else if(npop != npop_m_we_d){
+    #   showModal(modalDialog(
+    #     title = "Error",
+    #     paste0("Weekend daytime mixing matrix does not have ", npop, " rows"),
+    #     easyClose = TRUE,
+    #     footer = modalButton("Close")
+    #   ))
+    #   } else if(npop != npop_m_we_n){
+    #   showModal(modalDialog(
+    #     title = "Error",
+    #     paste0("Weekend nighttime mixing matrix does not have ", npop, " rows"),
+    #     easyClose = TRUE,
+    #     footer = modalButton("Close")
+    #   ))
+    #   } else if(abs(chk_N) > 0){
+    #   showModal(modalDialog(
+    #     title = "Error",
+    #     paste0("S0 + I0 + V0 + R0 != N"),
+    #     easyClose = TRUE,
+    #     footer = modalButton("Close")
+    #   ))
+    #   } else if(chk_m_wd_d){
+    #   showModal(modalDialog(
+    #     title = "Error",
+    #     "Weekday daytime mixing matrix does not have row sums equal to 1.",
+    #     easyClose = TRUE,
+    #     footer = modalButton("Close")
+    #   ))
+    #   } else if(chk_m_wd_n){
+    #   showModal(modalDialog(
+    #     title = "Error",
+    #     "Weekday nighttime mixing matrix does not have row sums equal to 1.",
+    #     easyClose = TRUE,
+    #     footer = modalButton("Close")
+    #   ))
+    #   } else if(chk_m_we_d){
+    #   showModal(modalDialog(
+    #     title = "Error",
+    #     "Weekend daytime mixing matrix does not have row sums equal to 1.",
+    #     easyClose = TRUE,
+    #     footer = modalButton("Close")
+    #   ))
+    #   } else if(chk_m_we_n){
+    #     showModal(modalDialog(
+    #       title = "Error",
+    #       "Weekend nighttime mixing matrix does not have row sums equal to 1.",
+    #       easyClose = TRUE,
+    #       footer = modalButton("Close")
+    #     ))
+    #   } else {
+    #     cat(as.yaml(yaml_data))
+    # }
+
 
     if(any(abs(rowSums(model_config$m_wd_d) - 1) > 1e-10) |
        any(abs(rowSums(model_config$m_wd_n) - 1) > 1e-10) |
@@ -450,20 +555,22 @@ server <- function(input, output, session) {
     # Download filtered results
     output$download <- downloadHandler(
 
-      yaml_data <- parse_config(input$config$datapath),
-
       filename = function() {
         # paste("out_", Sys.Date(), ".zip", sep = "")
         "out.zip"
       },
       content = function(file) {
 
+        yaml_data <- parse_config(input$config$datapath)
+        yaml_config <- yaml::read_yaml(input$config$datapath)
+        run_id <- yaml_config$run_id
+
         tmp <- sample(10000, 1)
 
-        sim_input <- paste("in_", tmp, ".yaml")
-        sim_output <- paste("out_", tmp, ".csv", sep = "")
+        sim_input <- paste("in_", run_id, ".RDS")
+        sim_output <- paste("out_", run_id, ".csv", sep = "")
 
-        write_yaml(yaml_data, sim_input)
+        saveRDS(yaml_data, file = sim_input)
         write.csv(sub_out(), sim_output, row.names = FALSE)
 
         zip(file, files = c(sim_input, sim_output))

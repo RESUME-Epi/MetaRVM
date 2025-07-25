@@ -248,6 +248,11 @@ ui <- tagList(
       ),
       tabPanel("Simulation Control",
           fluidRow(
+            column(12,
+                   card(
+                     div(class = "custom-card-body",
+                         actionButton("reset", "Reset", class = "custom-button")))),
+            br(),
             column(4,
                    card(
                      div(class = "custom-card",
