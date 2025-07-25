@@ -34,7 +34,8 @@ parse_config <- function(config_file){
   pop_map <- data.table::fread(pop_map_file, colClasses = "character")
 
   if(!is.null(yaml_data$simulation_config$start_date)) {
-    start_date <- as.Date(yaml_data$simulation_config$start_date)
+    start_date <- as.Date(yaml_data$simulation_config$start_date,
+                          tryFormats = c("%m/%d/%Y"))
   }
   sim_length <- yaml_data$simulation_config$length
   nsim <- ifelse(!is.null(yaml_data$simulation_config$nsim),
@@ -130,7 +131,7 @@ parse_config <- function(config_file){
   if(!is.null(yaml_data$population_data$vaccination)){
 
     vac_file <- yaml_data$population_data$vaccination
-    vac_dt <- data.table::fread(vac_file)
+    vac_dt <- data.table::fread(vac_file, header = TRUE)
     processed_vac <- process_vac_data(vac_dt,
                                       sim_start_date = start_date,
                                       sim_length = sim_length,

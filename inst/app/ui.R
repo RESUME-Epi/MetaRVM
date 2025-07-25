@@ -173,7 +173,7 @@ ui <- tagList(
                    br(),
                    br(),
                    # DiagrammeR::grVizOutput("compartment_plot"),
-                   img(src = "GIRD-Vensim.svg", align = "center", height="90%", width="90%"),
+                   img(src = "GIRD_v2.png", align = "center", height="90%", width="90%"),
                    br(),
                    br(),
                    br(),
@@ -183,7 +183,7 @@ ui <- tagList(
                      Majority of the parameters are scalar valued parameter (but can be vectors) which can be directly specified in the appropriate
                      fields. Others need to supplied via CSV or text file. Below is a brief description of the list of inputs,
                      their structure and acceptable ranges."),
-                   img(src = "example_config.png", align = "center", height="90%", width="90%"),
+                   img(src = "example_config.png", align = "center", height="50%", width="auto"),
                     tags$ul(
                       tags$li(strong("File inputs:"),
                               tags$ul(
@@ -193,18 +193,25 @@ ui <- tagList(
                                S0: number of susceptible at the start of the simulation, I0: number of
                                  infected people at the start of the simulation, V0: number of vaccinated
                                  people at the start of the simulation, R0: number of recovered
-                                 people (from an earlier exposure) at the start of the simulation"),
-                                tags$li(strong("accination:"), tags$br(),
+                                 people (from an earlier exposure) at the start of the simulation.",
+                                        br(),
+                                        img(src = "pop_init_screenshot.png", align = "center", height="50%", width="auto")),
+                                tags$li(strong("Vaccination:"), tags$br(),
                                         HTML("&nbsp;&nbsp;&nbsp;&nbsp;"), "A CSV file with header consisting of the number of (subpopulations + 1) many columns.
                                  The first column contains calendar dates and the remaining
-                               columns hold the number of vaccinations in each of the subpopulations."),
+                               columns hold the number of vaccinations in each of the subpopulations. The column name for the
+                                        dates must be date and the dates are needed to be provided in the mm/dd/yyyy format.",
+                                        br(),
+                                        img(src = "vac_screenshot.png", align = "center", height="50%", width="auto")),
                                 tags$li(strong("Mixing matrix:"), tags$br(),
-                                        HTML("&nbsp;&nbsp;&nbsp;&nbsp;"), "A CSV file of mixing matrix. There are four sets of
+                                        HTML("&nbsp;&nbsp;&nbsp;&nbsp;"), "A CSV file of mixing matrix with no column or row header. There are four sets of
                                  mixing matrices required for the simulation, accounting for different mixing patterns in
                                  weekdays vs weekends and in day time vs night time. The rows of a mixing matrix should add up to 1."),
                                 tags$li(strong("mapping:"), tags$br(),
                                         HTML("&nbsp;&nbsp;&nbsp;&nbsp;"), "A CSV file with header consisting of the sub-population demographic
-                                        mapping. "),
+                                        mapping. ",
+                                        br(),
+                                        img(src = "pop_map_screenshot.png", align = "center", height="50%", width="auto")),
                                 )
                               )
                     ),
@@ -228,7 +235,7 @@ ui <- tagList(
                    tags$ul(
                      tags$li(strong("Settings"),
                        tags$ul(
-                         tags$li(strong("Start date:"), "a calendar date, must be a Monday"),
+                         tags$li(strong("Start date:"), "a calendar date in the mm/dd/yyyy format, must be a Monday"),
                          # tags$li(strong("Model time step:"), "positive real number, simulation time step"),
                          tags$li(strong("Simulation length:"), "days to simulate, a positive integer" ),
                          # tags$li(strong("reps:"), "number of replicates to run, a positive integer" ),
@@ -239,7 +246,7 @@ ui <- tagList(
                    br(),
                    br(),
                    p("The disease parameters can be set to subpopulation specific values via additional tags."),
-                   img(src = "example_disease_parameter.png", align = "center", height="90%", width="90%"),
+                   img(src = "example_disease_parameter.png", align = "center", height="50%", width="auto%"),
                    br(),
                    br(),
                    br()
