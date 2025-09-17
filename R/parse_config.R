@@ -192,28 +192,6 @@ parse_config <- function(config_file){
     if(length(phr) == 1) phr <- rep(phr, N_pop)
   }
 
-  ## check if population specific disease params are present
-  if(!is.null(yaml_data$sub_disease_params)){
-
-    sub_disease_params <- yaml_data$sub_disease_params
-    cats_to_modify <- names(sub_disease_params)
-
-    for (cat in cats_to_modify){
-      cat_vals <- names(sub_disease_params[[cat]])
-
-      for (cat_val in cat_vals){
-        row_ids <- which(pop_map[[cat]] == cat_val)
-        params_to_modify <- names(sub_disease_params[[cat]][[cat_val]])
-
-        for (param in params_to_modify){
-          temp_param <- get(param)
-          temp_param[row_ids] <- sub_disease_params[[cat]][[cat_val]][[param]]
-          assign(param, temp_param)
-        }
-      }
-    }
-
-  }
 
   ## Stochastic parameters
 
@@ -230,6 +208,31 @@ parse_config <- function(config_file){
   pea <- do.call(rbind, (purrr::map(1:nsim, ~ draw_sample(pea, N_pop))))
   psr <- do.call(rbind, (purrr::map(1:nsim, ~ draw_sample(psr, N_pop))))
   phr <- do.call(rbind, (purrr::map(1:nsim, ~ draw_sample(phr, N_pop))))
+
+  ## check if population specific disease params are present
+  if(!is.null(yaml_data$sub_disease_params)){
+
+    sub_disease_params <- yaml_data$sub_disease_params
+    cats_to_modify <- names(sub_disease_params)
+
+    for (cat in cats_to_modify){
+      cat_vals <- names(sub_disease_params[[cat]])
+
+      for (cat_val in cat_vals){
+        row_ids <- which(pop_map[[cat]] == cat_val)
+        params_to_modify <- names(sub_disease_params[[cat]][[cat_val]])
+
+        for (param in params_to_modify){
+          temp_param <- get(param)
+          temp_param[, row_ids] <- sub_disease_params[[cat]][[cat_val]][[param]]
+          assign(param, temp_param)
+        }
+      }
+    }
+
+  }
+
+
 
 
   ## TODO: check for mixing matrix consistency (rowsum = 1)
