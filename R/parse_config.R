@@ -182,6 +182,7 @@ parse_config <- function(config_file){
     if(length(tv) == 1) tv <- rep(tv, N_pop)
     if(length(ve) == 1) ve <- rep(ve, N_pop)
     if(length(dv) == 1) dv <- rep(dv, N_pop)
+    if(length(de) == 1) dv <- rep(de, N_pop)
     if(length(dp) == 1) dp <- rep(dp, N_pop)
     if(length(da) == 1) da <- rep(da, N_pop)
     if(length(ds) == 1) ds <- rep(ds, N_pop)
