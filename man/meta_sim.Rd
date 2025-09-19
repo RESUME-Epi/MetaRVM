@@ -2,7 +2,7 @@
 % Please edit documentation in R/metaODIN.R
 \name{meta_sim}
 \alias{meta_sim}
-\title{Metapopulation respiratory virus model Simulator}
+\title{Metapopulation Respiratory Virus Model Simulator}
 \usage{
 meta_sim(
   N_pop,
@@ -42,78 +42,291 @@ meta_sim(
 )
 }
 \arguments{
-\item{N_pop}{Number of sub-populations}
+\item{N_pop}{Integer. Number of demographic subpopulations in the model}
 
-\item{ts}{A scalar or vector, transmission rate for susceptible population}
+\item{ts}{Numeric vector or scalar. Transmission rate for symptomatic individuals
+in susceptible population. If scalar, applied to all subpopulations}
 
-\item{tv}{A scalar or vector, transmission rate for vaccinated population}
+\item{tv}{Numeric vector or scalar. Transmission rate for symptomatic individuals
+in vaccinated population. If scalar, applied to all subpopulations}
 
-\item{S0}{A vector of initial number of susceptible people in N_pop subpopulations}
+\item{S0}{Numeric vector of length N_pop. Initial number of susceptible individuals
+in each subpopulation}
 
-\item{I0}{A vector of initial number of infected people in N_pop subpopulations}
+\item{I0}{Numeric vector of length N_pop. Initial number of symptomatic infected
+individuals in each subpopulation}
 
-\item{P0}{A vector of population sizes for N_pop subpopulations}
+\item{P0}{Numeric vector of length N_pop. Total population sizes for each subpopulation}
 
-\item{R0}{A vector of initial number of recovered people in N_pop subpopulations}
+\item{R0}{Numeric vector of length N_pop. Initial number of recovered individuals
+in each subpopulation}
 
-\item{H0}{A vector of initial number of hospitalized people in N_pop subpopulations}
+\item{H0}{Numeric vector of length N_pop. Initial number of hospitalized individuals
+in each subpopulation (default: rep(0, N_pop))}
 
-\item{D0}{A vector of initial number of dead people in N_pop subpopulations}
+\item{D0}{Numeric vector of length N_pop. Initial number of deceased individuals
+in each subpopulation (default: rep(0, N_pop))}
 
-\item{Ia0}{A vector of initial number of Infectious asymptomatic people in N_pop subpopulations}
+\item{Ia0}{Numeric vector of length N_pop. Initial number of asymptomatic infected
+individuals in each subpopulation (default: rep(0, N_pop))}
 
-\item{Ip0}{A vector of initial number of Infectious presymptomatic people in N_pop subpopulations}
+\item{Ip0}{Numeric vector of length N_pop. Initial number of presymptomatic infected
+individuals in each subpopulation (default: rep(0, N_pop))}
 
-\item{E0}{A vector of initial number of Exposed people in N_pop subpopulations}
+\item{E0}{Numeric vector of length N_pop. Initial number of exposed individuals
+in each subpopulation (default: rep(0, N_pop))}
 
-\item{m_weekday_day}{mixing matrix for weekday 6 am - 6 pm}
+\item{m_weekday_day}{Numeric matrix (N_pop × N_pop). Contact mixing matrix for
+weekday daytime (6 AM - 6 PM) interactions}
 
-\item{m_weekday_night}{mixing matrix for weekday 6 pm - 6 am}
+\item{m_weekday_night}{Numeric matrix (N_pop × N_pop). Contact mixing matrix for
+weekday nighttime (6 PM - 6 AM) interactions}
 
-\item{m_weekend_day}{mixing matrix for weekend 6 am - 6 pm}
+\item{m_weekend_day}{Numeric matrix (N_pop × N_pop). Contact mixing matrix for
+weekend daytime (6 AM - 6 PM) interactions}
 
-\item{m_weekend_night}{mixing matrix for weekend 6 pm - 6 am}
+\item{m_weekend_night}{Numeric matrix (N_pop × N_pop). Contact mixing matrix for
+weekend nighttime (6 PM - 6 AM) interactions}
 
-\item{delta_t}{A positive real number indicating the discrete time increment}
+\item{delta_t}{Positive numeric. Discrete time increment in days (typically 0.5)}
 
-\item{vac_mat}{A matrix of order nsteps x (1 + N_pop), first column in time indices
-and the rest are vaccination counts in N_pop strata.}
+\item{vac_mat}{Numeric matrix. Vaccination schedule with dimensions (nsteps × (1 + N_pop)).
+First column contains time indices, remaining columns contain vaccination counts
+for each subpopulation at each time step}
 
-\item{dv}{mean number of days in Vaccinated state before waning immunity completely}
+\item{dv}{Numeric vector or scalar. Mean duration (days) in vaccinated state before
+immunity waning. If scalar, applied to all subpopulations}
 
-\item{de}{mean number of days in Exposed state}
+\item{de}{Numeric vector or scalar. Mean duration (days) in exposed state.
+If scalar, applied to all subpopulations}
 
-\item{pea}{Proportion of people becoming infectious asymptomatic from exposed}
+\item{pea}{Numeric vector or scalar. Proportion of exposed individuals becoming
+asymptomatic infectious (vs. presymptomatic). Range: \link{0,1}.
+If scalar, applied to all subpopulations}
 
-\item{dp}{mean number of days in Infectious presymptomatic state}
+\item{dp}{Numeric vector or scalar. Mean duration (days) in presymptomatic
+infectious state. If scalar, applied to all subpopulations}
 
-\item{da}{mean number of days in Infectious presymptomatic state}
+\item{da}{Numeric vector or scalar. Mean duration (days) in asymptomatic
+infectious state. If scalar, applied to all subpopulations}
 
-\item{ds}{mean number of days in Infectious symptomatic state}
+\item{ds}{Numeric vector or scalar. Mean duration (days) in symptomatic
+infectious state. If scalar, applied to all subpopulations}
 
-\item{psr}{Proportion of people recovered from infectious symptomatic}
+\item{psr}{Numeric vector or scalar. Proportion of symptomatic individuals
+recovering directly (vs. hospitalization). Range: \link{0,1}.
+If scalar, applied to all subpopulations}
 
-\item{dh}{mean number of days in Hospitalized state}
+\item{dh}{Numeric vector or scalar. Mean duration (days) in hospitalized state.
+If scalar, applied to all subpopulations}
 
-\item{phr}{Proportion of people Recovered from Hospitalized}
+\item{phr}{Numeric vector or scalar. Proportion of hospitalized individuals
+recovering (vs. death). Range: \link{0,1}. If scalar, applied to all subpopulations}
 
-\item{dr}{mean number of days in Recovered state}
+\item{dr}{Numeric vector or scalar. Mean duration (days) of immunity in
+recovered state. If scalar, applied to all subpopulations}
 
-\item{ve}{Vaccination efficacy, a value between 0 and 1}
+\item{ve}{Numeric vector or scalar. Vaccine effectiveness (proportion).
+Range: \link{0,1}. If scalar, applied to all subpopulations}
 
-\item{nsteps}{Number of discrete evolution in the simulation}
+\item{nsteps}{Integer. Total number of discrete time evolution steps in simulation}
 
-\item{is.stoch}{1 if the simulation is stochastic, 0 otherwise}
+\item{is.stoch}{Logical. Whether to run stochastic simulation (TRUE) or
+deterministic simulation (FALSE). Default: FALSE}
 
-\item{seed}{optional, for reproducibility, only application when is.stoch = 1}
+\item{seed}{Integer or NULL. Random seed for reproducibility. Only used when
+is.stoch = TRUE. Default: NULL}
 
-\item{do_chk}{boolean, if the model needs to be checkpointed}
+\item{do_chk}{Logical. Whether to save model checkpoint at simulation end.
+Default: FALSE}
 
-\item{chk_file_name}{if do_chk is TRUE, a file name}
+\item{chk_file_name}{Character string or NULL. Checkpoint file name if do_chk = TRUE.
+Default: NULL}
 }
 \value{
-A data.table of model output in long format
+Returns a data.table with the following structure:
+\describe{
+\item{step}{Integer time step index (0 to nsteps)}
+\item{time}{Continuous simulation time (step × delta_t)}
+\item{disease_state}{Character vector of compartment names}
+\item{population_id}{Character vector of subpopulation identifiers}
+\item{value}{Numeric values representing population counts in each compartment}
+}
+
+Available disease states in output:
+\itemize{
+\item Core compartments: S, E, I_presymp, I_asymp, I_symp, H, R, D, V, P
+\item Derived outputs: I_all (total infectious), cum_V (cumulative vaccinations)
+\item Transition flows: n_SE, n_EI, n_HR, n_HD, etc. (new infections, hospitalizations, deaths)
+\item Debug outputs: p_SE, p_VE, I_eff (probabilities and effective populations)
+}
 }
 \description{
-The main simulator which compiles and run an ODIN model in the background
+The core simulation engine that implements a stochastic compartmental SEIRD
+(Susceptible-Exposed-Infected-Recovered-Dead) model for respiratory virus
+epidemics across multiple demographic subpopulations. The function compiles
+and executes an ODIN-based differential equation model with time-varying
+contact patterns, vaccination dynamics, and complex disease progression pathways.
+}
+\details{
+The model implements a complex epidemiological framework with the following features:
+
+\strong{Compartmental Structure:}
+\itemize{
+\item \strong{S}: Susceptible individuals
+\item \strong{E}: Exposed (incubating) individuals
+\item \strong{I_presymp}: Presymptomatic infectious individuals
+\item \strong{I_asymp}: Asymptomatic infectious individuals
+\item \strong{I_symp}: Symptomatic infectious individuals
+\item \strong{H}: Hospitalized individuals
+\item \strong{R}: Recovered individuals
+\item \strong{D}: Deceased individuals
+\item \strong{V}: Vaccinated individuals
+\item \strong{P}: Total living population (excludes deaths)
+}
+
+\strong{Disease Progression Pathways:}
+\enumerate{
+\item \strong{S → E}: Exposure through contact with infectious individuals
+\item \strong{E → I_asymp/I_presymp}: Progression to infectious states (proportion pea)
+\item \strong{I_presymp → I_symp}: Development of symptoms
+\item \strong{I_asymp → R}: Direct recovery from asymptomatic state
+\item \strong{I_symp → R/H}: Recovery or hospitalization (proportion psr)
+\item \strong{H → R/D}: Hospital discharge or death (proportion phr)
+\item \strong{R → S}: Loss of immunity
+\item \strong{S → V}: Vaccination
+\item \strong{V → S/E}: Vaccine waning or breakthrough infection
+}
+
+\strong{Mixing Patterns:}
+Contact patterns vary by:
+\itemize{
+\item Day of week: Weekday vs. weekend patterns
+\item Time of day: Day (6 AM - 6 PM) vs. night (6 PM - 6 AM) patterns
+\item Each pattern specified by N_pop × N_pop contact matrix
+}
+
+\strong{Force of Infection:}
+Transmission occurs through contact between susceptible/vaccinated individuals and
+all infectious compartments (I_presymp + I_asymp + I_symp), modified by:
+\itemize{
+\item Population-specific transmission rates (ts, tv)
+\item Time-varying contact patterns
+\item Vaccine effectiveness for breakthrough infections
+}
+
+\strong{Stochastic vs. Deterministic Mode:}
+\itemize{
+\item \strong{Deterministic}: Uses exact differential equations
+\item \strong{Stochastic}: Adds demographic stochasticity via binomial draws
+}
+
+\strong{Vaccination Implementation:}
+Vaccination is implemented as time-varying input with:
+\itemize{
+\item Scheduled vaccination counts per time step and subpopulation
+\item Vaccine effectiveness reducing infection probability
+\item Waning immunity returning individuals to susceptible state
+}
+}
+\section{Parameter Scaling}{
+
+All duration parameters are automatically converted to rates (1/duration).
+Scalar parameters are automatically expanded to vectors of length N_pop.
+This allows flexible specification of homogeneous or heterogeneous parameters.
+}
+
+\section{Checkpointing}{
+
+When do_chk = TRUE, the function saves a checkpoint file containing:
+\itemize{
+\item Final compartment states for simulation continuation
+\item All model parameters for reproducibility
+\item Vaccination schedule data
+\item Population structure information
+}
+}
+
+\section{Performance Considerations}{
+
+\itemize{
+\item Runtime scales approximately as O(N_pop² × nsteps)
+\item Memory usage increases with output frequency and population complexity
+\item Stochastic mode adds computational overhead for random number generation
+\item Large contact matrices (high N_pop) significantly impact performance
+}
+}
+
+\examples{
+\dontrun{
+# Basic deterministic simulation
+N_pop <- 30
+nsteps <- 400
+
+# Initialize populations
+S0 <- rep(1000, N_pop)
+I0 <- rep(10, N_pop)
+P0 <- S0 + I0
+R0 <- rep(0, N_pop)
+
+# Contact matrices (simplified - identity matrices)
+contact_matrix <- diag(N_pop) * 0.1
+
+# Basic vaccination schedule (no vaccination)
+vac_mat <- matrix(0, nrow = nsteps + 1, ncol = N_pop + 1)
+vac_mat[, 1] <- 0:nsteps
+
+# Run simulation
+results <- meta_sim(
+  N_pop = N_pop,
+  ts = 0.5,
+  tv = 0.1,
+  S0 = S0,
+  I0 = I0,
+  P0 = P0,
+  R0 = R0,
+  m_weekday_day = contact_matrix,
+  m_weekday_night = contact_matrix * 0.5,
+  m_weekend_day = contact_matrix * 0.8,
+  m_weekend_night = contact_matrix * 0.3,
+  delta_t = 0.5,
+  vac_mat = vac_mat,
+  dv = 365,
+  de = 3,
+  pea = 0.3,
+  dp = 2,
+  da = 7,
+  ds = 7,
+  psr = 0.95,
+  dh = 10,
+  phr = 0.9,
+  dr = 180,
+  ve = 0.8,
+  nsteps = nsteps
+)
+
+# Stochastic simulation with checkpointing
+results_stoch <- meta_sim(
+  # ... same parameters as above ...
+  is.stoch = TRUE,
+  seed = 12345,
+  do_chk = TRUE,
+  chk_file_name = "simulation_checkpoint.rds"
+)
+}
+
+}
+\references{
+\itemize{
+\item ODIN package: \url{https://mrc-ide.github.io/odin/}
+\item Fadikar, A., et al. "Developing and deploying a use-inspired metapopulation modeling framework for detailed tracking of stratified health outcomes"
+}
+}
+\seealso{
+\code{\link{metaRVM}} for high-level simulation interface with configuration files
+\code{\link{parse_config}} for configuration file processing
+\code{\link{format_metarvm_output}} for output formatting with demographics
+}
+\author{
+Arindam Fadikar, Charles Macal, Ignacio Martinez-Moyano, Jonathan Ozik
 }

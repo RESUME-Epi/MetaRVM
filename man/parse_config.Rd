@@ -2,19 +2,139 @@
 % Please edit documentation in R/parse_config.R
 \name{parse_config}
 \alias{parse_config}
-\title{Function to read and parse model inputs from yaml file}
+\title{Parse MetaRVM Configuration File}
 \usage{
-parse_config(config_file)
+parse_config(config_file, return_object = FALSE)
 }
 \arguments{
-\item{config_file}{A yaml configuration file.}
+\item{config_file}{Character string. Path to a YAML configuration file containing
+model parameters and settings.}
+
+\item{return_object}{Logical. If \code{TRUE}, returns a \code{MetaRVMConfig}
+object for method chaining and enhanced functionality. If \code{FALSE}
+(default), returns a named list for backward compatibility.}
 }
 \value{
-a named list of (key, value) pairs of the parameters
+If \code{return_object = FALSE} (default), returns a named list containing:
+\describe{
+\item{N_pop}{Number of population groups}
+\item{pop_map}{Data.table with population mapping and demographics}
+\item{S_ini, E_ini, I_asymp_ini, I_presymp_ini, I_symp_ini, H_ini, D_ini, P_ini, V_ini, R_ini}{Initial compartment populations}
+\item{vac_time_id, vac_counts, vac_mat}{Vaccination schedule data}
+\item{m_wd_d, m_wd_n, m_we_d, m_we_n}{Contact mixing matrices}
+\item{ts, tv, ve, dv, de, dp, da, ds, dh, dr, pea, psr, phr}{Disease parameter matrices (nsim × N_pop)}
+\item{start_date}{Simulation start date as Date object}
+\item{sim_length}{Simulation length in days}
+\item{nsim}{Number of simulation instances}
+\item{random_seed}{Random seed used (if any)}
+\item{delta_t}{Time step size (fixed at 0.5)}
+\item{chk_file_names, do_chk}{Checkpointing configuration}
+}
+
+If \code{return_object = TRUE}, returns a \code{MetaRVMConfig} object with
+methods for parameter access and validation.
 }
 \description{
-Function to read and parse model inputs from yaml file
+Reads and parses a YAML configuration file for MetaRVM simulations, extracting
+all necessary parameters for epidemic modeling including population data,
+disease parameters, mixing matrices, vaccination schedules, and simulation settings.
 }
 \details{
-Additional details...
+The function processes a comprehensive YAML configuration file with the following
+main sections:
+
+\strong{Simulation Configuration:}
+\itemize{
+\item \code{random_seed}: Optional random seed for reproducibility
+\item \code{nsim}: Number of simulation instances (default: 1)
+\item \code{start_date}: Simulation start date in MM/DD/YYYY format
+\item \code{length}: Simulation length in days
+\item \code{chk_dir}: Optional checkpoint directory for saving intermediate results
+\item \code{restore_from}: Optional path to restore simulation from checkpoint
+}
+
+\strong{Population Data:}
+\itemize{
+\item \code{mapping}: CSV file path containing population mapping with demographic categories
+\item \code{initialization}: CSV file with initial population states (S0, I0, V0, R0, N)
+\item \code{vaccination}: CSV file with vaccination schedule over time
+}
+
+\strong{Mixing Matrices:}
+Contact matrices for different time periods:
+\itemize{
+\item \code{weekday_day}, \code{weekday_night}: Weekday contact patterns
+\item \code{weekend_day}, \code{weekend_night}: Weekend contact patterns
+}
+
+\strong{Disease Parameters:}
+Epidemiological parameters (can be scalars or distributions):
+\itemize{
+\item \code{ts}: Transmission rate for symptomatic individuals
+\item \code{tv}: Transmission rate for vaccinated individuals
+\item \code{ve}: Vaccine effectiveness
+\item \code{de, dp, da, ds, dh, dr}: Duration parameters for different disease states
+\item \code{pea, psr, phr}: Probability parameters for disease transitions
+}
+
+\strong{Sub-population Parameters:}
+\code{sub_disease_params} allows specification of different parameter values
+for specific demographic categories (e.g., age groups, races).
+
+The function supports stochastic parameters through distribution specifications
+with \code{dist}, \code{mu}, \code{sd}, \code{shape}, \code{rate}, etc.
+}
+\section{Parameter Distributions}{
+
+Disease parameters can be specified as distributions for stochastic modeling:
+\itemize{
+\item \strong{lognormal}: \code{dist: "lognormal", mu: value, sd: value}
+\item \strong{gamma}: \code{dist: "gamma", shape: value, rate: value}
+\item \strong{uniform}: \code{dist: "uniform", min: value, max: value}
+\item \strong{beta}: \code{dist: "beta", shape1: value, shape2: value}
+\item \strong{gaussian}: \code{dist: "gaussian", mean: value, sd: value}
+}
+}
+
+\section{File Requirements}{
+
+\strong{Population mapping file} must contain columns:
+\itemize{
+\item \code{population_id}: Unique identifier for each population group
+\item \code{age}: Age category (e.g., "0-4", "5-11", "12-17", "18-49", "50-64", "65+")
+\item \code{race}: Race/ethnicity category
+\item \code{hcez}: Geographic zone identifier
+}
+
+\strong{Population initialization file} must contain:
+\code{N} (total population), \code{S0}, \code{I0}, \code{V0}, \code{R0} (initial compartment counts)
+
+\strong{Vaccination file} must contain:
+\code{date} (MM/DD/YYYY format) and vaccination counts for each population group
+}
+
+\examples{
+\dontrun{
+# Parse configuration file and return list (backward compatible)
+config <- parse_config("path/to/config.yaml")
+
+# Parse and return MetaRVMConfig object for method chaining
+config_obj <- parse_config("path/to/config.yaml", return_object = TRUE)
+
+# Access parameters from config object
+config_obj$get("N_pop")
+config_obj$list_parameters()
+
+# Use with MetaRVM simulation
+results <- metaRVM(config_obj)
+}
+
+}
+\seealso{
+\code{\link{metaRVM}} for running simulations with parsed configuration
+\code{\link{MetaRVMConfig}} for the configuration object class
+\code{\link{process_vac_data}} for vaccination data processing
+}
+\author{
+Arindam Fadikar
 }
