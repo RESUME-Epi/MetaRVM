@@ -25,7 +25,7 @@ format_metarvm_output <- function(sim_output, config) {
   }
   
   # Make a copy to avoid modifying the original
-  formatted_results <- copy(sim_output)
+  formatted_results <- data.table::copy(sim_output)
   
   # Join with population mapping to get demographics
   # population_id is character in both tables, so no conversion needed
@@ -51,7 +51,7 @@ format_metarvm_output <- function(sim_output, config) {
     n_states_daily[, time := day]
     n_states_daily[, day := NULL]
   } else {
-    n_states_daily <- data.table()
+    n_states_daily <- data.table::data.table()
   }
   
   # Combine regular states and aggregated n_ states
@@ -80,7 +80,7 @@ format_metarvm_output <- function(sim_output, config) {
   )]
   
   # Sort by date, instance, and demographics for better readability
-  setorder(final_results, date, instance, zone, age, race, disease_state)
+  data.table::setorder(final_results, date, instance, zone, age, race, disease_state)
   
   return(final_results)
 }
