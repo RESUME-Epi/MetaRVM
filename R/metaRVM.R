@@ -227,4 +227,5 @@ metaRVM <- function(config_input) {
   # Create and return MetaRVMResults object
   results_obj <- MetaRVMResults$new(out, config_obj)
   return(results_obj)
+  # return(out)
 }

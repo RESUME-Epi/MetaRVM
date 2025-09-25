@@ -32,28 +32,14 @@ Depends:
 LazyData: true
 Imports: 
     data.table,
-    dde,
     dplyr,
-    DT,
-    future,
     ggplot2,
-    ggthemes,
-    leaflet,
     magrittr,
     methods,
     odin,
-    plotly,
-    promises,
     purrr,
     R6,
-    RColorBrewer,
-    sf,
-    shiny,
-    shinydashboard,
-    shinyjs,
-    shinythemes,
     tidyr,
-    viridis,
     yaml
 Suggests: 
     knitr,

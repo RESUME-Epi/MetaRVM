@@ -47,7 +47,7 @@
 #' @param de Numeric vector or scalar. Mean duration (days) in exposed state.
 #'   If scalar, applied to all subpopulations
 #' @param pea Numeric vector or scalar. Proportion of exposed individuals becoming
-#'   asymptomatic infectious (vs. presymptomatic). Range: [0,1].
+#'   asymptomatic infectious (vs. presymptomatic). Range: (0,1).
 #'   If scalar, applied to all subpopulations
 #' @param dp Numeric vector or scalar. Mean duration (days) in presymptomatic
 #'   infectious state. If scalar, applied to all subpopulations
@@ -56,12 +56,12 @@
 #' @param ds Numeric vector or scalar. Mean duration (days) in symptomatic
 #'   infectious state. If scalar, applied to all subpopulations
 #' @param psr Numeric vector or scalar. Proportion of symptomatic individuals
-#'   recovering directly (vs. hospitalization). Range: [0,1].
+#'   recovering directly (vs. hospitalization). Range: (0,1).
 #'   If scalar, applied to all subpopulations
 #' @param dh Numeric vector or scalar. Mean duration (days) in hospitalized state.
 #'   If scalar, applied to all subpopulations
 #' @param phr Numeric vector or scalar. Proportion of hospitalized individuals
-#'   recovering (vs. death). Range: [0,1]. If scalar, applied to all subpopulations
+#'   recovering (vs. death). Range: (0,1). If scalar, applied to all subpopulations
 #' @param dr Numeric vector or scalar. Mean duration (days) of immunity in
 #'   recovered state. If scalar, applied to all subpopulations
 #' @param ve Numeric vector or scalar. Vaccine effectiveness (proportion).
@@ -558,7 +558,7 @@ meta_sim <- function(N_pop, ts, tv,
   if(length(phr) == 1) phr <- rep(phr, N_pop)
 
 
-  nsteps <- nsteps - 1
+  # nsteps <- nsteps - 1
 
   ## prepare vaccination input
   tvac <- vac_mat[-nsteps, 1]
@@ -614,43 +614,78 @@ meta_sim <- function(N_pop, ts, tv,
 
   # Checkpointing
   if(do_chk){
-    chk <- list()
 
-    chk[["N_pop"]] <- N_pop
-    chk[["delta_t"]] <- delta_t
+    # chk should be of class MetaRVMConfig
 
-    chk[["m_weekday_day"]] <- m_weekday_day
-    chk[["m_weekday_night"]] <- m_weekday_night
-    chk[["m_weekend_day"]] <- m_weekend_day
-    chk[["m_weekend_night"]] <- m_weekend_night
+    chk <- MetaRVMConfig$new(list(
+      N_pop = N_pop,
+      delta_t = delta_t,
+      m_weekday_day = m_weekday_day,
+      m_weekday_night = m_weekday_night,
+      m_weekend_day = m_weekend_day,
+      m_weekend_night = m_weekend_night,
+      ts = ts,
+      tv = tv,
+      ve = ve,
+      dv = dv,
+      de = de,
+      dp = dp,
+      da = da,
+      ds = ds,
+      dh = dh,
+      dr = dr,
+      pea = pea,
+      psr = psr,
+      phr = phr,
+      vac_time_id = tvac,
+      vac_counts = vac_mat,
+      S = long_out[(long_out$step == nsteps) & (long_out$disease_state == "S"), c("value")],
+      E = long_out[(long_out$step == nsteps) & (long_out$disease_state == "E"), c("value")],
+      Ia = long_out[(long_out$step == nsteps) & (long_out$disease_state == "I_asymp"), c("value")],
+      Ip = long_out[(long_out$step == nsteps) & (long_out$disease_state == "I_presymp"), c("value")],
+      Is = long_out[(long_out$step == nsteps) & (long_out$disease_state == "I_symp"), c("value")],
+      H = long_out[(long_out$step == nsteps) & (long_out$disease_state == "H"), c("value")],
+      D = long_out[(long_out$step == nsteps) & (long_out$disease_state == "D"), c("value")],
+      P = long_out[(long_out$step == nsteps) & (long_out$disease_state == "P"), c("value")],
+      V = long_out[(long_out$step == nsteps) & (long_out$disease_state == "V"), c("value")],
+      R = long_out[(long_out$step == nsteps) & (long_out$disease_state == "R"), c("value")]
+    ))
 
-    chk[["ts"]] <- ts
-    chk[["tv"]] <- tv
-    chk[["ve"]] <- ve
-    chk[["dv"]] <- dv
-    chk[["de"]] <- de
-    chk[["dp"]] <- dp
-    chk[["da"]] <- da
-    chk[["ds"]] <- ds
-    chk[["dh"]] <- dh
-    chk[["dr"]] <- dr
-    chk[["pea"]] <- pea
-    chk[["psr"]] <- psr
-    chk[["phr"]] <- phr
+    # chk[["N_pop"]] <- N_pop
+    # chk[["delta_t"]] <- delta_t
 
-    chk[["vac_time_id"]] <- tvac
-    chk[["vac_counts"]] <- vac_mat
+    # chk[["m_weekday_day"]] <- m_weekday_day
+    # chk[["m_weekday_night"]] <- m_weekday_night
+    # chk[["m_weekend_day"]] <- m_weekend_day
+    # chk[["m_weekend_night"]] <- m_weekend_night
 
-    chk[["S"]] <- long_out[(long_out$step == nsteps) & (long_out$disease_state == "S"), c("value")]
-    chk[["E"]] <- long_out[(long_out$step == nsteps) & (long_out$disease_state == "E"), c("value")]
-    chk[["Ia"]] <- long_out[(long_out$step == nsteps) & (long_out$disease_state == "I_asymp"), c("value")]
-    chk[["Ip"]] <- long_out[(long_out$step == nsteps) & (long_out$disease_state == "I_presymp"), c("value")]
-    chk[["Is"]] <- long_out[(long_out$step == nsteps) & (long_out$disease_state == "I_symp"), c("value")]
-    chk[["H"]] <- long_out[(long_out$step == nsteps) & (long_out$disease_state == "H"), c("value")]
-    chk[["D"]] <- long_out[(long_out$step == nsteps) & (long_out$disease_state == "D"), c("value")]
-    chk[["P"]] <- long_out[(long_out$step == nsteps) & (long_out$disease_state == "P"), c("value")]
-    chk[["V"]] <- long_out[(long_out$step == nsteps) & (long_out$disease_state == "V"), c("value")]
-    chk[["R"]] <- long_out[(long_out$step == nsteps) & (long_out$disease_state == "R"), c("value")]
+    # chk[["ts"]] <- ts
+    # chk[["tv"]] <- tv
+    # chk[["ve"]] <- ve
+    # chk[["dv"]] <- dv
+    # chk[["de"]] <- de
+    # chk[["dp"]] <- dp
+    # chk[["da"]] <- da
+    # chk[["ds"]] <- ds
+    # chk[["dh"]] <- dh
+    # chk[["dr"]] <- dr
+    # chk[["pea"]] <- pea
+    # chk[["psr"]] <- psr
+    # chk[["phr"]] <- phr
+
+    # chk[["vac_time_id"]] <- tvac
+    # chk[["vac_counts"]] <- vac_mat
+
+    # chk[["S"]] <- long_out[(long_out$step == nsteps) & (long_out$disease_state == "S"), c("value")]
+    # chk[["E"]] <- long_out[(long_out$step == nsteps) & (long_out$disease_state == "E"), c("value")]
+    # chk[["Ia"]] <- long_out[(long_out$step == nsteps) & (long_out$disease_state == "I_asymp"), c("value")]
+    # chk[["Ip"]] <- long_out[(long_out$step == nsteps) & (long_out$disease_state == "I_presymp"), c("value")]
+    # chk[["Is"]] <- long_out[(long_out$step == nsteps) & (long_out$disease_state == "I_symp"), c("value")]
+    # chk[["H"]] <- long_out[(long_out$step == nsteps) & (long_out$disease_state == "H"), c("value")]
+    # chk[["D"]] <- long_out[(long_out$step == nsteps) & (long_out$disease_state == "D"), c("value")]
+    # chk[["P"]] <- long_out[(long_out$step == nsteps) & (long_out$disease_state == "P"), c("value")]
+    # chk[["V"]] <- long_out[(long_out$step == nsteps) & (long_out$disease_state == "V"), c("value")]
+    # chk[["R"]] <- long_out[(long_out$step == nsteps) & (long_out$disease_state == "R"), c("value")]
 
     if(!is.null(chk_file_name)) {
       saveRDS(chk, file = chk_file_name)

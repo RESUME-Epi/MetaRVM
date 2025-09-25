@@ -153,7 +153,7 @@ MetaRVMConfig <- R6::R6Class(
     #' @description Get available age categories
     #' @return Character vector of unique age categories, or NULL if no population mapping available
     get_age_categories = function() {
-      if ("pop_map" %in% names(self$config_data)) {
+      if ("pop_map" %in% names(self$config_data) && "age" %in% names(self$config_data$pop_map)) {
         unique(self$config_data$pop_map$age)
       } else {
         NULL
@@ -163,7 +163,7 @@ MetaRVMConfig <- R6::R6Class(
     #' @description Get available race categories
     #' @return Character vector of unique race categories, or NULL if no population mapping available
     get_race_categories = function() {
-      if ("pop_map" %in% names(self$config_data)) {
+      if ("pop_map" %in% names(self$config_data) && "race" %in% names(self$config_data$pop_map)) {
         unique(self$config_data$pop_map$race)
       } else {
         NULL
@@ -173,7 +173,7 @@ MetaRVMConfig <- R6::R6Class(
     #' @description Get available zones
     #' @return Character vector of unique zone identifiers, or NULL if no population mapping available
     get_zones = function() {
-      if ("pop_map" %in% names(self$config_data)) {
+      if ("pop_map" %in% names(self$config_data) && "hcez" %in% names(self$config_data$pop_map)) {
         unique(self$config_data$pop_map$hcez)
       } else {
         NULL
@@ -255,25 +255,45 @@ MetaRVMResults <- R6::R6Class(
     #' @param raw_results Raw simulation results data.table
     #' @param config MetaRVMConfig object used for the simulation
     #' @param run_info Optional metadata about the run
+    #' @param formatted_results formatted simulation results data.table
     #' @return New MetaRVMResults object (invisible)
-    initialize = function(raw_results, config, run_info = NULL) {
+    initialize = function(raw_results, config, run_info = NULL, formatted_results = NULL) {
       if (!inherits(config, "MetaRVMConfig")) {
         stop("config must be a MetaRVMConfig object")
       }
-      if (!data.table::is.data.table(raw_results)) {
-        stop("raw_results must be a data.table")
-      }
       
       self$config <- config
-      # Format the results immediately and store formatted version
-      self$results <- format_metarvm_output(raw_results, config)
       
-      # Calculate run info from formatted results
+      # Handle different initialization scenarios
+      if (!is.null(formatted_results)) {
+        # Use pre-formatted data (from subset_data)
+        if (!data.table::is.data.table(formatted_results)) {
+          stop("formatted_results must be a data.table")
+        }
+        self$results <- formatted_results
+      } else if (!is.null(raw_results)) {
+        # Format raw data (from metaRVM simulation)
+        if (!data.table::is.data.table(raw_results)) {
+          stop("raw_results must be a data.table")
+        }
+        self$results <- format_metarvm_output(raw_results, config)
+      } else {
+        stop("Either raw_results or formatted_results must be provided")
+      }
+      
+      # # Set run_info
+      # self$run_info <- run_info %||% list(
+      #   created_at = Sys.time(),
+      #   n_instances = length(unique(self$results$instance)),
+      #   n_populations = length(unique(paste(self$results$age, self$results$race, self$results$zone))),
+      #   date_range = if(nrow(self$results) > 0) range(self$results$date, na.rm = TRUE) else c(NA, NA)
+      # )
+      # Set run_info
       self$run_info <- run_info %||% list(
         created_at = Sys.time(),
         n_instances = length(unique(self$results$instance)),
-        n_populations = length(unique(paste(self$results$age, self$results$race, self$results$zone))),
-        date_range = range(self$results$date, na.rm = TRUE)
+        n_populations = private$calculate_n_populations(self$results),
+        date_range = if(nrow(self$results) > 0) range(self$results$date, na.rm = TRUE) else c(NA, NA)
       )
       
       invisible(self)
@@ -291,99 +311,6 @@ MetaRVMResults <- R6::R6Class(
       cat("Disease states:", paste(unique(self$results$disease_state), collapse = ", "), "\n")
       invisible(self)
     },
-    
-    # #' @description Summarize results by age categories (excluding p_ columns)
-    # summarize_by_age = function(disease_states = NULL, date_range = NULL) {
-    #   formatted_data <- copy(self$results)
-      
-    #   # Filter out p_ columns by default
-    #   if (is.null(disease_states)) {
-    #     formatted_data <- formatted_data[!grepl("^p_", disease_state)]
-    #   } else {
-    #     formatted_data <- formatted_data[disease_state %in% disease_states]
-    #   }
-      
-    #   # Filter by date range if specified
-    #   if (!is.null(date_range)) {
-    #     formatted_data <- formatted_data[date >= date_range[1] & date <= date_range[2]]
-    #   }
-      
-    #   # Summarize by age
-    #   summary_result <- formatted_data[, .(
-    #     mean_value = mean(value, na.rm = TRUE),
-    #     median_value = median(value, na.rm = TRUE),
-    #     sum_value = sum(value, na.rm = TRUE),
-    #     min_value = min(value, na.rm = TRUE),
-    #     max_value = max(value, na.rm = TRUE),
-    #     sd_value = sd(value, na.rm = TRUE)
-    #     # observations = .N
-    #   ), by = .(date, age, disease_state)]
-      
-    #   setorder(summary_result, age, disease_state)
-    #   return(summary_result)
-    # },
-    
-    # #' @description Summarize results by race categories (excluding p_ columns)
-    # summarize_by_race = function(disease_states = NULL, date_range = NULL) {
-    #   formatted_data <- copy(self$results)
-      
-    #   # Filter out p_ columns by default
-    #   if (is.null(disease_states)) {
-    #     formatted_data <- formatted_data[!grepl("^p_", disease_state)]
-    #   } else {
-    #     formatted_data <- formatted_data[disease_state %in% disease_states]
-    #   }
-      
-    #   # Filter by date range if specified
-    #   if (!is.null(date_range)) {
-    #     formatted_data <- formatted_data[date >= date_range[1] & date <= date_range[2]]
-    #   }
-      
-    #   # Summarize by race
-    #   summary_result <- formatted_data[, .(
-    #     mean_value = mean(value, na.rm = TRUE),
-    #     median_value = median(value, na.rm = TRUE),
-    #     sum_value = sum(value, na.rm = TRUE),
-    #     min_value = min(value, na.rm = TRUE),
-    #     max_value = max(value, na.rm = TRUE),
-    #     sd_value = sd(value, na.rm = TRUE)
-    #     # observations = .N
-    #   ), by = .(date, race, disease_state)]
-      
-    #   setorder(summary_result, race, disease_state)
-    #   return(summary_result)
-    # },
-    
-    # #' @description Summarize results by geographic zones (excluding p_ columns)
-    # summarize_by_zone = function(disease_states = NULL, date_range = NULL) {
-    #   formatted_data <- copy(self$results)
-      
-    #   # Filter out p_ columns by default
-    #   if (is.null(disease_states)) {
-    #     formatted_data <- formatted_data[!grepl("^p_", disease_state)]
-    #   } else {
-    #     formatted_data <- formatted_data[disease_state %in% disease_states]
-    #   }
-      
-    #   # Filter by date range if specified
-    #   if (!is.null(date_range)) {
-    #     formatted_data <- formatted_data[date >= date_range[1] & date <= date_range[2]]
-    #   }
-      
-    #   # Summarize by zone
-    #   summary_result <- formatted_data[, .(
-    #     mean_value = mean(value, na.rm = TRUE),
-    #     median_value = median(value, na.rm = TRUE),
-    #     sum_value = sum(value, na.rm = TRUE),
-    #     min_value = min(value, na.rm = TRUE),
-    #     max_value = max(value, na.rm = TRUE),
-    #     sd_value = sd(value, na.rm = TRUE)
-    #     # observations = .N
-    #   ), by = .(date, zone, disease_state)]
-      
-    #   setorder(summary_result, zone, disease_state)
-    #   return(summary_result)
-    # },
 
     #' @description Subset the data based on any combination of parameters
     #' @param ages Vector of age categories to include (default: all)
@@ -393,7 +320,7 @@ MetaRVMResults <- R6::R6Class(
     #' @param date_range Vector of two dates start_date, and end_date for filtering (default: all)
     #' @param instances Vector of instance numbers to include (default: all)
     #' @param exclude_p_columns Logical, whether to exclude p_ columns (default: TRUE)
-    #' @return data.table with subset of results
+    #' @return MetaRVMResults object with subset of results
     subset_data = function(ages = NULL, races = NULL, zones = NULL, disease_states = NULL, 
                       date_range = NULL, instances = NULL, exclude_p_columns = TRUE) {
   
@@ -440,7 +367,49 @@ MetaRVMResults <- R6::R6Class(
       # Sort results for better readability
       setorder(subset_results, date, instance, zone, age, race, disease_state)
       
-      return(subset_results)
+      # Create new MetaRVMResults object with subset data
+      # Update run_info to reflect the subset
+      # new_run_info <- list(
+      #   created_at = Sys.time(),
+      #   original_created_at = self$run_info$created_at,
+      #   n_instances = length(unique(subset_results$instance)),
+      #   n_populations = length(unique(paste(subset_results$age, subset_results$race, subset_results$zone))),
+      #   date_range = if(nrow(subset_results) > 0) range(subset_results$date, na.rm = TRUE) else c(NA, NA),
+      #   subset_filters = list(
+      #     age = age,
+      #     race = race, 
+      #     zone = zone,
+      #     disease_states = disease_states,
+      #     date_range = date_range,
+      #     instance = instance,
+      #     exclude_p_columns = exclude_p_columns
+      #   )
+      # )
+
+      new_run_info <- list(
+        created_at = Sys.time(),
+        original_created_at = self$run_info$created_at,
+        n_instances = length(unique(subset_results$instance)),
+        n_populations = private$calculate_n_populations(subset_results),
+        date_range = if(nrow(subset_results) > 0) range(subset_results$date, na.rm = TRUE) else c(NA, NA),
+        subset_filters = list(
+          ages = ages,
+          races = races, 
+          zones = zones,
+          disease_states = disease_states,
+          date_range = date_range,
+          instances = instances,
+          exclude_p_columns = exclude_p_columns
+        )
+      )
+      
+      # Return new MetaRVMResults object
+      return(MetaRVMResults$new(
+        raw_results = NULL,  # We're using already formatted data
+        config = self$config,
+        run_info = new_run_info,
+        formatted_results = subset_results  # Pass pre-formatted data
+      ))
     },
 
     #' @description Summarize results across specified demographic characteristics
@@ -478,7 +447,7 @@ MetaRVMResults <- R6::R6Class(
       
       # Step 1: Sum by demographic categories, date, and disease_state (keeping instances separate)
       group_vars <- c("date", group_by, "disease_state", "instance")
-      summed_data <- subset_data[, .(
+      summed_data <- subset_data$results[, .(
         value = sum(value, na.rm = TRUE)
       ), by = group_vars]
       
@@ -548,190 +517,29 @@ MetaRVMResults <- R6::R6Class(
         return(MetaRVMSummary$new(summary_result, self$config, type = "summary"))
       }
     }
+  ),
 
 
-    # #' @description Plot age-specific outcomes as time series
-    # #' @param disease_states Disease states to plot
-    # #' @param date_range Optional date range for filtering
-    # #' @param plot_type Either "mean" (mean with CI) or "individual" (individual instance lines)
-    # #' @param ci_level Confidence level for CI (default: 0.95), only used when plot_type = "mean"
-    # #' @param theme ggplot2 theme function (default: theme_minimal())
-    # #' @return ggplot object
-    # plot_by_age = function(disease_states = NULL, date_range = NULL, plot_type = "mean", 
-    #                       ci_level = 0.95, theme = theme_minimal()) {
+  private = list(
+    calculate_n_populations = function(data) {
+      if (nrow(data) == 0) return(0)
       
-    #   if (plot_type == "mean") {
-    #     # Get raw data for empirical quantiles
-    #     subset_data <- self$subset_data(disease_states = disease_states, date_range = date_range)
-        
-    #     # Calculate empirical quantiles for confidence intervals
-    #     alpha <- 1 - ci_level
-    #     lower_quantile <- alpha / 2
-    #     upper_quantile <- 1 - alpha / 2
-        
-    #     # Summarize with empirical quantiles
-    #     age_summary <- subset_data[, .(
-    #       mean_value = mean(value, na.rm = TRUE),
-    #       ci_lower = quantile(value, lower_quantile, na.rm = TRUE),
-    #       ci_upper = quantile(value, upper_quantile, na.rm = TRUE)
-    #     ), by = .(date, age, disease_state)]
-        
-    #     p <- ggplot(age_summary, aes(x = date, y = mean_value, color = age)) +
-    #       geom_line(size = 1) +
-    #       geom_ribbon(aes(ymin = ci_lower, ymax = ci_upper, fill = age), alpha = 0.2, color = NA) +
-    #       facet_wrap(~age, scales = "free_y") +
-    #       labs(
-    #         title = paste0("Mean Outcomes by Age Group (", ci_level*100, "% Empirical CI)"),
-    #         x = "Date",
-    #         y = "Mean Value",
-    #         color = "Disease State",
-    #         fill = "Disease State"
-    #       ) +
-    #       theme
-          
-    #   } else if (plot_type == "individual") {
-    #     # Get raw data for individual instance lines
-    #     subset_data <- self$subset_data(disease_states = disease_states, date_range = date_range)
-        
-    #     p <- ggplot(subset_data, aes(x = date, y = value, color = age)) +
-    #       geom_line(aes(group = instance), alpha = 0.6, size = 0.5) +
-    #       facet_wrap(~age, scales = "free_y") +
-    #       labs(
-    #         title = "Individual Instance Trajectories by Age Group",
-    #         x = "Date", 
-    #         y = "Value",
-    #         color = "Disease State"
-    #       ) +
-    #       theme
-          
-    #   } else {
-    #     stop("plot_type must be either 'mean' or 'individual'")
-    #   }
+      # Get available demographic columns
+      demographic_cols <- intersect(names(data), c("age", "race", "zone"))
       
-    #   return(p)
-    # },
-
-    # #' @description Plot race-specific outcomes as time series
-    # #' @param disease_states Disease states to plot
-    # #' @param date_range Optional date range for filtering
-    # #' @param plot_type Either "mean" (mean with CI) or "individual" (individual instance lines)
-    # #' @param ci_level Confidence level for CI (default: 0.95), only used when plot_type = "mean"
-    # #' @param theme ggplot2 theme function (default: theme_minimal())
-    # #' @return ggplot object
-    # plot_by_race = function(disease_states = NULL, date_range = NULL, plot_type = "mean",
-    #                       ci_level = 0.95, theme = theme_minimal()) {
-      
-    #   if (plot_type == "mean") {
-    #     # Get raw data for empirical quantiles
-    #     subset_data <- self$subset_data(disease_states = disease_states, date_range = date_range)
-        
-    #     # Calculate empirical quantiles for confidence intervals
-    #     alpha <- 1 - ci_level
-    #     lower_quantile <- alpha / 2
-    #     upper_quantile <- 1 - alpha / 2
-        
-    #     # Summarize with empirical quantiles
-    #     race_summary <- subset_data[, .(
-    #       mean_value = mean(value, na.rm = TRUE),
-    #       ci_lower = quantile(value, lower_quantile, na.rm = TRUE),
-    #       ci_upper = quantile(value, upper_quantile, na.rm = TRUE)
-    #     ), by = .(date, race, disease_state)]
-        
-    #     p <- ggplot(race_summary, aes(x = date, y = mean_value, color = disease_state)) +
-    #       geom_line(size = 1) +
-    #       geom_ribbon(aes(ymin = ci_lower, ymax = ci_upper, fill = disease_state), alpha = 0.2, color = NA) +
-    #       facet_wrap(~race, scales = "free_y") +
-    #       labs(
-    #         title = paste0("Mean Outcomes by Race (", ci_level*100, "% Empirical CI)"),
-    #         x = "Date",
-    #         y = "Mean Value", 
-    #         color = "Disease State",
-    #         fill = "Disease State"
-    #       ) +
-    #       theme
-          
-    #   } else if (plot_type == "individual") {
-    #     # Get raw data for individual instance lines
-    #     subset_data <- self$subset_data(disease_states = disease_states, date_range = date_range)
-        
-    #     p <- ggplot(subset_data, aes(x = date, y = value, color = disease_state)) +
-    #       geom_line(aes(group = interaction(disease_state, instance)), alpha = 0.6, size = 0.5) +
-    #       facet_wrap(~race, scales = "free_y") +
-    #       labs(
-    #         title = "Individual Instance Trajectories by Race",
-    #         x = "Date",
-    #         y = "Value",
-    #         color = "Disease State"
-    #       ) +
-    #       theme
-          
-    #   } else {
-    #     stop("plot_type must be either 'mean' or 'individual'")
-    #   }
-      
-    #   return(p)
-    # },
-
-    # #' @description Plot zone-specific outcomes as time series
-    # #' @param disease_states Disease states to plot
-    # #' @param date_range Optional date range for filtering
-    # #' @param plot_type Either "mean" (mean with CI) or "individual" (individual instance lines)
-    # #' @param ci_level Confidence level for CI (default: 0.95), only used when plot_type = "mean"
-    # #' @param theme ggplot2 theme function (default: theme_minimal())
-    # #' @return ggplot object
-    # plot_by_zone = function(disease_states = NULL, date_range = NULL, plot_type = "mean",
-    #                       ci_level = 0.95, theme = theme_minimal()) {
-      
-    #   if (plot_type == "mean") {
-    #     # Get raw data for empirical quantiles
-    #     subset_data <- self$subset_data(disease_states = disease_states, date_range = date_range)
-        
-    #     # Calculate empirical quantiles for confidence intervals
-    #     alpha <- 1 - ci_level
-    #     lower_quantile <- alpha / 2
-    #     upper_quantile <- 1 - alpha / 2
-        
-    #     # Summarize with empirical quantiles
-    #     zone_summary <- subset_data[, .(
-    #       mean_value = mean(value, na.rm = TRUE),
-    #       ci_lower = quantile(value, lower_quantile, na.rm = TRUE),
-    #       ci_upper = quantile(value, upper_quantile, na.rm = TRUE)
-    #     ), by = .(date, zone, disease_state)]
-        
-    #     p <- ggplot(zone_summary, aes(x = date, y = mean_value, color = disease_state)) +
-    #       geom_line(size = 1) +
-    #       geom_ribbon(aes(ymin = ci_lower, ymax = ci_upper, fill = disease_state), alpha = 0.2, color = NA) +
-    #       facet_wrap(~zone, scales = "free_y") +
-    #       labs(
-    #         title = paste0("Mean Outcomes by Geographic Zone (", ci_level*100, "% Empirical CI)"),
-    #         x = "Date",
-    #         y = "Mean Value",
-    #         color = "Disease State", 
-    #         fill = "Disease State"
-    #       ) +
-    #       theme
-          
-    #   } else if (plot_type == "individual") {
-    #     # Get raw data for individual instance lines
-    #     subset_data <- self$subset_data(disease_states = disease_states, date_range = date_range)
-        
-    #     p <- ggplot(subset_data, aes(x = date, y = value, color = disease_state)) +
-    #       geom_line(aes(group = interaction(disease_state, instance)), alpha = 0.6, size = 0.5) +
-    #       facet_wrap(~zone, scales = "free_y") +
-    #       labs(
-    #         title = "Individual Instance Trajectories by Geographic Zone",
-    #         x = "Date",
-    #         y = "Value",
-    #         color = "Disease State"
-    #       ) +
-    #       theme
-          
-    #   } else {
-    #     stop("plot_type must be either 'mean' or 'individual'")
-    #   }
-      
-    #   return(p)
-    # }
+      if (length(demographic_cols) == 0) {
+        # No demographic columns - assume single population
+        return(1)
+      } else if (length(demographic_cols) == 1) {
+        # Single demographic - count unique values
+        return(length(unique(data[[demographic_cols[1]]])))
+      } else {
+        # Multiple demographics - count unique combinations
+        unique_combinations <- data[, ..demographic_cols]
+        unique_combinations <- unique(unique_combinations)
+        return(nrow(unique_combinations))
+      }
+    }
   )
 )
 
@@ -959,6 +767,7 @@ MetaRVMSummary <- R6::R6Class(
 )
 
 # Utility function for NULL coalescing operator
+#' @name grapes-or-or-grapes
 #' @title NULL Coalescing Operator
 #' @description 
 #' Returns the left-hand side if it's not NULL, otherwise returns the right-hand side.
