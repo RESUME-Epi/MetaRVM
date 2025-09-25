@@ -68,7 +68,12 @@ Arindam Fadikar
 \subsection{Method \code{new()}}{
 Initialize a new MetaRVMResults object
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MetaRVMResults$new(raw_results, config, run_info = NULL)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{MetaRVMResults$new(
+  raw_results,
+  config,
+  run_info = NULL,
+  formatted_results = NULL
+)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -79,6 +84,8 @@ Initialize a new MetaRVMResults object
 \item{\code{config}}{MetaRVMConfig object used for the simulation}
 
 \item{\code{run_info}}{Optional metadata about the run}
+
+\item{\code{formatted_results}}{formatted simulation results data.table}
 }
 \if{html}{\out{</div>}}
 }
@@ -136,7 +143,7 @@ Subset the data based on any combination of parameters
 \if{html}{\out{</div>}}
 }
 \subsection{Returns}{
-data.table with subset of results
+MetaRVMResults object with subset of results
 }
 }
 \if{html}{\out{<hr>}}

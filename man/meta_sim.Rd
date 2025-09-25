@@ -101,7 +101,7 @@ immunity waning. If scalar, applied to all subpopulations}
 If scalar, applied to all subpopulations}
 
 \item{pea}{Numeric vector or scalar. Proportion of exposed individuals becoming
-asymptomatic infectious (vs. presymptomatic). Range: \link{0,1}.
+asymptomatic infectious (vs. presymptomatic). Range: (0,1).
 If scalar, applied to all subpopulations}
 
 \item{dp}{Numeric vector or scalar. Mean duration (days) in presymptomatic
@@ -114,14 +114,14 @@ infectious state. If scalar, applied to all subpopulations}
 infectious state. If scalar, applied to all subpopulations}
 
 \item{psr}{Numeric vector or scalar. Proportion of symptomatic individuals
-recovering directly (vs. hospitalization). Range: \link{0,1}.
+recovering directly (vs. hospitalization). Range: (0,1).
 If scalar, applied to all subpopulations}
 
 \item{dh}{Numeric vector or scalar. Mean duration (days) in hospitalized state.
 If scalar, applied to all subpopulations}
 
 \item{phr}{Numeric vector or scalar. Proportion of hospitalized individuals
-recovering (vs. death). Range: \link{0,1}. If scalar, applied to all subpopulations}
+recovering (vs. death). Range: (0,1). If scalar, applied to all subpopulations}
 
 \item{dr}{Numeric vector or scalar. Mean duration (days) of immunity in
 recovered state. If scalar, applied to all subpopulations}
