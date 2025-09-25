@@ -129,6 +129,13 @@ parse_config <- function(config_file, return_object = FALSE){
   # read the yaml config file
   yaml_data <- yaml::read_yaml(config_file)
 
+  # provision of relative paths
+  yaml_file_path <- dirname(config_file)
+
+  # temporarily set the working directory to the yaml file location
+  old_wd <- getwd()
+  setwd(yaml_file_path)
+
   # check random seed
   if(!is.null(yaml_data$simulation_config$random_seed)){
     random_seed <- yaml_data$simulation_config$randmom_seed
@@ -180,42 +187,49 @@ parse_config <- function(config_file, return_object = FALSE){
 
     chk_obj <- readRDS(yaml_data$simulation_config$restore_from)
 
-    N_pop <- chk_obj[["N_pop"]]
-    delta_t <- chk_obj[["delta_t"]]
+    ## chk_obj should also be of class MetaRVMConfig
+    ## verfify if chk_obj is of class MetaRVMConfig
+    if(!methods::is(chk_obj, "MetaRVMConfig")){
+      setwd(old_wd)
+      stop("The restore_from file does not contain a valid MetaRVMConfig object")
+    }
 
-    m_wd_d <- chk_obj[["m_weekday_day"]]
-    m_wd_n <- chk_obj[["m_weekday_night"]]
-    m_we_d <- chk_obj[["m_weekend_day"]]
-    m_we_n <- chk_obj[["m_weekend_night"]]
+    N_pop <- chk_obj$get("N_pop")
+    delta_t <- chk_obj$get("delta_t")
+
+    m_wd_d <- chk_obj$get("m_weekday_day")
+    m_wd_n <- chk_obj$get("m_weekday_night")
+    m_we_d <- chk_obj$get("m_weekend_day")
+    m_we_n <- chk_obj$get("m_weekend_night")
 
     # read disease parameters
-    ts <- chk_obj[["ts"]]
-    tv <- chk_obj[["tv"]]
-    ve <- chk_obj[["ve"]]
-    dv <- chk_obj[["dv"]]
-    de <- chk_obj[["de"]]
-    dp <- chk_obj[["dp"]]
-    da <- chk_obj[["da"]]
-    ds <- chk_obj[["ds"]]
-    dh <- chk_obj[["dh"]]
-    dr <- chk_obj[["dr"]]
-    pea <- chk_obj[["pea"]]
-    psr <- chk_obj[["psr"]]
-    phr <- chk_obj[["phr"]]
+    ts <- chk_obj$get("ts")
+    tv <- chk_obj$get("tv")
+    ve <- chk_obj$get("ve")
+    dv <- chk_obj$get("dv")
+    de <- chk_obj$get("de")
+    dp <- chk_obj$get("dp")
+    da <- chk_obj$get("da")
+    ds <- chk_obj$get("ds")
+    dh <- chk_obj$get("dh")
+    dr <- chk_obj$get("dr")
+    pea <- chk_obj$get("pea")
+    psr <- chk_obj$get("psr")
+    phr <- chk_obj$get("phr")
 
-    vac_time_id <- chk_obj[["vac_time_id"]]
-    vac_counts <- chk_obj[["vac_counts"]]
+    vac_time_id <- chk_obj$get("vac_time_id")
+    vac_counts <- chk_obj$get("vac_counts")
 
-    S_ini = chk_obj[["S"]]
-    E_ini = chk_obj[["E"]]
-    I_asymp_ini = chk_obj[["Ia"]]
-    I_presymp_ini = chk_obj[["Ip"]]
-    I_symp_ini = chk_obj[["Is"]]
-    H_ini = chk_obj[["H"]]
-    D_ini = chk_obj[["D"]]
-    P_ini = chk_obj[["P"]]
-    V_ini = chk_obj[["V"]]
-    R_ini = chk_obj[["R"]]
+    S_ini = chk_obj$get("S")
+    E_ini = chk_obj$get("E")
+    I_asymp_ini = chk_obj$get("Ia")
+    I_presymp_ini = chk_obj$get("Ip")
+    I_symp_ini = chk_obj$get("Is")
+    H_ini = chk_obj$get("H")
+    D_ini = chk_obj$get("D")
+    P_ini = chk_obj$get("P")
+    V_ini = chk_obj$get("V")
+    R_ini = chk_obj$get("R")
 
   }
 
@@ -273,6 +287,23 @@ parse_config <- function(config_file, return_object = FALSE){
     m_we_n <- as.matrix(utils::read.csv(m_we_n_file, header = F))
   }
 
+  ## check for mixing matrix consistency (rowsum = 1)
+  if(any(abs(rowSums(m_wd_d) - 1) > 0.01)) {
+    setwd(old_wd)
+    stop("Rows of weekday day mixing matrix do not sum to 1")
+  }
+  if(any(abs(rowSums(m_wd_n) - 1) > 0.01)) {
+    setwd(old_wd)
+    stop("Rows of weekday night mixing matrix do not sum to 1")
+  }
+  if(any(abs(rowSums(m_we_d) - 1) > 0.01)) {
+    setwd(old_wd)
+    stop("Rows of weekend day mixing matrix do not sum to 1")
+  }
+  if(any(abs(rowSums(m_we_n) - 1) > 0.01)) {
+    setwd(old_wd)
+    stop("Rows of weekend night mixing matrix do not sum to 1")
+  }
 
   ## check if global disease params are present
   if(!is.null(yaml_data$disease_params)){
@@ -389,9 +420,8 @@ parse_config <- function(config_file, return_object = FALSE){
                       chk_file_names = chk_file_names,
                       do_chk = do_chk)
 
-  ## TODO: check for mixing matrix consistency (rowsum = 1)
-
-
+  setwd(old_wd)  # reset working directory
+  
   if (return_object) {
     return(MetaRVMConfig$new(config_list))
   } else {
