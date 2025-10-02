@@ -157,7 +157,7 @@ parse_config <- function(config_file, return_object = FALSE){
 
   if(!is.null(yaml_data$simulation_config$start_date)) {
     start_date <- as.Date(yaml_data$simulation_config$start_date,
-                          tryFormats = c("%m/%d/%Y"))
+                          tryFormats = c("%m/%d/%Y")) - 1 # we start one day before to treat the first day of simulation as day 1. 
   }
   sim_length <- yaml_data$simulation_config$length
   nsim <- ifelse(!is.null(yaml_data$simulation_config$nsim),
@@ -166,10 +166,10 @@ parse_config <- function(config_file, return_object = FALSE){
 
 
   if(!is.null(yaml_data$simulation_config$chk_dir)){
-    chk_dir <- yaml_data$simulation_config$chk_dir
+    chk_dir <- normalizePath(yaml_data$simulation_config$chk_dir, mustWork = FALSE)
 
     # prepare checkpoint file names
-    if(!dir.exists(chk_dir)) dir.create(chk_dir)
+    if(!dir.exists(chk_dir)) dir.create(chk_dir, recursive = TRUE)
 
     chk_file_names <- paste0(chk_dir, "/chk_", 1:nsim, ".Rda")
 
@@ -187,11 +187,11 @@ parse_config <- function(config_file, return_object = FALSE){
 
     chk_obj <- readRDS(yaml_data$simulation_config$restore_from)
 
-    ## chk_obj should also be of class MetaRVMConfig
-    ## verfify if chk_obj is of class MetaRVMConfig
-    if(!methods::is(chk_obj, "MetaRVMConfig")){
+    ## chk_obj should be of class MetaRVMCheck
+    ## verfify if chk_obj is of class MetaRVMCheck
+    if(!methods::is(chk_obj, "MetaRVMCheck")){
       setwd(old_wd)
-      stop("The restore_from file does not contain a valid MetaRVMConfig object")
+      stop("The restore_from file does not contain a valid MetaRVMCheck object")
     }
 
     N_pop <- chk_obj$get("N_pop")
@@ -217,8 +217,8 @@ parse_config <- function(config_file, return_object = FALSE){
     psr <- chk_obj$get("psr")
     phr <- chk_obj$get("phr")
 
-    vac_time_id <- chk_obj$get("vac_time_id")
-    vac_counts <- chk_obj$get("vac_counts")
+    # vac_time_id <- chk_obj$get("vac_time_id")
+    # vac_counts <- chk_obj$get("vac_counts")
 
     S_ini = chk_obj$get("S")
     E_ini = chk_obj$get("E")

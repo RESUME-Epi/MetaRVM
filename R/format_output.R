@@ -68,8 +68,9 @@ format_metarvm_output <- function(sim_output, config) {
   # time 0 = start_date, time 1 = start_date + 1 day, etc.
   combined_results[, date := start_date + time]
   
+  # only keep time > 0
   # Select and reorder final columns
-  final_results <- combined_results[, .(
+  final_results <- combined_results[time > 0, .(
     date,
     age, 
     race, 

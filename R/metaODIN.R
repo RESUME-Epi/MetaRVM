@@ -615,9 +615,9 @@ meta_sim <- function(N_pop, ts, tv,
   # Checkpointing
   if(do_chk){
 
-    # chk should be of class MetaRVMConfig
+    # chk should be of class MetaRVMCheck
 
-    chk <- MetaRVMConfig$new(list(
+    chk <- MetaRVMCheck$new(list(
       N_pop = N_pop,
       delta_t = delta_t,
       m_weekday_day = m_weekday_day,
@@ -637,8 +637,8 @@ meta_sim <- function(N_pop, ts, tv,
       pea = pea,
       psr = psr,
       phr = phr,
-      vac_time_id = tvac,
-      vac_counts = vac_mat,
+      # vac_time_id = tvac,
+      # vac_counts = vac_mat,
       S = long_out[(long_out$step == nsteps) & (long_out$disease_state == "S"), c("value")],
       E = long_out[(long_out$step == nsteps) & (long_out$disease_state == "E"), c("value")],
       Ia = long_out[(long_out$step == nsteps) & (long_out$disease_state == "I_asymp"), c("value")],

@@ -783,3 +783,55 @@ MetaRVMSummary <- R6::R6Class(
 #' }
 #' @keywords internal
 `%||%` <- function(x, y) if (is.null(x)) y else x
+
+#' @title MetaRVM Checkpoint Class
+#' @description
+#' R6 class to handle MetaRVM checkpoint data. This class is a simplified
+#' version of [MetaRVMConfig] tailored for storing and accessing simulation
+#' checkpoints.
+#'
+#' @details
+#' The `MetaRVMCheck` class is designed to hold the state of a simulation at a
+#' specific time point, allowing for continuation or analysis. It stores all
+#' necessary parameters and population states.
+#'
+#' @import R6
+#' @author Arindam Fadikar
+#' @export
+MetaRVMCheck <- R6::R6Class(
+  "MetaRVMCheck",
+  inherit = MetaRVMConfig,
+  public = list(
+    #' @field check_data List containing all parsed checkpoint data
+    check_data = NULL,
+    
+    #' @description Initialize a new MetaRVMCheck object
+    #' @param input A list containing checkpoint data.
+    #' @return A new `MetaRVMCheck` object.
+    initialize = function(input) {
+      if (!is.list(input)) {
+        stop("Input must be a list containing checkpoint data.")
+      }
+      self$check_data <- input
+      self$config_data <- input  # Also assign to config_data for inherited methods
+      private$validate_config()
+      invisible(self)
+    }
+  ),
+  private = list(
+    validate_config = function() {
+      # Basic validation for checkpoint data
+      required_fields <- c(
+        "N_pop", "delta_t", "m_weekday_day", "m_weekday_night", "m_weekend_day", 
+        "m_weekend_night", "ts", "tv", "ve", "dv", "de", "dp", "da", "ds", 
+        "dh", "dr", "pea", "psr", "phr", "S", 
+        "E", "Ia", "Ip", "Is", "H", "D", "P", "V", "R"
+      )
+      missing_fields <- setdiff(required_fields, names(self$check_data))
+      if (length(missing_fields) > 0) {
+        stop(sprintf("Missing required checkpoint fields: %s",
+                     paste(missing_fields, collapse = ", ")))
+      }
+    }
+  )
+)

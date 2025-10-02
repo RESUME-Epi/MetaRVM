@@ -39,6 +39,7 @@ Imports:
     odin,
     purrr,
     R6,
+    RobustCalibration,
     tidyr,
     yaml
 Suggests: 
