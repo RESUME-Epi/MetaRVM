@@ -220,16 +220,16 @@ parse_config <- function(config_file, return_object = FALSE){
     # vac_time_id <- chk_obj$get("vac_time_id")
     # vac_counts <- chk_obj$get("vac_counts")
 
-    S_ini = chk_obj$get("S")
-    E_ini = chk_obj$get("E")
-    I_asymp_ini = chk_obj$get("Ia")
-    I_presymp_ini = chk_obj$get("Ip")
-    I_symp_ini = chk_obj$get("Is")
-    H_ini = chk_obj$get("H")
-    D_ini = chk_obj$get("D")
-    P_ini = chk_obj$get("P")
-    V_ini = chk_obj$get("V")
-    R_ini = chk_obj$get("R")
+    S_ini = chk_obj$get("S")$value
+    E_ini = chk_obj$get("E")$value
+    I_asymp_ini = chk_obj$get("Ia")$value
+    I_presymp_ini = chk_obj$get("Ip")$value
+    I_symp_ini = chk_obj$get("Is")$value
+    H_ini = chk_obj$get("H")$value
+    D_ini = chk_obj$get("D")$value
+    P_ini = chk_obj$get("P")$value
+    V_ini = chk_obj$get("V")$value
+    R_ini = chk_obj$get("R")$value
 
   }
 

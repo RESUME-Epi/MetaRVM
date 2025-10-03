@@ -19,6 +19,13 @@ Arindam Fadikar
 \section{Super class}{
 \code{\link[MetaRVM:MetaRVMConfig]{MetaRVM::MetaRVMConfig}} -> \code{MetaRVMCheck}
 }
+\section{Public fields}{
+\if{html}{\out{<div class="r6-fields">}}
+\describe{
+\item{\code{check_data}}{List containing all parsed checkpoint data}
+}
+\if{html}{\out{</div>}}
+}
 \section{Methods}{
 \subsection{Public methods}{
 \itemize{
