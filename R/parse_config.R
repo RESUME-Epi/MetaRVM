@@ -22,7 +22,7 @@
 #'   \item \code{start_date}: Simulation start date in MM/DD/YYYY format
 #'   \item \code{length}: Simulation length in days
 #'   \item \code{chk_dir}: Optional checkpoint directory for saving intermediate results
-#'   \item \code{chk_dates}: Optional list of dates to save checkpoints.
+#'   \item \code{checkpoint_dates}: Optional list of dates to save checkpoints.
 #'   \item \code{restore_from}: Optional path to restore simulation from checkpoint
 #' }
 #'
@@ -178,9 +178,9 @@ parse_config <- function(config_file, return_object = FALSE){
     if(!dir.exists(chk_dir)) dir.create(chk_dir, recursive = TRUE)
     do_chk <- TRUE
 
-    if (!is.null(yaml_data$simulation_config$chk_dates)) {
+    if (!is.null(yaml_data$simulation_config$checkpoint_dates)) {
       # Checkpoint at specified dates
-      chk_dates <- as.Date(yaml_data$simulation_config$chk_dates,
+      chk_dates <- as.Date(yaml_data$simulation_config$checkpoint_dates,
                            tryFormats = c("%m/%d/%Y"))
 
       # Convert dates to time steps
