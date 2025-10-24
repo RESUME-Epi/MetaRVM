@@ -55,25 +55,11 @@ reference:
       - MetaRVMSummary
       - format_metarvm_output
       
-  - title: "Calibration and Optimization"
-    desc: "Functions for model calibration"
+  - title: "Calibration and Inference"
+    desc: "Functions for model calibration and inference"
     contents:
       - calibrate_metaRVM
-      - meta_objective_function
-      - optim_metaRVM
-      - DEoptim_metaRVM
       - meta_infer
-      
-  - title: "Visualization"
-    desc: "Plotting and visualization functions"
-    contents:
-      - starts_with("plot_")
-      
-  - title: "Utilities"
-    desc: "Helper and utility functions"
-    contents:
-      - draw_sample
-      - '`%||%`'
 
 figures:
   dev: ragg::agg_png
