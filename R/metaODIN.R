@@ -73,8 +73,9 @@
 #'   is.stoch = TRUE. Default: NULL
 #' @param do_chk Logical. Whether to save model checkpoint at simulation end.
 #'   Default: FALSE
-#' @param chk_file_name Character string or NULL. Checkpoint file name if do_chk = TRUE.
-#'   Default: NULL
+#' @param chk_time_steps Integer vector or NULL. Time steps at which to save checkpoints.
+#' @param chk_file_names List of character vectors or NULL. File names for checkpoints.
+#'   Each element of the list corresponds to a time step in `chk_time_steps`.
 #'
 #' @details
 #' The model implements a complex epidemiological framework with the following features:
@@ -250,7 +251,6 @@
 #' @export
 
 meta_sim <- function(N_pop, ts, tv,
-                     # S0, I0, P0, V0, R0,
                      S0, I0, P0, R0,
                      H0 = rep(0, N_pop),
                      D0 = rep(0, N_pop),
@@ -259,7 +259,6 @@ meta_sim <- function(N_pop, ts, tv,
                      E0 = rep(0, N_pop),
                      m_weekday_day, m_weekday_night, m_weekend_day, m_weekend_night,
                      delta_t,
-                     # tvac,
                      vac_mat,
                      dv, de, pea, dp,
                      da, ds, psr, dh,
@@ -268,7 +267,8 @@ meta_sim <- function(N_pop, ts, tv,
                      is.stoch = FALSE,
                      seed = NULL,
                      do_chk = FALSE,
-                     chk_file_name = NULL){
+                     chk_time_steps = NULL,
+                     chk_file_names = NULL){
 
   metaODIN <- odin::odin({
 
@@ -613,82 +613,48 @@ meta_sim <- function(N_pop, ts, tv,
   long_out <- data.table::data.table(long_out)
 
   # Checkpointing
-  if(do_chk){
-
-    # chk should be of class MetaRVMCheck
-
-    chk <- MetaRVMCheck$new(list(
-      N_pop = N_pop,
-      delta_t = delta_t,
-      m_weekday_day = m_weekday_day,
-      m_weekday_night = m_weekday_night,
-      m_weekend_day = m_weekend_day,
-      m_weekend_night = m_weekend_night,
-      ts = ts,
-      tv = tv,
-      ve = ve,
-      dv = dv,
-      de = de,
-      dp = dp,
-      da = da,
-      ds = ds,
-      dh = dh,
-      dr = dr,
-      pea = pea,
-      psr = psr,
-      phr = phr,
-      # vac_time_id = tvac,
-      # vac_counts = vac_mat,
-      S = long_out[(long_out$step == nsteps) & (long_out$disease_state == "S"), c("value")],
-      E = long_out[(long_out$step == nsteps) & (long_out$disease_state == "E"), c("value")],
-      Ia = long_out[(long_out$step == nsteps) & (long_out$disease_state == "I_asymp"), c("value")],
-      Ip = long_out[(long_out$step == nsteps) & (long_out$disease_state == "I_presymp"), c("value")],
-      Is = long_out[(long_out$step == nsteps) & (long_out$disease_state == "I_symp"), c("value")],
-      H = long_out[(long_out$step == nsteps) & (long_out$disease_state == "H"), c("value")],
-      D = long_out[(long_out$step == nsteps) & (long_out$disease_state == "D"), c("value")],
-      P = long_out[(long_out$step == nsteps) & (long_out$disease_state == "P"), c("value")],
-      V = long_out[(long_out$step == nsteps) & (long_out$disease_state == "V"), c("value")],
-      R = long_out[(long_out$step == nsteps) & (long_out$disease_state == "R"), c("value")]
-    ))
-
-    # chk[["N_pop"]] <- N_pop
-    # chk[["delta_t"]] <- delta_t
-
-    # chk[["m_weekday_day"]] <- m_weekday_day
-    # chk[["m_weekday_night"]] <- m_weekday_night
-    # chk[["m_weekend_day"]] <- m_weekend_day
-    # chk[["m_weekend_night"]] <- m_weekend_night
-
-    # chk[["ts"]] <- ts
-    # chk[["tv"]] <- tv
-    # chk[["ve"]] <- ve
-    # chk[["dv"]] <- dv
-    # chk[["de"]] <- de
-    # chk[["dp"]] <- dp
-    # chk[["da"]] <- da
-    # chk[["ds"]] <- ds
-    # chk[["dh"]] <- dh
-    # chk[["dr"]] <- dr
-    # chk[["pea"]] <- pea
-    # chk[["psr"]] <- psr
-    # chk[["phr"]] <- phr
-
-    # chk[["vac_time_id"]] <- tvac
-    # chk[["vac_counts"]] <- vac_mat
-
-    # chk[["S"]] <- long_out[(long_out$step == nsteps) & (long_out$disease_state == "S"), c("value")]
-    # chk[["E"]] <- long_out[(long_out$step == nsteps) & (long_out$disease_state == "E"), c("value")]
-    # chk[["Ia"]] <- long_out[(long_out$step == nsteps) & (long_out$disease_state == "I_asymp"), c("value")]
-    # chk[["Ip"]] <- long_out[(long_out$step == nsteps) & (long_out$disease_state == "I_presymp"), c("value")]
-    # chk[["Is"]] <- long_out[(long_out$step == nsteps) & (long_out$disease_state == "I_symp"), c("value")]
-    # chk[["H"]] <- long_out[(long_out$step == nsteps) & (long_out$disease_state == "H"), c("value")]
-    # chk[["D"]] <- long_out[(long_out$step == nsteps) & (long_out$disease_state == "D"), c("value")]
-    # chk[["P"]] <- long_out[(long_out$step == nsteps) & (long_out$disease_state == "P"), c("value")]
-    # chk[["V"]] <- long_out[(long_out$step == nsteps) & (long_out$disease_state == "V"), c("value")]
-    # chk[["R"]] <- long_out[(long_out$step == nsteps) & (long_out$disease_state == "R"), c("value")]
-
-    if(!is.null(chk_file_name)) {
-      saveRDS(chk, file = chk_file_name)
+  if(do_chk && !is.null(chk_time_steps)){
+    for (i in seq_along(chk_time_steps)) {
+      time_step <- chk_time_steps[i]
+      if (time_step %in% out_df$step) {
+        chk_file_name_instance <- chk_file_names[[i]]
+        
+        chk <- MetaRVMCheck$new(list(
+          N_pop = N_pop,
+          delta_t = delta_t,
+          m_weekday_day = m_weekday_day,
+          m_weekday_night = m_weekday_night,
+          m_weekend_day = m_weekend_day,
+          m_weekend_night = m_weekend_night,
+          ts = ts,
+          tv = tv,
+          ve = ve,
+          dv = dv,
+          de = de,
+          dp = dp,
+          da = da,
+          ds = ds,
+          dh = dh,
+          dr = dr,
+          pea = pea,
+          psr = psr,
+          phr = phr,
+          S = long_out[(long_out$step == time_step) & (long_out$disease_state == "S"), c("value")],
+          E = long_out[(long_out$step == time_step) & (long_out$disease_state == "E"), c("value")],
+          Ia = long_out[(long_out$step == time_step) & (long_out$disease_state == "I_asymp"), c("value")],
+          Ip = long_out[(long_out$step == time_step) & (long_out$disease_state == "I_presymp"), c("value")],
+          Is = long_out[(long_out$step == time_step) & (long_out$disease_state == "I_symp"), c("value")],
+          H = long_out[(long_out$step == time_step) & (long_out$disease_state == "H"), c("value")],
+          D = long_out[(long_out$step == time_step) & (long_out$disease_state == "D"), c("value")],
+          P = long_out[(long_out$step == time_step) & (long_out$disease_state == "P"), c("value")],
+          V = long_out[(long_out$step == time_step) & (long_out$disease_state == "V"), c("value")],
+          R = long_out[(long_out$step == time_step) & (long_out$disease_state == "R"), c("value")]
+        ))
+        
+        if(!is.null(chk_file_name_instance)) {
+          saveRDS(chk, file = chk_file_name_instance)
+        }
+      }
     }
   }
 

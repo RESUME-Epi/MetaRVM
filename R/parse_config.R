@@ -22,6 +22,7 @@
 #'   \item \code{start_date}: Simulation start date in MM/DD/YYYY format
 #'   \item \code{length}: Simulation length in days
 #'   \item \code{chk_dir}: Optional checkpoint directory for saving intermediate results
+#'   \item \code{chk_dates}: Optional list of dates to save checkpoints.
 #'   \item \code{restore_from}: Optional path to restore simulation from checkpoint
 #' }
 #'
@@ -69,7 +70,7 @@
 #'   \item{nsim}{Number of simulation instances}
 #'   \item{random_seed}{Random seed used (if any)}
 #'   \item{delta_t}{Time step size (fixed at 0.5)}
-#'   \item{chk_file_names, do_chk}{Checkpointing configuration}
+#'   \item{chk_file_names, chk_time_steps, do_chk}{Checkpointing configuration}
 #' }
 #'
 #' If \code{return_object = TRUE}, returns a \code{MetaRVMConfig} object with
@@ -138,7 +139,7 @@ parse_config <- function(config_file, return_object = FALSE){
 
   # check random seed
   if(!is.null(yaml_data$simulation_config$random_seed)){
-    random_seed <- yaml_data$simulation_config$randmom_seed
+    random_seed <- yaml_data$simulation_config$random_seed
     set.seed(random_seed)
   } else {
     random_seed <- NULL
@@ -155,6 +156,9 @@ parse_config <- function(config_file, return_object = FALSE){
   pop_map_file <- yaml_data$population_data$mapping
   pop_map <- data.table::fread(pop_map_file, colClasses = "character")
 
+  vac_time_id <- NULL
+  vac_counts <- NULL
+
   if(!is.null(yaml_data$simulation_config$start_date)) {
     start_date <- as.Date(yaml_data$simulation_config$start_date,
                           tryFormats = c("%m/%d/%Y")) - 1 # we start one day before to treat the first day of simulation as day 1. 
@@ -163,20 +167,45 @@ parse_config <- function(config_file, return_object = FALSE){
   nsim <- ifelse(!is.null(yaml_data$simulation_config$nsim),
                  yaml_data$simulation_config$nsim, 1)
 
-
+  chk_time_steps <- NULL
+  chk_file_names <- NULL
+  do_chk <- FALSE
 
   if(!is.null(yaml_data$simulation_config$chk_dir)){
     chk_dir <- normalizePath(yaml_data$simulation_config$chk_dir, mustWork = FALSE)
 
-    # prepare checkpoint file names
+    # prepare checkpoint directory
     if(!dir.exists(chk_dir)) dir.create(chk_dir, recursive = TRUE)
-
-    chk_file_names <- paste0(chk_dir, "/chk_", 1:nsim, ".Rda")
-
     do_chk <- TRUE
-  } else {
-    chk_file_names <- NULL
-    do_chk <- FALSE
+
+    if (!is.null(yaml_data$simulation_config$chk_dates)) {
+      # Checkpoint at specified dates
+      chk_dates <- as.Date(yaml_data$simulation_config$chk_dates,
+                           tryFormats = c("%m/%d/%Y"))
+
+      # Convert dates to time steps
+      chk_time_steps <- as.integer((chk_dates - start_date) / delta_t)
+
+      # Generate a matrix of file names: rows for instances, columns for dates
+      chk_file_names <- sapply(chk_dates, function(date) {
+        date_str <- format(date, "%Y-%m-%d")
+        paste0(chk_dir, "/chk_", date_str, "_", 1:nsim, ".Rda")
+      })
+      if (is.vector(chk_file_names)) {
+        chk_file_names <- matrix(chk_file_names, ncol = 1)
+      }
+
+    } else {
+      # Default behavior: checkpoint at the end of the simulation
+      end_date <- start_date + sim_length
+      date_str <- format(end_date, "%Y-%m-%d")
+
+      # The time step is the last one
+      chk_time_steps <- as.integer(sim_length / delta_t)
+
+      # Create a 1-column matrix for the single checkpoint date
+      chk_file_names <- matrix(paste0(chk_dir, "/chk_", date_str, "_", 1:nsim, ".Rda"), ncol = 1)
+    }
   }
 
 
@@ -217,9 +246,6 @@ parse_config <- function(config_file, return_object = FALSE){
     psr <- chk_obj$get("psr")
     phr <- chk_obj$get("phr")
 
-    # vac_time_id <- chk_obj$get("vac_time_id")
-    # vac_counts <- chk_obj$get("vac_counts")
-
     S_ini = chk_obj$get("S")$value
     E_ini = chk_obj$get("E")$value
     I_asymp_ini = chk_obj$get("Ia")$value
@@ -239,7 +265,6 @@ parse_config <- function(config_file, return_object = FALSE){
 
     pop_init_file <- yaml_data$population_data$initialization
     pop_init <- data.table::fread(pop_init_file)
-    # print(pop_init)
 
     # set up initializtion
     N_pop <- nrow(pop_init)
@@ -368,7 +393,7 @@ parse_config <- function(config_file, return_object = FALSE){
       setwd(old_wd)
       stop(paste("Invalid categories in sub_disease_params:",
                  paste(invalid_cats, collapse = ", "),
-                 ". The valid categories are", paste(names(pop_map), collapse = ", ")))
+                 ". They are not present in the population mapping file."))
     }
 
     for (cat in cats_to_modify){
@@ -380,7 +405,7 @@ parse_config <- function(config_file, return_object = FALSE){
         setwd(old_wd)
         stop(paste("Invalid values for category", cat, "in sub_disease_params:",
                    paste(invalid_cat_vals, collapse = ", "),
-                   ". The valid categories are", paste(unique(pop_map[[cat]]), collapse = ", ")))
+                   ". They are not present in the population mapping file."))
       }
 
       for (cat_val in cat_vals){
@@ -436,6 +461,7 @@ parse_config <- function(config_file, return_object = FALSE){
                       random_seed = random_seed,
                       delta_t = delta_t,
                       chk_file_names = chk_file_names,
+                      chk_time_steps = chk_time_steps,
                       do_chk = do_chk)
 
   setwd(old_wd)  # reset working directory
