@@ -362,8 +362,26 @@ parse_config <- function(config_file, return_object = FALSE){
     sub_disease_params <- yaml_data$sub_disease_params
     cats_to_modify <- names(sub_disease_params)
 
+    # check if the subgroup names match with mapping
+    invalid_cats <- setdiff(cats_to_modify, names(pop_map))
+    if (length(invalid_cats) > 0) {
+      setwd(old_wd)
+      stop(paste("Invalid categories in sub_disease_params:",
+                 paste(invalid_cats, collapse = ", "),
+                 ". The valid categories are", paste(names(pop_map), collapse = ", ")))
+    }
+
     for (cat in cats_to_modify){
       cat_vals <- names(sub_disease_params[[cat]])
+
+      # check if the subgroup values are valid
+      invalid_cat_vals <- setdiff(cat_vals, unique(pop_map[[cat]]))
+      if (length(invalid_cat_vals) > 0) {
+        setwd(old_wd)
+        stop(paste("Invalid values for category", cat, "in sub_disease_params:",
+                   paste(invalid_cat_vals, collapse = ", "),
+                   ". The valid categories are", paste(unique(pop_map[[cat]]), collapse = ", ")))
+      }
 
       for (cat_val in cat_vals){
         row_ids <- which(pop_map[[cat]] == cat_val)
@@ -451,8 +469,11 @@ parse_config <- function(config_file, return_object = FALSE){
 #'
 process_vac_data <- function(vac_dt, sim_start_date, sim_length, delta_t) {
 
-  vac_dt$date <- as.Date(vac_dt$date,
-                         tryFormats = c("%m/%d/%Y"))
+  # Ensure the date column is of Date type
+  vac_dt[[1]] <- as.Date(vac_dt[[1]], tryFormats = c("%m/%d/%Y"))
+  
+  # Rename the first column to "date" for easier processing
+  data.table::setnames(vac_dt, 1, "date")
 
   date_filtered <- vac_dt %>%
     dplyr::filter(date >= as.Date(sim_start_date)) %>%
