@@ -466,7 +466,7 @@ parse_config <- function(config_file, return_object = FALSE){
 #' @param delta_t Step size in the simulation
 #'
 #' @returns A data.table
-#'
+#' @keywords internal
 process_vac_data <- function(vac_dt, sim_start_date, sim_length, delta_t) {
 
   # Ensure the date column is of Date type
@@ -500,7 +500,7 @@ process_vac_data <- function(vac_dt, sim_start_date, sim_length, delta_t) {
 #' @param seed
 #'
 #' @returns A random sample drawn from the distribution specified by the dist component
-#'
+#' @keywords internal
 draw_sample <- function(config_list, N_pop, seed = NULL){
 
   if(methods::is(config_list, "list")){

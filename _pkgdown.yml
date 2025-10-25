@@ -2,6 +2,8 @@ url: https://RESUME-Epi.github.io/MetaRVM/
 template:
   bootstrap: 5
   bootswatch: cosmo
+  light-switch: false
+  logo: man/figures/logo.png
   
 home:
   title: MetaRVM - Meta-population Respiratory Virus Model
@@ -17,6 +19,7 @@ navbar:
     home:
       icon: fa-home
       href: index.html
+      aria-label: MetaRVM
     reference:
       text: Reference
       href: reference/index.html

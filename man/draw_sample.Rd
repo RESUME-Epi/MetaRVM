@@ -19,3 +19,4 @@ A random sample drawn from the distribution specified by the dist component
 \description{
 Function to draw samples for distributional parameters
 }
+\keyword{internal}

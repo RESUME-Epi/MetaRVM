@@ -133,7 +133,7 @@ DEoptim_metaRVM <- function(config, ground_truth, params_to_infer, deoptim_setti
 #' @param settings A list of settings for the chosen optimization method.
 #'
 #' @return The results from the chosen optimization function.
-#' @export
+#' @keywords internal
 #' @examples
 #' \dontrun{
 #' # This is a conceptual example.
