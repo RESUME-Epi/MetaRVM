@@ -1,0 +1,169 @@
+---
+title: "Getting Started with MetaRVM"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Getting Started with MetaRVM}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.width = 7,
+  fig.height = 5
+)
+```
+
+## Introduction
+
+MetaRVM is a comprehensive R package for simulating respiratory virus epidemics using meta-population compartmental models. This vignette will guide you through the basic usage of the package.
+
+## Installation
+
+You can install the development version of MetaRVM from GitHub:
+
+```{r eval=FALSE}
+# install.packages("devtools")
+devtools::install_github("RESUME-Epi/MetaRVM")
+```
+
+## Loading the Package
+
+```{r setup, eval=FALSE}
+library(MetaRVM)
+library(ggplot2)
+```
+
+## Basic Example
+
+This example shows how to run a basic meta-population simulation.
+
+### Setting Up Population Data
+
+For a meta-population model, we need to define sub-populations. In this example, we'll use 6 sub-populations representing different zones.
+
+```{r eval=FALSE}
+## Model initialization
+N_pop <- 6
+pop_zones <- data.frame(N = rep(NA, N_pop),
+                        S0 = rep(NA, N_pop),
+                        I0 = rep(NA, N_pop),
+                        V0 = rep(NA, N_pop))
+
+pop_zones$N <- sample(1000:1500, N_pop)
+pop_zones$I0 <- sample(10:100, N_pop)
+pop_zones$V0 <- sample(1:10, N_pop)
+pop_zones$R0 <- sample(100:200, N_pop)
+pop_zones$S0 <- pop_zones$N - pop_zones$I0 - pop_zones$V0 - pop_zones$R0
+
+pop_zones
+```
+
+### Setting Up Vaccination Profile
+
+The vaccination data includes time indices and the number of vaccinations for each sub-population.
+
+```{r eval=FALSE}
+## Vaccine profile
+sim_length <- 100
+tt <- seq(0, sim_length, by = 1)
+nt <- length(tt)
+vol <- sample(1:10, (nt-1)*N_pop, replace = TRUE)
+
+vac_zones <- cbind(tt, rbind(pop_zones$V0, matrix(vol, nrow = nt-1)))
+colnames(vac_zones) <- c("t", paste0("v", 1:N_pop))
+
+head(vac_zones)
+```
+
+### Creating Mixing Matrices
+
+Mixing matrices define contact patterns between sub-populations for different time periods (weekday/weekend, day/night).
+
+```{r eval=FALSE}
+## mixing matrix
+m1 <- m2 <- m3 <- m4 <- matrix(NA, nrow = N_pop, ncol = N_pop)
+diag(m1) <- round(runif(N_pop, min = 0.85, max = 0.92), 2)
+diag(m2) <- 1
+diag(m3) <- round(runif(N_pop, min = 0.7, max = 0.9), 2)
+diag(m4) <- 1
+
+for(ii in 1:N_pop){
+  tmp <- runif(N_pop - 1)
+  m1[ii, -ii] <- round(tmp * (1 - m1[ii, ii]) / sum(tmp), 2)
+  m2[ii, -ii] <- 0
+  m3[ii, -ii] <- round(tmp * (1 - m3[ii, ii]) / sum(tmp), 2)
+  m4[ii, -ii] <- 0
+}
+
+m_weekday_day <- m1
+m_weekday_night <- m2
+m_weekend_day <- m3
+m_weekend_night <- m4
+```
+
+### Running the Simulation
+
+```{r eval=FALSE}
+out <- meta_sim(N_pop = N_pop,
+                ts = 0.7,
+                tv = 0.2,
+                S0 = pop_zones$S0,
+                I0 = pop_zones$I0,
+                P0 = pop_zones$N,
+                R0 = pop_zones$R0,
+                m_weekday_day = m_weekday_day,
+                m_weekend_day = m_weekend_day,
+                m_weekday_night = m_weekday_night,
+                m_weekend_night = m_weekend_night,
+                delta_t = 0.5,
+                vac_mat = as.matrix(vac_zones),
+                dv = 50,
+                de = 3,
+                pea = 0.5,
+                dp = 2,
+                da = 5,
+                ds = 2,
+                psr = 0.5,
+                dh = 3,
+                phr = 0.8,
+                dr = 50,
+                ve = 0.5,
+                nsteps = 100,
+                is.stoch = 0,
+                seed = NULL)
+
+head(out, n = 20)
+```
+
+## Visualization
+
+MetaRVM provides built-in visualization functions:
+
+```{r eval=FALSE}
+# Add instance column for summary functions
+out$instance <- 1
+
+# Convert to daily output
+long_out_daily <- daily_output(out, start_date = as.Date("2023-09-01"))
+
+# Create plot
+plot_metaRVM(long_out_daily,
+             conf_level = 90,
+             value_column = "total_value", 
+             is.plotly = FALSE)
+```
+
+## Interactive App
+
+You can also run an interactive Shiny app:
+
+```{r eval=FALSE}
+MetaRVM::run_app()
+```
+
+## Next Steps
+
+For more detailed information about specific functions and advanced usage, please refer to the function documentation and other vignettes.

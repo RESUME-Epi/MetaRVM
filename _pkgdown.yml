@@ -1,0 +1,76 @@
+url: https://RESUME-Epi.github.io/MetaRVM/
+template:
+  bootstrap: 5
+  bootswatch: cosmo
+  light-switch: false
+  logo: man/figures/logo.png
+  
+home:
+  title: MetaRVM - Meta-population Respiratory Virus Model
+  description: >
+    A comprehensive R package for simulating respiratory virus epidemics 
+    using meta-population compartmental models.
+
+navbar:
+  structure:
+    left:  [home, reference, articles, news]
+    right: [github]
+  components:
+    home:
+      icon: fa-home
+      href: index.html
+      aria-label: MetaRVM
+    reference:
+      text: Reference
+      href: reference/index.html
+    articles:
+      text: Articles
+      menu:
+      - text: Getting Started
+        href: articles/getting-started.html
+    news:
+      text: News
+      href: news/index.html
+    github:
+      icon: fab fa-github fa-lg
+      href: https://github.com/RESUME-Epi/MetaRVM
+      aria-label: GitHub
+
+reference:
+  - title: "Main Functions"
+    desc: "Core simulation and modeling functions"
+    contents:
+      - metaRVM
+      - meta_sim
+      - run_app
+      
+  - title: "Configuration and Parsing"
+    desc: "Functions for configuration management"
+    contents:
+      - parse_config
+      - MetaRVMConfig
+      - MetaRVMCheck
+      
+  - title: "Results and Output"
+    desc: "Functions for handling and formatting results"
+    contents:
+      - MetaRVMResults
+      - MetaRVMSummary
+      - format_metarvm_output
+      
+  - title: "Calibration and Inference"
+    desc: "Functions for model calibration and inference"
+    contents:
+      - calibrate_metaRVM
+      - meta_infer
+
+figures:
+  dev: ragg::agg_png
+  dpi: 96
+  dev.args: []
+  fig.ext: png
+  fig.width: 7.2916667
+  fig.height: ~
+  fig.retina: 2
+  fig.asp: 1.618
+  bg: NA

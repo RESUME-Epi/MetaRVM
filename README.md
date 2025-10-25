@@ -11,6 +11,10 @@
 This is a compartmental model simulation code for generic respiratory
 virus diseases.
 
+## Documentation
+
+Full documentation is available at: https://RESUME-Epi.github.io/MetaRVM/
+
 ## Model
 
 <figure>

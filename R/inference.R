@@ -14,7 +14,7 @@
 #'   and `burnin`.
 #'
 #' @return An object from `rcalibration` containing the MCMC posterior samples.
-#' @export
+#' @keywords internal
 meta_infer <- function(config, params_to_infer, ground_truth, mcmc_settings) {
 
   # 1. Input handling for config

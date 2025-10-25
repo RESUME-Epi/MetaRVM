@@ -22,3 +22,4 @@ A data.table
 This function takes the vaccination schedule given by a data.table and prepares
 it according to the required structure needed in \code{meta_sim()} function
 }
+\keyword{internal}

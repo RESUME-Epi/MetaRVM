@@ -74,3 +74,4 @@ deoptim_results <- calibrate_metaRVM(
 print(deoptim_results)
 }
 }
+\keyword{internal}
