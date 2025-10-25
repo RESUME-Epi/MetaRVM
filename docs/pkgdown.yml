@@ -1,0 +1,9 @@
+pandoc: 3.6.3
+pkgdown: 2.1.1
+pkgdown_sha: ~
+articles:
+  getting-started: getting-started.html
+last_built: 2025-10-25T14:58Z
+urls:
+  reference: https://RESUME-Epi.github.io/MetaRVM/reference
+  article: https://RESUME-Epi.github.io/MetaRVM/articles
