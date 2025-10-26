@@ -100,7 +100,7 @@ object for method chaining and enhanced functionality. If <code>FALSE</code>
 <dt>delta_t</dt>
 <dd><p>Time step size (fixed at 0.5)</p></dd>
 
-<dt>chk_file_names, do_chk</dt>
+<dt>chk_file_names, chk_time_steps, do_chk</dt>
 <dd><p>Checkpointing configuration</p></dd>
 
 
@@ -115,7 +115,8 @@ main sections:</p>
 <li><p><code>nsim</code>: Number of simulation instances (default: 1)</p></li>
 <li><p><code>start_date</code>: Simulation start date in MM/DD/YYYY format</p></li>
 <li><p><code>length</code>: Simulation length in days</p></li>
-<li><p><code>chk_dir</code>: Optional checkpoint directory for saving intermediate results</p></li>
+<li><p><code>checkpoint_dir</code>: Optional checkpoint directory for saving intermediate results</p></li>
+<li><p><code>checkpoint_dates</code>: Optional list of dates to save checkpoints.</p></li>
 <li><p><code>restore_from</code>: Optional path to restore simulation from checkpoint</p></li>
 </ul><p><strong>Population Data:</strong></p><ul><li><p><code>mapping</code>: CSV file path containing population mapping with demographic categories</p></li>
 <li><p><code>initialization</code>: CSV file with initial population states (S0, I0, V0, R0, N)</p></li>
