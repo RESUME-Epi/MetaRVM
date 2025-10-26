@@ -21,7 +21,7 @@
 #'   \item \code{nsim}: Number of simulation instances (default: 1)
 #'   \item \code{start_date}: Simulation start date in MM/DD/YYYY format
 #'   \item \code{length}: Simulation length in days
-#'   \item \code{chk_dir}: Optional checkpoint directory for saving intermediate results
+#'   \item \code{checkpoint_dir}: Optional checkpoint directory for saving intermediate results
 #'   \item \code{checkpoint_dates}: Optional list of dates to save checkpoints.
 #'   \item \code{restore_from}: Optional path to restore simulation from checkpoint
 #' }
@@ -171,11 +171,11 @@ parse_config <- function(config_file, return_object = FALSE){
   chk_file_names <- NULL
   do_chk <- FALSE
 
-  if(!is.null(yaml_data$simulation_config$chk_dir)){
-    chk_dir <- normalizePath(yaml_data$simulation_config$chk_dir, mustWork = FALSE)
+  if(!is.null(yaml_data$simulation_config$checkpoint_dir)){
+    checkpoint_dir <- normalizePath(yaml_data$simulation_config$checkpoint_dir, mustWork = FALSE)
 
     # prepare checkpoint directory
-    if(!dir.exists(chk_dir)) dir.create(chk_dir, recursive = TRUE)
+    if(!dir.exists(checkpoint_dir)) dir.create(checkpoint_dir, recursive = TRUE)
     do_chk <- TRUE
 
     if (!is.null(yaml_data$simulation_config$checkpoint_dates)) {
@@ -189,7 +189,7 @@ parse_config <- function(config_file, return_object = FALSE){
       # Generate a matrix of file names: rows for instances, columns for dates
       chk_file_names <- sapply(chk_dates, function(date) {
         date_str <- format(date, "%Y-%m-%d")
-        paste0(chk_dir, "/chk_", date_str, "_", 1:nsim, ".Rda")
+        paste0(checkpoint_dir, "/checkpoint_", date_str, "_instance_", 1:nsim, ".Rda")
       })
       if (is.vector(chk_file_names)) {
         chk_file_names <- matrix(chk_file_names, ncol = 1)
@@ -204,7 +204,7 @@ parse_config <- function(config_file, return_object = FALSE){
       chk_time_steps <- as.integer(sim_length / delta_t)
 
       # Create a 1-column matrix for the single checkpoint date
-      chk_file_names <- matrix(paste0(chk_dir, "/chk_", date_str, "_", 1:nsim, ".Rda"), ncol = 1)
+      chk_file_names <- matrix(paste0(checkpoint_dir, "/chk_", date_str, "_", 1:nsim, ".Rda"), ncol = 1)
     }
   }
 
@@ -393,7 +393,7 @@ parse_config <- function(config_file, return_object = FALSE){
       setwd(old_wd)
       stop(paste("Invalid categories in sub_disease_params:",
                  paste(invalid_cats, collapse = ", "),
-                 ". They are not present in the population mapping file."))
+                 ". The valid categories are", paste(names(pop_map), collapse = ", ")))
     }
 
     for (cat in cats_to_modify){
@@ -405,7 +405,7 @@ parse_config <- function(config_file, return_object = FALSE){
         setwd(old_wd)
         stop(paste("Invalid values for category", cat, "in sub_disease_params:",
                    paste(invalid_cat_vals, collapse = ", "),
-                   ". They are not present in the population mapping file."))
+                   ". The valid categories are", paste(unique(pop_map[[cat]]), collapse = ", ")))
       }
 
       for (cat_val in cat_vals){
@@ -492,7 +492,7 @@ parse_config <- function(config_file, return_object = FALSE){
 #' @param delta_t Step size in the simulation
 #'
 #' @returns A data.table
-#'
+#' @keywords internal
 process_vac_data <- function(vac_dt, sim_start_date, sim_length, delta_t) {
 
   # Ensure the date column is of Date type
@@ -526,7 +526,7 @@ process_vac_data <- function(vac_dt, sim_start_date, sim_length, delta_t) {
 #' @param seed
 #'
 #' @returns A random sample drawn from the distribution specified by the dist component
-#'
+#' @keyworkds internal
 draw_sample <- function(config_list, N_pop, seed = NULL){
 
   if(methods::is(config_list, "list")){

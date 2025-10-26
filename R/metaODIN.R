@@ -620,6 +620,7 @@ meta_sim <- function(N_pop, ts, tv,
         chk_file_name_instance <- chk_file_names[[i]]
         
         chk <- MetaRVMCheck$new(list(
+          chk_time_step = time_step,
           N_pop = N_pop,
           delta_t = delta_t,
           m_weekday_day = m_weekday_day,

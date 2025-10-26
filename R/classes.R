@@ -825,7 +825,7 @@ MetaRVMCheck <- R6::R6Class(
         "N_pop", "delta_t", "m_weekday_day", "m_weekday_night", "m_weekend_day", 
         "m_weekend_night", "ts", "tv", "ve", "dv", "de", "dp", "da", "ds", 
         "dh", "dr", "pea", "psr", "phr", "S", 
-        "E", "Ia", "Ip", "Is", "H", "D", "P", "V", "R"
+        "E", "Ia", "Ip", "Is", "H", "D", "P", "V", "R", "chk_time_step"
       )
       missing_fields <- setdiff(required_fields, names(self$check_data))
       if (length(missing_fields) > 0) {
