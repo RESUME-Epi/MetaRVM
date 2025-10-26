@@ -23,6 +23,8 @@ Description: A comprehensive R package for simulating respiratory virus epidemic
     The package is designed for epidemiologists, public health researchers, and
     policy makers who need robust tools for infectious disease modeling and
     scenario analysis.
+URL: https://RESUME-Epi.github.io/MetaRVM/, https://github.com/RESUME-Epi/MetaRVM
+BugReports: https://github.com/RESUME-Epi/MetaRVM/issues
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
@@ -44,6 +46,7 @@ Imports:
     yaml
 Suggests: 
     knitr,
+    pkgdown,
     rmarkdown,
     testthat (>= 3.0.0)
 VignetteBuilder: knitr, rmarkdown

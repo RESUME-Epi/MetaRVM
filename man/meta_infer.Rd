@@ -27,3 +27,4 @@ This function calibrates specified MetaRVM model parameters against ground
 truth observational data using a Bayesian framework provided by the
 \code{RobustCalibration} package.
 }
+\keyword{internal}

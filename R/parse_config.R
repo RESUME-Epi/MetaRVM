@@ -526,7 +526,7 @@ process_vac_data <- function(vac_dt, sim_start_date, sim_length, delta_t) {
 #' @param seed
 #'
 #' @returns A random sample drawn from the distribution specified by the dist component
-#' @keyworkds internal
+#' @keywords internal
 draw_sample <- function(config_list, N_pop, seed = NULL){
 
   if(methods::is(config_list, "list")){
