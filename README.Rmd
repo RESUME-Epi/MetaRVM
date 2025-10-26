@@ -5,7 +5,7 @@ always_allow_html: true
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# MetaRVM <img src="inst/logo.png" width="170px" align="right" /> 
+# MetaRVM <img src="man/figures/logo.png" width="170px" align="right" /> 
 
 
 ```{r, include = FALSE}
@@ -23,11 +23,19 @@ knitr::opts_chunk$set(
 
 This is a compartmental model simulation code for generic respiratory virus diseases.
 
+## Background
+
+`MetaRVM` is an open-source R package for modeling the spread of infectious diseases in subpopulations, which can be flexibly defined by geography, demographics, or other stratifications. It is designed to support real-time public health decision-making. `MetaRVM` is a metapopulation model, which extends the classic Susceptible-Infected-Recovered (SIR) framework by propagating infection across interacting subpopulations (e.g., age groups, neighborhoods), whose interactions are governed by realistic mixing patterns.
+
+The `MetaRVM` model builds upon the SEIR framework by introducing additional compartments to capture more detailed dynamics of disease progression, while allowing for heterogeneous mixing among different demographic stratum. These generalizations allow the model to account for factors such as vaccinations, hospitalizations, and fatalities.
+
+For more details, please refer to the paper: [Developing and deploying a use-inspired metapopulation modeling framework for detailed tracking of stratified health outcomes](https://www.medrxiv.org/content/10.1101/2025.05.05.25327021v1.full-text)
+
+
 ## Documentation
 
 Full documentation is available at: https://RESUME-Epi.github.io/MetaRVM/
 
-## Model
 
 ![Model schematics](man/figures/GIRD-Vensim.svg)
 
@@ -38,143 +46,4 @@ You can install the development version of MetaRVM from [GitHub](https://github.
 ``` r
 # install.packages("devtools")
 devtools::install_github("NSF-RESUME/MetaRVM")
-```
-
-## Example
-
-This is a basic example which shows how to run the simulation from R command line.
-
-```{r example}
-library(MetaRVM)
-library(ggplot2)
-```
-
-We will create some data sets that will be used for this demonstration. This is a meta-population model, i.e., the total population is divided in several sub-populations (based on some common attributes such as zones, age-groups, races etc.). The mixing pattern within and between these sub-populations are dictated by a mixing matrix, which will be explained later. In summary, to run the meta-population simulation, we need 
-1. population sizes and model initialization information,
-2. vaccination information,
-3. mixing matrices.
-
-#### Population
-
-For this example, we define our sub-populations by the 6 HCZ (Healthy Chicago Zone) in Chicago, IL. For each sub-population we need to provide the model the total population size (N), number of susceptible (S), infectious (I) and vaccinated (v) people at the start of the simulation.
-
-```{r data}
-## Model initialization
-N_pop <- 6
-pop_zones <- data.frame(N = rep(NA, N_pop),
-                        S0 = rep(NA, N_pop),
-                        I0 = rep(NA, N_pop),
-                        V0 = rep(NA, N_pop))
-
-pop_zones$N <- sample(1000:1500, N_pop)
-pop_zones$I0 <- sample(10:100, N_pop)
-pop_zones$V0 <- sample(1:10, N_pop)
-pop_zones$R0 <- sample(100:200, N_pop)
-pop_zones$S0 <- pop_zones$N - pop_zones$I0 - pop_zones$V0 - pop_zones$R0
-
-pop_zones
-```
-
-#### Vaccination
-
-The vaccination data has the time indices when the vaccination occured in the first column with the column name `t` and the other columns contain the number vaccinations in each sub-populations ordered from left to right. 
-
-```{r}
-## Vaccine profile
-sim_length <- 100
-tt <- seq(0, sim_length, by = 1)
-nt <- length(tt)
-vol <- sample(1:10, (nt-1)*N_pop, replace = TRUE)
-
-vac_zones <- cbind(tt, rbind(pop_zones$V0, matrix(vol, nrow = nt-1)))
-colnames(vac_zones) <- c("t", paste0("v", 1:N_pop))
-
-head(vac_zones)
-```
-
-
-
-```{r}
-## mixing matrix
-
-m1 <- m2 <- m3 <- m4 <- matrix(NA, nrow = N_pop, ncol = N_pop)
-diag(m1) <- round(runif(N_pop, min = 0.85, max = 0.92), 2)
-diag(m2) <- 1
-diag(m3) <- round(runif(N_pop, min = 0.7, max = 0.9), 2)
-diag(m4) <- 1
-
-for(ii in 1:N_pop){
-  tmp <- runif(N_pop - 1)
-  m1[ii, -ii] <- round(tmp * (1 - m1[ii, ii]) / sum(tmp), 2)
-  m2[ii, -ii] <- 0
-  m3[ii, -ii] <- round(tmp * (1 - m3[ii, ii]) / sum(tmp), 2)
-  m4[ii, -ii] <- 0
-}
-
-m_weekday_day <- m1
-m_weekday_night <- m2
-m_weekend_day <- m3
-m_weekend_night <- m4
-```
-
-Then run the simulation:
-
-```{r sim}
-out <- meta_sim(N_pop = N_pop,
-                ts = 0.7,
-                tv = 0.2,
-                S0 = pop_zones$S0,
-                I0 = pop_zones$I0,
-                P0 = pop_zones$N,
-                R0 = pop_zones$R0,
-                m_weekday_day = m_weekday_day,
-                m_weekend_day = m_weekend_day,
-                m_weekday_night = m_weekday_night,
-                m_weekend_night = m_weekend_night,
-                delta_t = 0.5,
-                vac_mat = as.matrix(vac_zones),
-                dv = 50,
-                de = 3,
-                pea = 0.5,
-                dp = 2,
-                da = 5,
-                ds = 2,
-                psr = 0.5,
-                dh = 3,
-                phr = 0.8,
-                dr = 50,
-                ve = 0.5,
-                nsteps = 100,
-                is.stoch = 0,
-                seed = NULL)
-
-head(out, n = 20)
-```
-
-
-## Vizualizations
-
-These are some easy ways to create visualizations on the output of the simulation. These functionalities will be added later as functions to the package.
-
-#### Aggregate level plot
-
-```{r}
-# covert to daily counts and long format
-# The daily_output() function requires an instance column in the out data.table
-# instance column is used to create summaries if there are multiple simulations
-# occuring.
-
-out$instance <- 1
-
-long_out_daily <- daily_output(out, start_date = as.Date("2023-09-01"))
-plot_metaRVM(long_out_daily,
-                   conf_level = 90,
-                   value_column = "total_value", is.plotly = FALSE)
-```
-
-
-To run this simulation interactively, use the provided shiny app
-
-```{r eval=FALSE}
-MetaRVM::run_app()
 ```

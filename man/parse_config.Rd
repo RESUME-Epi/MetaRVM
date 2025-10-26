@@ -28,7 +28,7 @@ If \code{return_object = FALSE} (default), returns a named list containing:
 \item{nsim}{Number of simulation instances}
 \item{random_seed}{Random seed used (if any)}
 \item{delta_t}{Time step size (fixed at 0.5)}
-\item{chk_file_names, do_chk}{Checkpointing configuration}
+\item{chk_file_names, chk_time_steps, do_chk}{Checkpointing configuration}
 }
 
 If \code{return_object = TRUE}, returns a \code{MetaRVMConfig} object with
@@ -49,7 +49,8 @@ main sections:
 \item \code{nsim}: Number of simulation instances (default: 1)
 \item \code{start_date}: Simulation start date in MM/DD/YYYY format
 \item \code{length}: Simulation length in days
-\item \code{chk_dir}: Optional checkpoint directory for saving intermediate results
+\item \code{checkpoint_dir}: Optional checkpoint directory for saving intermediate results
+\item \code{checkpoint_dates}: Optional list of dates to save checkpoints.
 \item \code{restore_from}: Optional path to restore simulation from checkpoint
 }
 

@@ -38,7 +38,8 @@ meta_sim(
   is.stoch = FALSE,
   seed = NULL,
   do_chk = FALSE,
-  chk_file_name = NULL
+  chk_time_steps = NULL,
+  chk_file_names = NULL
 )
 }
 \arguments{
@@ -140,8 +141,10 @@ is.stoch = TRUE. Default: NULL}
 \item{do_chk}{Logical. Whether to save model checkpoint at simulation end.
 Default: FALSE}
 
-\item{chk_file_name}{Character string or NULL. Checkpoint file name if do_chk = TRUE.
-Default: NULL}
+\item{chk_time_steps}{Integer vector or NULL. Time steps at which to save checkpoints.}
+
+\item{chk_file_names}{List of character vectors or NULL. File names for checkpoints.
+Each element of the list corresponds to a time step in \code{chk_time_steps}.}
 }
 \value{
 Returns a data.table with the following structure:

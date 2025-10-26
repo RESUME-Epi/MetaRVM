@@ -87,7 +87,8 @@ contact patterns, vaccination dynamics, and complex disease progression pathways
 <span>  is.stoch <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  seed <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  do_chk <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  chk_file_name <span class="op">=</span> <span class="cn">NULL</span></span>
+<span>  chk_time_steps <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  chk_file_names <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -259,9 +260,13 @@ is.stoch = TRUE. Default: NULL</p></dd>
 Default: FALSE</p></dd>
 
 
-<dt id="arg-chk-file-name">chk_file_name<a class="anchor" aria-label="anchor" href="#arg-chk-file-name"></a></dt>
-<dd><p>Character string or NULL. Checkpoint file name if do_chk = TRUE.
-Default: NULL</p></dd>
+<dt id="arg-chk-time-steps">chk_time_steps<a class="anchor" aria-label="anchor" href="#arg-chk-time-steps"></a></dt>
+<dd><p>Integer vector or NULL. Time steps at which to save checkpoints.</p></dd>
+
+
+<dt id="arg-chk-file-names">chk_file_names<a class="anchor" aria-label="anchor" href="#arg-chk-file-names"></a></dt>
+<dd><p>List of character vectors or NULL. File names for checkpoints.
+Each element of the list corresponds to a time step in <code>chk_time_steps</code>.</p></dd>
 
 </dl></div>
     <div class="section level2">
