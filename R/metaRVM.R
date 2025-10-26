@@ -217,7 +217,8 @@ metaRVM <- function(config_input) {
                   dr = config_obj$config_data$dr[ii, ],
                   ve = config_obj$config_data$ve[ii, ],
                   do_chk = config_obj$config_data$do_chk,
-                  chk_file_name = config_obj$config_data$chk_file_names[ii])
+                  chk_time_steps = config_obj$config_data$chk_time_steps,
+                  chk_file_names = config_obj$config_data$chk_file_names[ii, ])
 
     o$instance <- ii
     out <- rbind(out, o)
