@@ -70,7 +70,7 @@ format_metarvm_output <- function(sim_output, config) {
   
   # only keep time > 0
   # Select and reorder final columns
-  final_results <- combined_results[time > 0, .(
+  final_results <- combined_results[time >= 0, .(
     date,
     age, 
     race, 

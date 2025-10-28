@@ -20,6 +20,8 @@
 #' @param P0 Numeric vector of length N_pop. Total population sizes for each subpopulation
 #' @param R0 Numeric vector of length N_pop. Initial number of recovered individuals
 #'   in each subpopulation
+#' @param V0 Numeric vector of length N_pop. Initial number of vaccinated individuals
+#'   in each subpopulation
 #' @param H0 Numeric vector of length N_pop. Initial number of hospitalized individuals
 #'   in each subpopulation (default: rep(0, N_pop))
 #' @param D0 Numeric vector of length N_pop. Initial number of deceased individuals
@@ -257,6 +259,7 @@ meta_sim <- function(N_pop, ts, tv,
                      Ia0 = rep(0, N_pop),
                      Ip0 = rep(0, N_pop),
                      E0 = rep(0, N_pop),
+                     V0 = rep(0, N_pop),
                      m_weekday_day, m_weekday_night, m_weekend_day, m_weekend_night,
                      delta_t,
                      vac_mat,
@@ -284,14 +287,20 @@ meta_sim <- function(N_pop, ts, tv,
     update(I_presymp[])  <- I_presymp[i] + n_EIpresymp[i] - n_preIsymp[i]
     update(I_asymp[])    <- I_asymp[i] + n_EIasymp[i] - n_IasympR[i]
     update(I_symp[])     <- I_symp[i] + n_preIsymp[i] - n_IsympRH[i]
-    update(I_all[])      <- I_presymp[i] + I_asymp[i] + I_symp[i]
+    # update(I_all[])      <- I_presymp[i] + I_asymp[i] + I_symp[i]
+    update(I_all[])      <- I_presymp[i] + n_EIpresymp[i] - n_preIsymp[i] + I_asymp[i] + n_EIasymp[i] - n_IasympR[i] + I_symp[i] + n_preIsymp[i] - n_IsympRH[i]
     update(R[])          <- R[i] + n_IasympR[i] + n_IsympR[i] +n_HR[i] - n_RS[i]
     update(H[])          <- H[i] + n_IsympH[i] - n_HR[i] - n_HD[i]
     update(D[])          <- D[i] + n_HD[i]
     update(P[])          <- P[i] - n_HD[i]
     update(V[])          <- V[i] - n_VS[i] - n_VE[i] + n_SV_eff[i]
     update(cum_V[])      <- cum_V[i] + n_SV_eff[i]
-    update(mob_pop[])    <- S[i] + E[i] + I_all[i] + R[i] + V[i]
+    update(mob_pop[])    <- S[i] - n_SE[i] + n_RS[i] + n_VS[i] - n_SV_eff[i] +
+                            E[i] + n_SE[i] - n_EI[i] + n_VE[i] + 
+                            I_presymp[i] + n_EIpresymp[i] - n_preIsymp[i] + I_asymp[i] + n_EIasymp[i] - n_IasympR[i] + I_symp[i] + n_preIsymp[i] - n_IsympRH[i] +
+                            R[i] + n_IasympR[i] + n_IsympR[i] +n_HR[i] - n_RS[i] +
+                            V[i] - n_VS[i] - n_VE[i] + n_SV_eff[i]
+      # S[i] + E[i] + I_all[i] + R[i] + V[i]
 
     ## =================================================
     ## sub population-based probabilities of transition:
@@ -391,14 +400,14 @@ meta_sim <- function(N_pop, ts, tv,
     initial(I_presymp[])    <- I_presymp_ini[i]
     initial(I_asymp[])      <- I_asymp_ini[i]
     initial(I_symp[])       <- I_symp_ini[i]
-    initial(I_all[])        <- I_symp_ini[i]
+    initial(I_all[])        <- I_presymp_ini[i] + I_asymp_ini[i] + I_symp_ini[i]
     initial(R[])            <- R_ini[i]
     initial(H[])            <- H_ini[i]
     initial(D[])            <- D_ini[i]
     initial(V[])            <- V_ini[i]
     initial(cum_V[])        <- V_ini[i]
     initial(P[])            <- P_ini[i]
-    initial(mob_pop[])      <- P_ini[i] - H_ini[i] - D_ini[i]
+    initial(mob_pop[])      <- S_ini[i] + E_ini[i] + I_presymp_ini[i] + I_asymp_ini[i] + I_symp_ini[i] + R_ini[i] + V_ini[i] # P_ini[i] - H_ini[i] - D_ini[i]
 
     ## =================================================
     ## additional output for debugging
@@ -561,10 +570,15 @@ meta_sim <- function(N_pop, ts, tv,
   # nsteps <- nsteps - 1
 
   ## prepare vaccination input
-  tvac <- vac_mat[-nsteps, 1]
-  vac_mat <- vac_mat[-1, -1]
+  # tvac <- vac_mat[-nsteps, 1]
+  # vac_mat <- vac_mat[-1, -1]
 
-  V0 <- vac_mat[1, ]
+  tvac <- vac_mat[, 1]
+  vac_mat <- vac_mat[, -1]
+
+  if(!is.matrix(vac_mat)) vac_mat <- matrix(vac_mat, ncol = 1)
+
+  V0 <- vac_mat[1, ] + V0
 
 
   model <- metaODIN$new(stoch = is.stoch,

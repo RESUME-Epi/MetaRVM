@@ -503,7 +503,7 @@ process_vac_data <- function(vac_dt, sim_start_date, sim_length, delta_t) {
 
   date_filtered <- vac_dt %>%
     dplyr::filter(date >= as.Date(sim_start_date)) %>%
-    dplyr::mutate(t = (date - as.Date(sim_start_date)) / 0.5) %>%
+    dplyr::mutate(t = (date - as.Date(sim_start_date)) / delta_t) %>%
     dplyr::select(-c(date)) %>%
     dplyr::select(dplyr::last_col(), dplyr::everything())
 
@@ -513,6 +513,7 @@ process_vac_data <- function(vac_dt, sim_start_date, sim_length, delta_t) {
   ## merge
   vac_all_dates <- merge(complete_time, date_filtered, by = "t", all.x = TRUE)
   vac_all_dates[is.na(vac_all_dates)] <- 0
+  vac_all_dates[t==0, V1:= 0] # since we are starting a day earlier, remove the vaccination counts from that date
 
   return(vac_all_dates)
 }

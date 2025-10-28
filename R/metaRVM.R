@@ -189,7 +189,7 @@ metaRVM <- function(config_input) {
                   S0 = config_obj$config_data$S_ini,
                   I0 = config_obj$config_data$I_symp_ini,
                   P0 = config_obj$config_data$P_ini,
-                  # V0 = config_obj$config_data$V_ini,
+                  V0 = config_obj$config_data$V_ini,
                   R0 = config_obj$config_data$R_ini,
                   H0 = config_obj$config_data$H_ini,
                   D0 = config_obj$config_data$D_ini,
@@ -227,6 +227,6 @@ metaRVM <- function(config_input) {
   
   # Create and return MetaRVMResults object
   results_obj <- MetaRVMResults$new(out, config_obj)
-  return(results_obj)
-  # return(out)
+  # return(results_obj)
+  return(out)
 }
