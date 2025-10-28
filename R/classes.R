@@ -354,8 +354,10 @@ MetaRVMResults <- R6::R6Class(
         if (length(date_range) != 2) {
           stop("date_range must be a vector of two dates: c(start_date, end_date)")
         }
-        start_date <- date_range[1]
-        end_date <- date_range[2]
+        start_date <- as.Date(date_range[1], tryFormats = c("%m/%d/%Y"))
+        end_date <- as.Date(date_range[2], tryFormats = c("%m/%d/%Y"))
+        cat(start_date, "\n")
+        cat(end_date, "\n")
         subset_results <- subset_results[date >= start_date & date <= end_date]
       }
       
