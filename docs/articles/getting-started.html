@@ -105,7 +105,7 @@ package is installed.</p>
 <code class="sourceCode R"><span><span class="co"># Locate the example YAML configuration file</span></span>
 <span><span class="va">yaml_file</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, <span class="st">"example_config.yaml"</span>, package <span class="op">=</span> <span class="st">"MetaRVM"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">yaml_file</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] "/tmp/RtmpEkEVxi/temp_libpath24fd71564241d1/MetaRVM/extdata/example_config.yaml"</span></span></code></pre></div>
+<span><span class="co">#&gt; [1] "/tmp/RtmpEkEVxi/temp_libpath24fd7163cb6ff9/MetaRVM/extdata/example_config.yaml"</span></span></code></pre></div>
 <p>The <code>yaml_file</code> variable now holds the full path to the
 example configuration file. This file is set up to use the other example
 data files (also in the <code>extdata</code> directory) with relative
@@ -135,7 +135,7 @@ paths. Below is the content of the yaml file.</p>
 <span id="cb4-23"><a href="#cb4-23" tabindex="-1"></a><span class="at">  </span><span class="fu">psr</span><span class="kw">:</span><span class="at"> </span><span class="fl">0.95</span></span>
 <span id="cb4-24"><a href="#cb4-24" tabindex="-1"></a><span class="at">  </span><span class="fu">phr</span><span class="kw">:</span><span class="at"> </span><span class="fl">0.97</span></span>
 <span id="cb4-25"><a href="#cb4-25" tabindex="-1"></a><span class="fu">simulation_config</span><span class="kw">:</span></span>
-<span id="cb4-26"><a href="#cb4-26" tabindex="-1"></a><span class="at">  </span><span class="fu">start_date</span><span class="kw">:</span><span class="at"> 01/01/2024</span><span class="co"> # m/d/Y</span></span>
+<span id="cb4-26"><a href="#cb4-26" tabindex="-1"></a><span class="at">  </span><span class="fu">start_date</span><span class="kw">:</span><span class="at"> 01/01/2023</span><span class="co"> # m/d/Y</span></span>
 <span id="cb4-27"><a href="#cb4-27" tabindex="-1"></a><span class="at">  </span><span class="fu">length</span><span class="kw">:</span><span class="at"> </span><span class="dv">150</span></span>
 <span id="cb4-28"><a href="#cb4-28" tabindex="-1"></a><span class="at">  </span><span class="fu">nsim</span><span class="kw">:</span><span class="at"> </span><span class="dv">1</span></span></code></pre></div>
 <p>For a detailed explanation of all the configuration options, please
@@ -155,26 +155,26 @@ be run using the <code><a href="../reference/metaRVM.html">metaRVM()</a></code> 
 <span><span class="va">sim_out</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/metaRVM.html">metaRVM</a></span><span class="op">(</span><span class="va">yaml_file</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Loading required namespace: pkgbuild</span></span>
 <span><span class="co">#&gt; Generating model in c</span></span>
-<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Re-compiling <span style="color: #0000BB;">odin1b45cb2c</span> (debug build)</span></span>
-<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Loading <span style="color: #0000BB;">odin1b45cb2c</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Re-compiling <span style="color: #0000BB;">odin62a63f38</span> (debug build)</span></span>
+<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Loading <span style="color: #0000BB;">odin62a63f38</span></span></span></code></pre></div>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">sim_out</span><span class="op">)</span></span>
 <span><span class="co">#&gt; MetaRVM Results Object</span></span>
 <span><span class="co">#&gt; =====================</span></span>
 <span><span class="co">#&gt; Instances: 1 </span></span>
 <span><span class="co">#&gt; Populations: 24 </span></span>
-<span><span class="co">#&gt; Date range: 2024-01-01 to 2024-05-29 </span></span>
+<span><span class="co">#&gt; Date range: 2023-10-01 to 2024-02-27 </span></span>
 <span><span class="co">#&gt; Total observations: 111600 </span></span>
 <span><span class="co">#&gt; Disease states: D, E, H, I_all, I_asymp, I_eff, I_presymp, I_symp, P, R, S, V, cum_V, mob_pop, n_EI, n_EIpresymp, n_HD, n_HR, n_HRD, n_IasympR, n_IsympH, n_IsympR, n_IsympRH, n_SE, n_SV, n_VE, n_VS, n_preIsymp, p_HRD, p_SE, p_VE</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">sim_out</span><span class="op">$</span><span class="va">results</span><span class="op">)</span></span>
 <span><span class="co">#&gt;          date    age   race   zone disease_state        value instance</span></span>
 <span><span class="co">#&gt;        &lt;Date&gt; &lt;char&gt; &lt;char&gt; &lt;char&gt;        &lt;char&gt;        &lt;num&gt;    &lt;int&gt;</span></span>
-<span><span class="co">#&gt; 1: 2024-01-01   0-17      A     11             D 2.252583e-04        1</span></span>
-<span><span class="co">#&gt; 2: 2024-01-01   0-17      A     11             E 1.367164e+01        1</span></span>
-<span><span class="co">#&gt; 3: 2024-01-01   0-17      A     11             H 2.304447e-01        1</span></span>
-<span><span class="co">#&gt; 4: 2024-01-01   0-17      A     11         I_all 2.852138e+01        1</span></span>
-<span><span class="co">#&gt; 5: 2024-01-01   0-17      A     11       I_asymp 3.228552e-01        1</span></span>
-<span><span class="co">#&gt; 6: 2024-01-01   0-17      A     11         I_eff 2.762196e+01        1</span></span></code></pre></div>
+<span><span class="co">#&gt; 1: 2023-10-01   0-17      A     11             D 2.252583e-04        1</span></span>
+<span><span class="co">#&gt; 2: 2023-10-01   0-17      A     11             E 1.305178e+01        1</span></span>
+<span><span class="co">#&gt; 3: 2023-10-01   0-17      A     11             H 2.304447e-01        1</span></span>
+<span><span class="co">#&gt; 4: 2023-10-01   0-17      A     11         I_all 2.731688e+01        1</span></span>
+<span><span class="co">#&gt; 5: 2023-10-01   0-17      A     11       I_asymp 3.227854e-01        1</span></span>
+<span><span class="co">#&gt; 6: 2023-10-01   0-17      A     11         I_eff 2.647304e+01        1</span></span></code></pre></div>
 <p>For more details on running <code>metaRVM</code>, refer to the <a href="articles/running-a-simulation.html">Running Simulation</a>
 vignette.</p>
 </div>

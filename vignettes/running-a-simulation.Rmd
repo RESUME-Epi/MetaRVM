@@ -56,7 +56,7 @@ disease_params:
   psr: 0.95
   phr: 0.97
 simulation_config:
-  start_date: 01/01/2024 # m/d/Y
+  start_date: 01/01/2023 # m/d/Y
   length: 150
   nsim: 1
 ```
@@ -220,7 +220,7 @@ disease_params:
   psr: 0.95
   phr: 0.97
 simulation_config:
-  start_date: 01/01/2024 # m/d/Y
+  start_date: 01/01/2023 # m/d/Y
   length: 150
   nsim: 20 # Increased nsim for meaningful summary statistics
 ```
@@ -318,7 +318,7 @@ sub_disease_params:
         dh: 10 
         phr: 0.9227
 simulation_config:
-  start_date: 01/01/2024 # m/d/Y
+  start_date: 01/01/2023 # m/d/Y
   length: 150
   nsim: 20
 ```

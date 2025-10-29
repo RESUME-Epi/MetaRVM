@@ -513,7 +513,12 @@ process_vac_data <- function(vac_dt, sim_start_date, sim_length, delta_t) {
   ## merge
   vac_all_dates <- merge(complete_time, date_filtered, by = "t", all.x = TRUE)
   vac_all_dates[is.na(vac_all_dates)] <- 0
-  vac_all_dates[t==0, V1:= 0] # since we are starting a day earlier, remove the vaccination counts from that date
+  
+  # since we are starting a day earlier, remove the vaccination counts from that date
+  if (nrow(vac_all_dates) > 0 && "t" %in% names(vac_all_dates)) {
+    cols_to_update <- setdiff(names(vac_all_dates), "t")
+    vac_all_dates[t == 0, (cols_to_update) := 0]
+  }
 
   return(vac_all_dates)
 }
