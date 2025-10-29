@@ -1,7 +1,7 @@
 url: https://RESUME-Epi.github.io/MetaRVM/
 template:
   bootstrap: 5
-  bootswatch: cosmo
+  bootswatch: litera
   light-switch: false
   logo: man/figures/logo.png
   
@@ -28,6 +28,12 @@ navbar:
       menu:
       - text: Getting Started
         href: articles/getting-started.html
+      - text: Model Configurations
+        href: articles/yaml-configuration.html
+      - text: Running Simulation
+        href: articles/running-a-simulation.html
+      # - text: Checkpointing and Restoring
+      #   href: articles/checkpointing.html
     news:
       text: News
       href: news/index.html

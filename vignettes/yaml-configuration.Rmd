@@ -1,0 +1,227 @@
+---
+title: "YAML Configuration for metaRVM"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{YAML Configuration for metaRVM}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+## Introduction
+
+The `metaRVM` package uses a YAML file to configure the model parameters. This vignette describes the structure of the YAML configuration file, starting with a simple example and progressively introducing more advanced features.
+
+## Basic Configuration
+
+A minimal configuration file specifies the data sources, simulation settings, and disease parameters with fixed scalar values.
+
+```yaml
+run_id: SimpleRun
+population_data:
+  mapping: data/demographic_mapping.csv
+  initialization: data/population_init.csv
+  vaccination: data/vaccination.csv
+mixing_matrix:
+  weekday_day: data/m_weekday_day.csv
+  weekday_night: data/m_weekday_night.csv
+  weekend_day: data/m_weekend_day.csv
+  weekend_night: data/m_weekend_night.csv
+disease_params:
+  ts: 0.5
+  tv: 0.25
+  ve: 0.4
+  dv: 180
+  dp: 1
+  de: 3
+  da: 5
+  ds: 6
+  dh: 8
+  dr: 180
+  pea: 0.3
+  psr: 0.95
+  phr: 0.97
+simulation_config:
+  start_date: 01/01/2025 # m/d/Y
+  length: 90
+  nsim: 1
+  random_seed: 42
+```
+
+### Configuration Sections
+
+-   **`run_id`**: A unique name for your simulation.
+-   **`population_data`**: Paths to CSV files for population demographics, initial state, and vaccination schedules.
+-   **`mixing_matrix`**: Paths to CSV files defining contact patterns for different times of the week.
+-   **`disease_params`**: Disease characteristics. In this example, all parameters are single, fixed values.
+-   **`simulation_config`**: Settings for the simulation run, such as start date, duration, and number of simulations.
+
+### Input File Structures
+
+The `metaRVM` package requires several CSV files to be structured in a specific way. Below are the descriptions for each of the required input files.
+
+#### Population Data Files
+
+-   **`mapping`**: The population mapping file connects population IDs to demographic information. It must contain the following columns:
+    -   `population_id`: A unique identifier for each subpopulation, set of natural numbers 1, 2, 3, ...
+    -   `age`: The age group of the subpopulation (e.g., "0-4", "65+").
+    -   `race`: The race or ethnicity of the subpopulation.
+    -   `hcez`: The healthcare zone or geographic region of the subpopulation.
+
+-   **`initialization`**: This file specifies the initial state of the population for the simulation. It must contain the following columns:
+    -   `N`: The total number of individuals in each subpopulation.
+    -   `S0`: The initial number of susceptible individuals.
+    -   `I0`: The initial number of symptomatic infected individuals.
+    -   `V0`: The initial number of vaccinated individuals.
+    -   `R0`: The initial number of recovered individuals.
+
+-   **`vaccination`**: The vaccination schedule file contains the number of vaccinations administered over time. The first column must be `date` in `MM/DD/YYYY` format, followed by columns for each subpopulation in the same order that they are assigned a `population_id` in the mapping file.
+
+#### Mixing Matrix Files
+
+The mixing matrix files define the contact patterns between different subpopulations. Each file should be a CSV without a header, where the rows and columns correspond to the subpopulations in the same order as the population mapping file. The values in the matrix represent the proportion of time that individuals from one subpopulation spend with individuals from another. The sum of each row must equal 1.
+
+### Disease Parameter Descriptions
+
+Below is a list of the disease parameters used in `metaRVM`:
+
+-   `ts`: Transmission rate for symptomatic individuals in the susceptible population.
+-   `tv`: Transmission rate for symptomatic individuals in the vaccinated population.
+-   `ve`: Vaccine effectiveness (proportion, range: [0, 1]).
+-   `dv`: Mean duration (in days) in the vaccinated state before immunity wanes.
+-   `dp`: Mean duration (in days) in the presymptomatic infectious state.
+-   `de`: Mean duration (in days) in the exposed state.
+-   `da`: Mean duration (in days) in the asymptomatic infectious state.
+-   `ds`: Mean duration (in days) in the symptomatic infectious state.
+-   `dh`: Mean duration (in days) in the hospitalized state.
+-   `dr`: Mean duration (in days) of immunity in the recovered state.
+-   `pea`: Proportion of exposed individuals who become asymptomatic (vs. presymptomatic) (range: 0-1).
+-   `psr`: Proportion of symptomatic individuals who recover directly (vs. requiring hospitalization) (range: 0-1).
+-   `phr`: Proportion of hospitalized individuals who recover (vs. die) (range: 0-1).
+
+## Defining Parameters with Distributions
+
+Instead of fixed values, you can define disease parameters using statistical distributions. This is useful for capturing uncertainty in the parameters. `metaRVM` supports `uniform` and `lognormal` distributions.
+
+Here is an example of defining `ve`, `da`, `ds`, and `dh` with distributions:
+
+```yaml
+disease_params:
+  ts: 0.7
+  tv: 0.35
+  ve:
+    dist: uniform
+    min: 0.29
+    max: 0.53
+  dv: 158
+  dp: 1
+  de: 3
+  da:
+    dist: uniform
+    min: 3
+    max: 7
+  ds:
+    dist: uniform
+    min: 5
+    max: 7
+  dh:
+    dist: lognormal
+    mu: 8
+    sd: 8.9
+  dr: 187
+  pea: 0.333
+  psr: 0.95
+  phr: 0.97
+```
+
+-   For a `uniform` distribution, you must specify `min` and `max` values.
+-   For a `lognormal` distribution, you must specify `mu` and `sd` (mean and standard deviation on the log scale).
+
+## Specifying Subgroup Parameters
+
+`metaRVM` allows you to specify different disease parameters for various demographic subgroups using the `sub_disease_params` section. These subgroup-specific parameters will override the global parameters defined in `disease_params`.
+
+It is crucial that the demographic categories (e.g., `age`) and the specific values (e.g., `0-4`, `5-11`) used in this section exactly match the corresponding columns and values in the population mapping CSV file specified under `population_data`.
+
+The following example defines different parameters for different age groups:
+
+```yaml
+sub_disease_params:
+    age:
+      0-4:
+        dh: 4
+        pea: 0.08
+        psr: 0.9303
+        phr: 0.9920
+      5-11:
+        dh: 4
+        pea: 0.08
+        psr: 0.9726
+        phr: 0.9920
+      12-17:
+        dh: 4
+        pea: 0.08
+        psr: 0.9726
+        phr: 0.9920
+      18-49:
+        ts: 0.01
+        dh: 6
+        pea: 0.12
+        psr: 0.9439
+        phr: 0.9690
+      50-64:
+        dh: 6
+        pea: 0.05
+        psr: 0.9894
+        phr: 0.9425
+      65+:
+        dh: 7
+        pea: 0.05
+        psr: 0.9091
+        phr: 0.9227
+```
+
+In this configuration, individuals in the "0-4" age group will have a `dh` (duration of hospitalization) of 4, overriding any global `dh` value. Similarly, the transmission rate `ts` for the "18-49" group is set to 0.01.
+
+## Checkpointing and Restoring Simulations
+
+For long-running simulations, it is useful to save the state of the model at intermediate points. This is known as checkpointing. `metaRVM` allows you to save checkpoints and restore a simulation from a saved state.
+
+### Enabling Checkpointing
+
+To enable checkpointing, you need to add the `checkpoint_dir` and optionally `checkpoint_dates` to the `simulation_config` section of your YAML file.
+
+-   `checkpoint_dir`: The directory where checkpoint files will be saved.
+-   `checkpoint_dates`: A list of dates (in `MM/DD/YYYY` format) on which to save a checkpoint. If this is not provided, a single checkpoint will be saved at the end of the simulation.
+
+Here is an example of how to configure checkpointing:
+
+```yaml
+simulation_config:
+  start_date: 01/01/2025
+  length: 90
+  nsim: 10
+  random_seed: 42
+  checkpoint_dir: "path/to/checkpoints"
+  checkpoint_dates: ["01/15/2025", "01/30/2025"]
+```
+
+### Restoring from a Checkpoint
+
+To restore a simulation from a checkpoint file, use the `restore_from` parameter in the `simulation_config` section. This will initialize the model with the state saved in the specified checkpoint file.
+
+```yaml
+simulation_config:
+  start_date: 01/30/2025 # Should be the next date of the checkpoint date
+  length: 60 # Remaining simulation length
+  nsim: 10
+  restore_from: "path/to/checkpoints/checkpoint_2025-01-30_instance_1.Rda"
+```
+
+When restoring, the `start_date` should correspond to the next date of the checkpoint, and the `length` should be the remaining duration of the simulation. Note that each instance of a simulation must be restored individually.
