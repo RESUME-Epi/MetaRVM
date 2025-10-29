@@ -22,7 +22,7 @@
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
-    <nav class="navbar navbar-expand-lg fixed-top bg-primary" data-bs-theme="dark" aria-label="Site navigation"><div class="container">
+    <nav class="navbar navbar-expand-lg fixed-top bg-light" data-bs-theme="light" aria-label="Site navigation"><div class="container">
 
     <a class="navbar-brand me-2" href="../index.html">MetaRVM</a>
 
@@ -41,6 +41,8 @@
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
 <li><a class="dropdown-item" href="../articles/getting-started.html">Getting Started</a></li>
+    <li><a class="dropdown-item" href="../articles/yaml-configuration.html">Model Configurations</a></li>
+    <li><a class="dropdown-item" href="../articles/running-a-simulation.html">Running Simulation</a></li>
   </ul>
 </li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">News</a></li>
@@ -68,162 +70,113 @@
 
     
     
-<div class="section level2">
-<h2 id="introduction">Introduction<a class="anchor" aria-label="anchor" href="#introduction"></a>
-</h2>
+<div class="section level3">
+<h3 id="introduction">Introduction<a class="anchor" aria-label="anchor" href="#introduction"></a>
+</h3>
 <p>MetaRVM is a comprehensive R package for simulating respiratory virus
 epidemics using meta-population compartmental models. This vignette will
 guide you through the basic usage of the package.</p>
 </div>
-<div class="section level2">
-<h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
-</h2>
+<div class="section level3">
+<h3 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
+</h3>
 <p>You can install the development version of MetaRVM from GitHub:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># install.packages("devtools")</span></span>
 <span><span class="fu">devtools</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"RESUME-Epi/MetaRVM"</span><span class="op">)</span></span></code></pre></div>
 </div>
-<div class="section level2">
-<h2 id="loading-the-package">Loading the Package<a class="anchor" aria-label="anchor" href="#loading-the-package"></a>
-</h2>
+<div class="section level3">
+<h3 id="loading-the-package">Loading the Package<a class="anchor" aria-label="anchor" href="#loading-the-package"></a>
+</h3>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://RESUME-Epi.github.io/MetaRVM/">MetaRVM</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org" class="external-link">ggplot2</a></span><span class="op">)</span></span></code></pre></div>
 </div>
-<div class="section level2">
-<h2 id="basic-example">Basic Example<a class="anchor" aria-label="anchor" href="#basic-example"></a>
-</h2>
+<div class="section level3">
+<h3 id="basic-example">Basic Example<a class="anchor" aria-label="anchor" href="#basic-example"></a>
+</h3>
 <p>This example shows how to run a basic meta-population simulation.</p>
-<div class="section level3">
-<h3 id="setting-up-population-data">Setting Up Population Data<a class="anchor" aria-label="anchor" href="#setting-up-population-data"></a>
-</h3>
-<p>For a meta-population model, we need to define sub-populations. In
-this example, we’ll use 6 sub-populations representing different
-zones.</p>
+<p>The <code>metaRVM</code> package includes a set of example files in
+its <code>extdata</code> directory. To run the example, we first need to
+locate these files. The <code><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file()</a></code> function in R is the
+recommended way to do this, as it will find the files wherever the
+package is installed.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co">## Model initialization</span></span>
-<span><span class="va">N_pop</span> <span class="op">&lt;-</span> <span class="fl">6</span></span>
-<span><span class="va">pop_zones</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>N <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="cn">NA</span>, <span class="va">N_pop</span><span class="op">)</span>,</span>
-<span>                        S0 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="cn">NA</span>, <span class="va">N_pop</span><span class="op">)</span>,</span>
-<span>                        I0 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="cn">NA</span>, <span class="va">N_pop</span><span class="op">)</span>,</span>
-<span>                        V0 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="cn">NA</span>, <span class="va">N_pop</span><span class="op">)</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">pop_zones</span><span class="op">$</span><span class="va">N</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sample.html" class="external-link">sample</a></span><span class="op">(</span><span class="fl">1000</span><span class="op">:</span><span class="fl">1500</span>, <span class="va">N_pop</span><span class="op">)</span></span>
-<span><span class="va">pop_zones</span><span class="op">$</span><span class="va">I0</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sample.html" class="external-link">sample</a></span><span class="op">(</span><span class="fl">10</span><span class="op">:</span><span class="fl">100</span>, <span class="va">N_pop</span><span class="op">)</span></span>
-<span><span class="va">pop_zones</span><span class="op">$</span><span class="va">V0</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sample.html" class="external-link">sample</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">10</span>, <span class="va">N_pop</span><span class="op">)</span></span>
-<span><span class="va">pop_zones</span><span class="op">$</span><span class="va">R0</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sample.html" class="external-link">sample</a></span><span class="op">(</span><span class="fl">100</span><span class="op">:</span><span class="fl">200</span>, <span class="va">N_pop</span><span class="op">)</span></span>
-<span><span class="va">pop_zones</span><span class="op">$</span><span class="va">S0</span> <span class="op">&lt;-</span> <span class="va">pop_zones</span><span class="op">$</span><span class="va">N</span> <span class="op">-</span> <span class="va">pop_zones</span><span class="op">$</span><span class="va">I0</span> <span class="op">-</span> <span class="va">pop_zones</span><span class="op">$</span><span class="va">V0</span> <span class="op">-</span> <span class="va">pop_zones</span><span class="op">$</span><span class="va">R0</span></span>
-<span></span>
-<span><span class="va">pop_zones</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="co"># Locate the example YAML configuration file</span></span>
+<span><span class="va">yaml_file</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, <span class="st">"example_config.yaml"</span>, package <span class="op">=</span> <span class="st">"MetaRVM"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">yaml_file</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] "/tmp/RtmpEkEVxi/temp_libpath24fd71564241d1/MetaRVM/extdata/example_config.yaml"</span></span></code></pre></div>
+<p>The <code>yaml_file</code> variable now holds the full path to the
+example configuration file. This file is set up to use the other example
+data files (also in the <code>extdata</code> directory) with relative
+paths. Below is the content of the yaml file.</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a><span class="fu">run_id</span><span class="kw">:</span><span class="at"> ExampleRun</span></span>
+<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a><span class="fu">population_data</span><span class="kw">:</span></span>
+<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a><span class="at">  </span><span class="fu">mapping</span><span class="kw">:</span><span class="at"> demographic_mapping_n24.csv</span></span>
+<span id="cb4-4"><a href="#cb4-4" tabindex="-1"></a><span class="at">  </span><span class="fu">initialization</span><span class="kw">:</span><span class="at"> population_init_n24.csv</span></span>
+<span id="cb4-5"><a href="#cb4-5" tabindex="-1"></a><span class="at">  </span><span class="fu">vaccination</span><span class="kw">:</span><span class="at"> vaccination_n24.csv</span></span>
+<span id="cb4-6"><a href="#cb4-6" tabindex="-1"></a><span class="fu">mixing_matrix</span><span class="kw">:</span></span>
+<span id="cb4-7"><a href="#cb4-7" tabindex="-1"></a><span class="at">  </span><span class="fu">weekday_day</span><span class="kw">:</span><span class="at"> m_weekday_day.csv</span></span>
+<span id="cb4-8"><a href="#cb4-8" tabindex="-1"></a><span class="at">  </span><span class="fu">weekday_night</span><span class="kw">:</span><span class="at"> m_weekday_night.csv</span></span>
+<span id="cb4-9"><a href="#cb4-9" tabindex="-1"></a><span class="at">  </span><span class="fu">weekend_day</span><span class="kw">:</span><span class="at"> m_weekend_day.csv</span></span>
+<span id="cb4-10"><a href="#cb4-10" tabindex="-1"></a><span class="at">  </span><span class="fu">weekend_night</span><span class="kw">:</span><span class="at"> m_weekend_night.csv</span></span>
+<span id="cb4-11"><a href="#cb4-11" tabindex="-1"></a><span class="fu">disease_params</span><span class="kw">:</span></span>
+<span id="cb4-12"><a href="#cb4-12" tabindex="-1"></a><span class="at">  </span><span class="fu">ts</span><span class="kw">:</span><span class="at"> </span><span class="fl">0.5</span></span>
+<span id="cb4-13"><a href="#cb4-13" tabindex="-1"></a><span class="at">  </span><span class="fu">tv</span><span class="kw">:</span><span class="at"> </span><span class="fl">0.25</span></span>
+<span id="cb4-14"><a href="#cb4-14" tabindex="-1"></a><span class="at">  </span><span class="fu">ve</span><span class="kw">:</span><span class="at"> </span><span class="fl">0.4</span></span>
+<span id="cb4-15"><a href="#cb4-15" tabindex="-1"></a><span class="at">  </span><span class="fu">dv</span><span class="kw">:</span><span class="at"> </span><span class="dv">180</span></span>
+<span id="cb4-16"><a href="#cb4-16" tabindex="-1"></a><span class="at">  </span><span class="fu">dp</span><span class="kw">:</span><span class="at"> </span><span class="dv">1</span></span>
+<span id="cb4-17"><a href="#cb4-17" tabindex="-1"></a><span class="at">  </span><span class="fu">de</span><span class="kw">:</span><span class="at"> </span><span class="dv">3</span></span>
+<span id="cb4-18"><a href="#cb4-18" tabindex="-1"></a><span class="at">  </span><span class="fu">da</span><span class="kw">:</span><span class="at"> </span><span class="dv">5</span></span>
+<span id="cb4-19"><a href="#cb4-19" tabindex="-1"></a><span class="at">  </span><span class="fu">ds</span><span class="kw">:</span><span class="at"> </span><span class="dv">6</span></span>
+<span id="cb4-20"><a href="#cb4-20" tabindex="-1"></a><span class="at">  </span><span class="fu">dh</span><span class="kw">:</span><span class="at"> </span><span class="dv">8</span></span>
+<span id="cb4-21"><a href="#cb4-21" tabindex="-1"></a><span class="at">  </span><span class="fu">dr</span><span class="kw">:</span><span class="at"> </span><span class="dv">180</span></span>
+<span id="cb4-22"><a href="#cb4-22" tabindex="-1"></a><span class="at">  </span><span class="fu">pea</span><span class="kw">:</span><span class="at"> </span><span class="fl">0.3</span></span>
+<span id="cb4-23"><a href="#cb4-23" tabindex="-1"></a><span class="at">  </span><span class="fu">psr</span><span class="kw">:</span><span class="at"> </span><span class="fl">0.95</span></span>
+<span id="cb4-24"><a href="#cb4-24" tabindex="-1"></a><span class="at">  </span><span class="fu">phr</span><span class="kw">:</span><span class="at"> </span><span class="fl">0.97</span></span>
+<span id="cb4-25"><a href="#cb4-25" tabindex="-1"></a><span class="fu">simulation_config</span><span class="kw">:</span></span>
+<span id="cb4-26"><a href="#cb4-26" tabindex="-1"></a><span class="at">  </span><span class="fu">start_date</span><span class="kw">:</span><span class="at"> 01/01/2024</span><span class="co"> # m/d/Y</span></span>
+<span id="cb4-27"><a href="#cb4-27" tabindex="-1"></a><span class="at">  </span><span class="fu">length</span><span class="kw">:</span><span class="at"> </span><span class="dv">150</span></span>
+<span id="cb4-28"><a href="#cb4-28" tabindex="-1"></a><span class="at">  </span><span class="fu">nsim</span><span class="kw">:</span><span class="at"> </span><span class="dv">1</span></span></code></pre></div>
+<p>For a detailed explanation of all the configuration options, please
+see the <a href="articles/yaml-configuration.html">Model
+Configurations</a> vignette.</p>
 </div>
-<div class="section level3">
-<h3 id="setting-up-vaccination-profile">Setting Up Vaccination Profile<a class="anchor" aria-label="anchor" href="#setting-up-vaccination-profile"></a>
-</h3>
-<p>The vaccination data includes time indices and the number of
-vaccinations for each sub-population.</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co">## Vaccine profile</span></span>
-<span><span class="va">sim_length</span> <span class="op">&lt;-</span> <span class="fl">100</span></span>
-<span><span class="va">tt</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">0</span>, <span class="va">sim_length</span>, by <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
-<span><span class="va">nt</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">tt</span><span class="op">)</span></span>
-<span><span class="va">vol</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sample.html" class="external-link">sample</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">10</span>, <span class="op">(</span><span class="va">nt</span><span class="op">-</span><span class="fl">1</span><span class="op">)</span><span class="op">*</span><span class="va">N_pop</span>, replace <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">vac_zones</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">cbind</a></span><span class="op">(</span><span class="va">tt</span>, <span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">rbind</a></span><span class="op">(</span><span class="va">pop_zones</span><span class="op">$</span><span class="va">V0</span>, <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="va">vol</span>, nrow <span class="op">=</span> <span class="va">nt</span><span class="op">-</span><span class="fl">1</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">vac_zones</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"t"</span>, <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"v"</span>, <span class="fl">1</span><span class="op">:</span><span class="va">N_pop</span><span class="op">)</span><span class="op">)</span></span>
-<span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">vac_zones</span><span class="op">)</span></span></code></pre></div>
-</div>
-<div class="section level3">
-<h3 id="creating-mixing-matrices">Creating Mixing Matrices<a class="anchor" aria-label="anchor" href="#creating-mixing-matrices"></a>
-</h3>
-<p>Mixing matrices define contact patterns between sub-populations for
-different time periods (weekday/weekend, day/night).</p>
+<div class="section level2">
+<h2 id="running-the-simulation">Running the Simulation<a class="anchor" aria-label="anchor" href="#running-the-simulation"></a>
+</h2>
+<p>Once we have the path to the configuration file, the simulation can
+be run using the <code><a href="../reference/metaRVM.html">metaRVM()</a></code> function.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co">## mixing matrix</span></span>
-<span><span class="va">m1</span> <span class="op">&lt;-</span> <span class="va">m2</span> <span class="op">&lt;-</span> <span class="va">m3</span> <span class="op">&lt;-</span> <span class="va">m4</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="cn">NA</span>, nrow <span class="op">=</span> <span class="va">N_pop</span>, ncol <span class="op">=</span> <span class="va">N_pop</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/diag.html" class="external-link">diag</a></span><span class="op">(</span><span class="va">m1</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Uniform.html" class="external-link">runif</a></span><span class="op">(</span><span class="va">N_pop</span>, min <span class="op">=</span> <span class="fl">0.85</span>, max <span class="op">=</span> <span class="fl">0.92</span><span class="op">)</span>, <span class="fl">2</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/diag.html" class="external-link">diag</a></span><span class="op">(</span><span class="va">m2</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fl">1</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/diag.html" class="external-link">diag</a></span><span class="op">(</span><span class="va">m3</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Uniform.html" class="external-link">runif</a></span><span class="op">(</span><span class="va">N_pop</span>, min <span class="op">=</span> <span class="fl">0.7</span>, max <span class="op">=</span> <span class="fl">0.9</span><span class="op">)</span>, <span class="fl">2</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/diag.html" class="external-link">diag</a></span><span class="op">(</span><span class="va">m4</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fl">1</span></span>
+<code class="sourceCode R"><span><span class="co"># Load the metaRVM library</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://RESUME-Epi.github.io/MetaRVM/">MetaRVM</a></span><span class="op">)</span></span>
 <span></span>
-<span><span class="kw">for</span><span class="op">(</span><span class="va">ii</span> <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span><span class="va">N_pop</span><span class="op">)</span><span class="op">{</span></span>
-<span>  <span class="va">tmp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Uniform.html" class="external-link">runif</a></span><span class="op">(</span><span class="va">N_pop</span> <span class="op">-</span> <span class="fl">1</span><span class="op">)</span></span>
-<span>  <span class="va">m1</span><span class="op">[</span><span class="va">ii</span>, <span class="op">-</span><span class="va">ii</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">tmp</span> <span class="op">*</span> <span class="op">(</span><span class="fl">1</span> <span class="op">-</span> <span class="va">m1</span><span class="op">[</span><span class="va">ii</span>, <span class="va">ii</span><span class="op">]</span><span class="op">)</span> <span class="op">/</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="va">tmp</span><span class="op">)</span>, <span class="fl">2</span><span class="op">)</span></span>
-<span>  <span class="va">m2</span><span class="op">[</span><span class="va">ii</span>, <span class="op">-</span><span class="va">ii</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fl">0</span></span>
-<span>  <span class="va">m3</span><span class="op">[</span><span class="va">ii</span>, <span class="op">-</span><span class="va">ii</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">tmp</span> <span class="op">*</span> <span class="op">(</span><span class="fl">1</span> <span class="op">-</span> <span class="va">m3</span><span class="op">[</span><span class="va">ii</span>, <span class="va">ii</span><span class="op">]</span><span class="op">)</span> <span class="op">/</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="va">tmp</span><span class="op">)</span>, <span class="fl">2</span><span class="op">)</span></span>
-<span>  <span class="va">m4</span><span class="op">[</span><span class="va">ii</span>, <span class="op">-</span><span class="va">ii</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fl">0</span></span>
-<span><span class="op">}</span></span>
-<span></span>
-<span><span class="va">m_weekday_day</span> <span class="op">&lt;-</span> <span class="va">m1</span></span>
-<span><span class="va">m_weekday_night</span> <span class="op">&lt;-</span> <span class="va">m2</span></span>
-<span><span class="va">m_weekend_day</span> <span class="op">&lt;-</span> <span class="va">m3</span></span>
-<span><span class="va">m_weekend_night</span> <span class="op">&lt;-</span> <span class="va">m4</span></span></code></pre></div>
-</div>
-<div class="section level3">
-<h3 id="running-the-simulation">Running the Simulation<a class="anchor" aria-label="anchor" href="#running-the-simulation"></a>
-</h3>
+<span><span class="co"># Run the simulation</span></span>
+<span><span class="va">sim_out</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/metaRVM.html">metaRVM</a></span><span class="op">(</span><span class="va">yaml_file</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Loading required namespace: pkgbuild</span></span>
+<span><span class="co">#&gt; Generating model in c</span></span>
+<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Re-compiling <span style="color: #0000BB;">odin1b45cb2c</span> (debug build)</span></span>
+<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Loading <span style="color: #0000BB;">odin1b45cb2c</span></span></span></code></pre></div>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">out</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/meta_sim.html">meta_sim</a></span><span class="op">(</span>N_pop <span class="op">=</span> <span class="va">N_pop</span>,</span>
-<span>                ts <span class="op">=</span> <span class="fl">0.7</span>,</span>
-<span>                tv <span class="op">=</span> <span class="fl">0.2</span>,</span>
-<span>                S0 <span class="op">=</span> <span class="va">pop_zones</span><span class="op">$</span><span class="va">S0</span>,</span>
-<span>                I0 <span class="op">=</span> <span class="va">pop_zones</span><span class="op">$</span><span class="va">I0</span>,</span>
-<span>                P0 <span class="op">=</span> <span class="va">pop_zones</span><span class="op">$</span><span class="va">N</span>,</span>
-<span>                R0 <span class="op">=</span> <span class="va">pop_zones</span><span class="op">$</span><span class="va">R0</span>,</span>
-<span>                m_weekday_day <span class="op">=</span> <span class="va">m_weekday_day</span>,</span>
-<span>                m_weekend_day <span class="op">=</span> <span class="va">m_weekend_day</span>,</span>
-<span>                m_weekday_night <span class="op">=</span> <span class="va">m_weekday_night</span>,</span>
-<span>                m_weekend_night <span class="op">=</span> <span class="va">m_weekend_night</span>,</span>
-<span>                delta_t <span class="op">=</span> <span class="fl">0.5</span>,</span>
-<span>                vac_mat <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">as.matrix</a></span><span class="op">(</span><span class="va">vac_zones</span><span class="op">)</span>,</span>
-<span>                dv <span class="op">=</span> <span class="fl">50</span>,</span>
-<span>                de <span class="op">=</span> <span class="fl">3</span>,</span>
-<span>                pea <span class="op">=</span> <span class="fl">0.5</span>,</span>
-<span>                dp <span class="op">=</span> <span class="fl">2</span>,</span>
-<span>                da <span class="op">=</span> <span class="fl">5</span>,</span>
-<span>                ds <span class="op">=</span> <span class="fl">2</span>,</span>
-<span>                psr <span class="op">=</span> <span class="fl">0.5</span>,</span>
-<span>                dh <span class="op">=</span> <span class="fl">3</span>,</span>
-<span>                phr <span class="op">=</span> <span class="fl">0.8</span>,</span>
-<span>                dr <span class="op">=</span> <span class="fl">50</span>,</span>
-<span>                ve <span class="op">=</span> <span class="fl">0.5</span>,</span>
-<span>                nsteps <span class="op">=</span> <span class="fl">100</span>,</span>
-<span>                is.stoch <span class="op">=</span> <span class="fl">0</span>,</span>
-<span>                seed <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span>
-<span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">out</span>, n <span class="op">=</span> <span class="fl">20</span><span class="op">)</span></span></code></pre></div>
-</div>
-</div>
-<div class="section level2">
-<h2 id="visualization">Visualization<a class="anchor" aria-label="anchor" href="#visualization"></a>
-</h2>
-<p>MetaRVM provides built-in visualization functions:</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Add instance column for summary functions</span></span>
-<span><span class="va">out</span><span class="op">$</span><span class="va">instance</span> <span class="op">&lt;-</span> <span class="fl">1</span></span>
-<span></span>
-<span><span class="co"># Convert to daily output</span></span>
-<span><span class="va">long_out_daily</span> <span class="op">&lt;-</span> <span class="fu">daily_output</span><span class="op">(</span><span class="va">out</span>, start_date <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/as.Date.html" class="external-link">as.Date</a></span><span class="op">(</span><span class="st">"2023-09-01"</span><span class="op">)</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># Create plot</span></span>
-<span><span class="fu">plot_metaRVM</span><span class="op">(</span><span class="va">long_out_daily</span>,</span>
-<span>             conf_level <span class="op">=</span> <span class="fl">90</span>,</span>
-<span>             value_column <span class="op">=</span> <span class="st">"total_value"</span>, </span>
-<span>             is.plotly <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
-</div>
-<div class="section level2">
-<h2 id="interactive-app">Interactive App<a class="anchor" aria-label="anchor" href="#interactive-app"></a>
-</h2>
-<p>You can also run an interactive Shiny app:</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu">MetaRVM</span><span class="fu">::</span><span class="fu"><a href="../reference/run_app.html">run_app</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
-</div>
-<div class="section level2">
-<h2 id="next-steps">Next Steps<a class="anchor" aria-label="anchor" href="#next-steps"></a>
-</h2>
-<p>For more detailed information about specific functions and advanced
-usage, please refer to the function documentation and other
-vignettes.</p>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">sim_out</span><span class="op">)</span></span>
+<span><span class="co">#&gt; MetaRVM Results Object</span></span>
+<span><span class="co">#&gt; =====================</span></span>
+<span><span class="co">#&gt; Instances: 1 </span></span>
+<span><span class="co">#&gt; Populations: 24 </span></span>
+<span><span class="co">#&gt; Date range: 2024-01-01 to 2024-05-29 </span></span>
+<span><span class="co">#&gt; Total observations: 111600 </span></span>
+<span><span class="co">#&gt; Disease states: D, E, H, I_all, I_asymp, I_eff, I_presymp, I_symp, P, R, S, V, cum_V, mob_pop, n_EI, n_EIpresymp, n_HD, n_HR, n_HRD, n_IasympR, n_IsympH, n_IsympR, n_IsympRH, n_SE, n_SV, n_VE, n_VS, n_preIsymp, p_HRD, p_SE, p_VE</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">sim_out</span><span class="op">$</span><span class="va">results</span><span class="op">)</span></span>
+<span><span class="co">#&gt;          date    age   race   zone disease_state        value instance</span></span>
+<span><span class="co">#&gt;        &lt;Date&gt; &lt;char&gt; &lt;char&gt; &lt;char&gt;        &lt;char&gt;        &lt;num&gt;    &lt;int&gt;</span></span>
+<span><span class="co">#&gt; 1: 2024-01-01   0-17      A     11             D 2.252583e-04        1</span></span>
+<span><span class="co">#&gt; 2: 2024-01-01   0-17      A     11             E 1.367164e+01        1</span></span>
+<span><span class="co">#&gt; 3: 2024-01-01   0-17      A     11             H 2.304447e-01        1</span></span>
+<span><span class="co">#&gt; 4: 2024-01-01   0-17      A     11         I_all 2.852138e+01        1</span></span>
+<span><span class="co">#&gt; 5: 2024-01-01   0-17      A     11       I_asymp 3.228552e-01        1</span></span>
+<span><span class="co">#&gt; 6: 2024-01-01   0-17      A     11         I_eff 2.762196e+01        1</span></span></code></pre></div>
+<p>For more details on running <code>metaRVM</code>, refer to the <a href="articles/running-a-simulation.html">Running Simulation</a>
+vignette.</p>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>

@@ -1,0 +1,29 @@
+run_id: CheckpointRun
+population_data:
+  mapping: demographic_mapping_n24.csv
+  initialization: population_init_n24.csv
+  vaccination: vaccination_n24.csv
+mixing_matrix:
+  weekday_day: m_weekday_day.csv
+  weekday_night: m_weekday_night.csv
+  weekend_day: m_weekend_day.csv
+  weekend_night: m_weekend_night.csv
+disease_params:
+  ts: 0.5
+  tv: 0.25
+  ve: 0.4
+  dv: 180
+  dp: 1
+  de: 3
+  da: 5
+  ds: 6
+  dh: 8
+  dr: 180
+  pea: 0.3
+  psr: 0.95
+  phr: 0.97
+simulation_config:
+  start_date: 10/01/2024 # m/d/Y
+  length: 90
+  nsim: 1
+  # The checkpoint_dir will be set dynamically in the vignette
