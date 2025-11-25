@@ -13,13 +13,14 @@ home:
 
 navbar:
   structure:
-    left:  [home, reference, articles, news]
+    # left:  [home, reference, articles, news]
+    left:  [reference, articles, news]
     right: [github]
   components:
-    home:
-      icon: fa-home
-      href: index.html
-      aria-label: MetaRVM
+    # home:
+    #   icon: fa-home
+    #   href: index.html
+    #   aria-label: MetaRVM
     reference:
       text: Reference
       href: reference/index.html
@@ -48,7 +49,6 @@ reference:
     contents:
       - metaRVM
       - meta_sim
-      - run_app
       
   - title: "Configuration and Parsing"
     desc: "Functions for configuration management"
@@ -64,11 +64,6 @@ reference:
       - MetaRVMSummary
       - format_metarvm_output
       
-  - title: "Calibration and Inference"
-    desc: "Functions for model calibration and inference"
-    contents:
-      - calibrate_metaRVM
-      - meta_infer
 
 figures:
   dev: ragg::agg_png

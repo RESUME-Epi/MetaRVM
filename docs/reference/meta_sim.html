@@ -23,8 +23,7 @@ contact patterns, vaccination dynamics, and complex disease progression pathways
     </button>
 
     <div id="navbar" class="collapse navbar-collapse ms-3">
-      <ul class="navbar-nav me-auto"><li class="nav-item"><a class="nav-link" href="../index.html" aria-label="MetaRVM"><span class="fa fa-home"></span></a></li>
-<li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
+      <ul class="navbar-nav me-auto"><li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/getting-started.html">Getting Started</a></li>
@@ -68,6 +67,7 @@ contact patterns, vaccination dynamics, and complex disease progression pathways
 <span>  Ia0 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">0</span>, <span class="va">N_pop</span><span class="op">)</span>,</span>
 <span>  Ip0 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">0</span>, <span class="va">N_pop</span><span class="op">)</span>,</span>
 <span>  E0 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">0</span>, <span class="va">N_pop</span><span class="op">)</span>,</span>
+<span>  V0 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">0</span>, <span class="va">N_pop</span><span class="op">)</span>,</span>
 <span>  <span class="va">m_weekday_day</span>,</span>
 <span>  <span class="va">m_weekday_night</span>,</span>
 <span>  <span class="va">m_weekend_day</span>,</span>
@@ -156,6 +156,11 @@ individuals in each subpopulation (default: rep(0, N_pop))</p></dd>
 in each subpopulation (default: rep(0, N_pop))</p></dd>
 
 
+<dt id="arg-v-">V0<a class="anchor" aria-label="anchor" href="#arg-v-"></a></dt>
+<dd><p>Numeric vector of length N_pop. Initial number of vaccinated individuals
+in each subpopulation</p></dd>
+
+
 <dt id="arg-m-weekday-day">m_weekday_day<a class="anchor" aria-label="anchor" href="#arg-m-weekday-day"></a></dt>
 <dd><p>Numeric matrix (N_pop × N_pop). Contact mixing matrix for
 weekday daytime (6 AM - 6 PM) interactions</p></dd>
@@ -198,7 +203,7 @@ If scalar, applied to all subpopulations</p></dd>
 
 <dt id="arg-pea">pea<a class="anchor" aria-label="anchor" href="#arg-pea"></a></dt>
 <dd><p>Numeric vector or scalar. Proportion of exposed individuals becoming
-asymptomatic infectious (vs. presymptomatic). Range: (0,1).
+asymptomatic infectious (vs. presymptomatic), values between 0 and 1. If scalar, applied to all subpopulations.
 If scalar, applied to all subpopulations</p></dd>
 
 
@@ -219,7 +224,7 @@ infectious state. If scalar, applied to all subpopulations</p></dd>
 
 <dt id="arg-psr">psr<a class="anchor" aria-label="anchor" href="#arg-psr"></a></dt>
 <dd><p>Numeric vector or scalar. Proportion of symptomatic individuals
-recovering directly (vs. hospitalization). Range: (0,1).
+recovering directly (vs. hospitalization), values between 0 and 1. If scalar, applied to all subpopulations.
 If scalar, applied to all subpopulations</p></dd>
 
 
@@ -230,7 +235,7 @@ If scalar, applied to all subpopulations</p></dd>
 
 <dt id="arg-phr">phr<a class="anchor" aria-label="anchor" href="#arg-phr"></a></dt>
 <dd><p>Numeric vector or scalar. Proportion of hospitalized individuals
-recovering (vs. death). Range: (0,1). If scalar, applied to all subpopulations</p></dd>
+recovering (vs. death). , values between 0 and 1. If scalar, applied to all subpopulations.</p></dd>
 
 
 <dt id="arg-dr">dr<a class="anchor" aria-label="anchor" href="#arg-dr"></a></dt>
@@ -239,8 +244,8 @@ recovered state. If scalar, applied to all subpopulations</p></dd>
 
 
 <dt id="arg-ve">ve<a class="anchor" aria-label="anchor" href="#arg-ve"></a></dt>
-<dd><p>Numeric vector or scalar. Vaccine effectiveness (proportion).
-Range: 0,1. If scalar, applied to all subpopulations</p></dd>
+<dd><p>Numeric vector or scalar. Vaccine effectiveness (proportion)
+, values between 0 and 1. If scalar, applied to all subpopulations</p></dd>
 
 
 <dt id="arg-nsteps">nsteps<a class="anchor" aria-label="anchor" href="#arg-nsteps"></a></dt>

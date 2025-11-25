@@ -35,7 +35,6 @@
 
     <div id="navbar" class="collapse navbar-collapse ms-3">
       <ul class="navbar-nav me-auto">
-<li class="nav-item"><a class="nav-link" href="../index.html" aria-label="MetaRVM"><span class="fa fa-home"></span></a></li>
 <li class="nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="active nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
@@ -90,7 +89,7 @@ package is installed.</p>
 <code class="sourceCode R"><span><span class="co"># Locate the example YAML configuration file</span></span>
 <span><span class="va">yaml_file</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, <span class="st">"example_config.yaml"</span>, package <span class="op">=</span> <span class="st">"MetaRVM"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">yaml_file</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] "/tmp/RtmpEkEVxi/temp_libpath24fd7163cb6ff9/MetaRVM/extdata/example_config.yaml"</span></span></code></pre></div>
+<span><span class="co">#&gt; [1] "/tmp/RtmpctkTqu/temp_libpathf0c6a415e1d8c/MetaRVM/extdata/example_config.yaml"</span></span></code></pre></div>
 <p>The <code>yaml_file</code> variable now holds the full path to the
 example configuration file. This file is set up to use the other example
 data files (also in the <code>extdata</code> directory) with relative
@@ -137,8 +136,8 @@ be run using the <code><a href="../reference/metaRVM.html">metaRVM()</a></code> 
 <span><span class="va">sim_out</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/metaRVM.html">metaRVM</a></span><span class="op">(</span><span class="va">yaml_file</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Loading required namespace: pkgbuild</span></span>
 <span><span class="co">#&gt; Generating model in c</span></span>
-<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Re-compiling <span style="color: #0000BB;">odin62a63f38</span> (debug build)</span></span>
-<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Loading <span style="color: #0000BB;">odin62a63f38</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Re-compiling <span style="color: #0000BB;">odin3a2926f6</span> (debug build)</span></span>
+<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Loading <span style="color: #0000BB;">odin3a2926f6</span></span></span></code></pre></div>
 <p>The <code><a href="../reference/metaRVM.html">metaRVM()</a></code> function will parse the YAML file, read
 the associated data files, run the simulation, and return a
 <code>MetaRVMResults</code> object.</p>
@@ -158,7 +157,7 @@ file path, or by creating a <code>MetaRVMConfig</code> object.</p>
 <span><span class="va">config_obj</span></span>
 <span><span class="co">#&gt; MetaRVM Configuration Object</span></span>
 <span><span class="co">#&gt; ============================</span></span>
-<span><span class="co">#&gt; Config file: /tmp/RtmpEkEVxi/temp_libpath24fd7163cb6ff9/MetaRVM/extdata/example_config.yaml </span></span>
+<span><span class="co">#&gt; Config file: /tmp/RtmpctkTqu/temp_libpathf0c6a415e1d8c/MetaRVM/extdata/example_config.yaml </span></span>
 <span><span class="co">#&gt; Parameters: 40 </span></span>
 <span><span class="co">#&gt; Parameter names (first 10): N_pop, pop_map, S_ini, E_ini, I_asymp_ini, I_presymp_ini, I_symp_ini, H_ini, D_ini, P_ini ...</span></span>
 <span><span class="co">#&gt; Population groups: 24 </span></span>
@@ -404,7 +403,14 @@ simulation with parameter distributions, we can use the
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Plot the summary</span></span>
-<span><span class="va">hospital_summary_dist</span><span class="op">$</span><span class="fu">plot</span><span class="op">(</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ggtitle</a></span><span class="op">(</span><span class="st">"Daily Hospitalizations by Age Group (with 90% confidence interval)"</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html" class="external-link">theme_bw</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+<span><span class="va">hospital_summary_dist</span><span class="op">$</span><span class="fu">plot</span><span class="op">(</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ggtitle</a></span><span class="op">(</span><span class="st">"Daily Hospitalizations by Age Group (with 90% confidence interval)"</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html" class="external-link">theme_bw</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Warning: Using `size` aesthetic for lines was deprecated in ggplot2 3.4.0.</span></span>
+<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Please use `linewidth` instead.</span></span>
+<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> The deprecated feature was likely used in the <span style="color: #0000BB;">MetaRVM</span> package.</span></span>
+<span><span class="co">#&gt;   Please report the issue at <span style="color: #0000BB; font-style: italic;">&lt;https://github.com/RESUME-Epi/MetaRVM/issues&gt;</span>.</span></span>
+<span><span class="co">#&gt; <span style="color: #555555;">This warning is displayed once every 8 hours.</span></span></span>
+<span><span class="co">#&gt; <span style="color: #555555;">Call `lifecycle::last_lifecycle_warnings()` to see where this warning was</span></span></span>
+<span><span class="co">#&gt; <span style="color: #555555;">generated.</span></span></span></code></pre></div>
 <p><img src="running-a-simulation_files/figure-html/unnamed-chunk-12-1.png" width="768" style="display: block; margin: auto;"></p>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span></span>
