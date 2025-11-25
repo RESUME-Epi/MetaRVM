@@ -92,7 +92,7 @@
 #'   \item \code{population_id}: Unique identifier for each population group
 #'   \item \code{age}: Age category (e.g., "0-4", "5-11", "12-17", "18-49", "50-64", "65+")
 #'   \item \code{race}: Race/ethnicity category
-#'   \item \code{hcez}: Geographic zone identifier
+#'   \item \code{zone}: Geographic zone identifier
 #' }
 #'
 #' \strong{Population initialization file} must contain:

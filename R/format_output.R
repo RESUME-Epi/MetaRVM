@@ -45,7 +45,7 @@ format_metarvm_output <- function(sim_output, config) {
     # Sum values within each day for n_ states
     n_states_daily <- n_states[, .(
       value = sum(value, na.rm = TRUE)
-    ), by = .(day, disease_state, population_id, age, race, hcez, instance)]
+    ), by = .(day, disease_state, population_id, age, race, zone, instance)]
     
     # Create time column to match regular states (use integer days)
     n_states_daily[, time := day]
@@ -57,11 +57,11 @@ format_metarvm_output <- function(sim_output, config) {
   # Combine regular states and aggregated n_ states
   if (nrow(n_states_daily) > 0) {
     combined_results <- rbind(
-      regular_states[, .(time, disease_state, population_id, age, race, hcez, value, instance)],
-      n_states_daily[, .(time, disease_state, population_id, age, race, hcez, value, instance)]
+      regular_states[, .(time, disease_state, population_id, age, race, zone, value, instance)],
+      n_states_daily[, .(time, disease_state, population_id, age, race, zone, value, instance)]
     )
   } else {
-    combined_results <- regular_states[, .(time, disease_state, population_id, age, race, hcez, value, instance)]
+    combined_results <- regular_states[, .(time, disease_state, population_id, age, race, zone, value, instance)]
   }
   
   # Convert time to calendar date
@@ -74,7 +74,7 @@ format_metarvm_output <- function(sim_output, config) {
     date,
     age, 
     race, 
-    zone = hcez,
+    zone,
     disease_state, 
     value, 
     instance

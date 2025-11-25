@@ -173,8 +173,8 @@ MetaRVMConfig <- R6::R6Class(
     #' @description Get available zones
     #' @return Character vector of unique zone identifiers, or NULL if no population mapping available
     get_zones = function() {
-      if ("pop_map" %in% names(self$config_data) && "hcez" %in% names(self$config_data$pop_map)) {
-        unique(self$config_data$pop_map$hcez)
+      if ("pop_map" %in% names(self$config_data) && "zone" %in% names(self$config_data$pop_map)) {
+        unique(self$config_data$pop_map$zone)
       } else {
         NULL
       }

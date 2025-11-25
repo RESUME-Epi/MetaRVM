@@ -72,7 +72,7 @@ The `metaRVM` package requires several CSV files to be structured in a specific 
     -   `population_id`: A unique identifier for each subpopulation, set of natural numbers 1, 2, 3, ...
     -   `age`: The age group of the subpopulation (e.g., "0-4", "65+").
     -   `race`: The race or ethnicity of the subpopulation.
-    -   `hcez`: The healthcare zone or geographic region of the subpopulation.
+    -   `zone`: The healthcare zone or geographic region of the subpopulation.
 
 -   **`initialization`**: This file specifies the initial state of the population for the simulation. It must contain the following columns:
     -   `N`: The total number of individuals in each subpopulation.

@@ -1,0 +1,1 @@
+utils::globalVariables(c(".", "time", "disease_state", "population_id", "age", "race", "zone", "day", "value", "instance", "date", "N", "S0", "I0", "V0", "R0"))

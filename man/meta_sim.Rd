@@ -17,6 +17,7 @@ meta_sim(
   Ia0 = rep(0, N_pop),
   Ip0 = rep(0, N_pop),
   E0 = rep(0, N_pop),
+  V0 = rep(0, N_pop),
   m_weekday_day,
   m_weekday_night,
   m_weekend_day,
@@ -77,6 +78,9 @@ individuals in each subpopulation (default: rep(0, N_pop))}
 \item{E0}{Numeric vector of length N_pop. Initial number of exposed individuals
 in each subpopulation (default: rep(0, N_pop))}
 
+\item{V0}{Numeric vector of length N_pop. Initial number of vaccinated individuals
+in each subpopulation}
+
 \item{m_weekday_day}{Numeric matrix (N_pop × N_pop). Contact mixing matrix for
 weekday daytime (6 AM - 6 PM) interactions}
 
@@ -102,7 +106,7 @@ immunity waning. If scalar, applied to all subpopulations}
 If scalar, applied to all subpopulations}
 
 \item{pea}{Numeric vector or scalar. Proportion of exposed individuals becoming
-asymptomatic infectious (vs. presymptomatic). Range: (0,1).
+asymptomatic infectious (vs. presymptomatic), values between 0 and 1. If scalar, applied to all subpopulations.
 If scalar, applied to all subpopulations}
 
 \item{dp}{Numeric vector or scalar. Mean duration (days) in presymptomatic
@@ -115,20 +119,20 @@ infectious state. If scalar, applied to all subpopulations}
 infectious state. If scalar, applied to all subpopulations}
 
 \item{psr}{Numeric vector or scalar. Proportion of symptomatic individuals
-recovering directly (vs. hospitalization). Range: (0,1).
+recovering directly (vs. hospitalization), values between 0 and 1. If scalar, applied to all subpopulations.
 If scalar, applied to all subpopulations}
 
 \item{dh}{Numeric vector or scalar. Mean duration (days) in hospitalized state.
 If scalar, applied to all subpopulations}
 
 \item{phr}{Numeric vector or scalar. Proportion of hospitalized individuals
-recovering (vs. death). Range: (0,1). If scalar, applied to all subpopulations}
+recovering (vs. death). , values between 0 and 1. If scalar, applied to all subpopulations.}
 
 \item{dr}{Numeric vector or scalar. Mean duration (days) of immunity in
 recovered state. If scalar, applied to all subpopulations}
 
-\item{ve}{Numeric vector or scalar. Vaccine effectiveness (proportion).
-Range: \link{0,1}. If scalar, applied to all subpopulations}
+\item{ve}{Numeric vector or scalar. Vaccine effectiveness (proportion)
+, values between 0 and 1. If scalar, applied to all subpopulations}
 
 \item{nsteps}{Integer. Total number of discrete time evolution steps in simulation}
 

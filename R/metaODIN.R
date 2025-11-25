@@ -49,7 +49,7 @@
 #' @param de Numeric vector or scalar. Mean duration (days) in exposed state.
 #'   If scalar, applied to all subpopulations
 #' @param pea Numeric vector or scalar. Proportion of exposed individuals becoming
-#'   asymptomatic infectious (vs. presymptomatic). Range: (0,1).
+#'   asymptomatic infectious (vs. presymptomatic), values between 0 and 1. If scalar, applied to all subpopulations.
 #'   If scalar, applied to all subpopulations
 #' @param dp Numeric vector or scalar. Mean duration (days) in presymptomatic
 #'   infectious state. If scalar, applied to all subpopulations
@@ -58,16 +58,16 @@
 #' @param ds Numeric vector or scalar. Mean duration (days) in symptomatic
 #'   infectious state. If scalar, applied to all subpopulations
 #' @param psr Numeric vector or scalar. Proportion of symptomatic individuals
-#'   recovering directly (vs. hospitalization). Range: (0,1).
+#'   recovering directly (vs. hospitalization), values between 0 and 1. If scalar, applied to all subpopulations.
 #'   If scalar, applied to all subpopulations
 #' @param dh Numeric vector or scalar. Mean duration (days) in hospitalized state.
 #'   If scalar, applied to all subpopulations
 #' @param phr Numeric vector or scalar. Proportion of hospitalized individuals
-#'   recovering (vs. death). Range: (0,1). If scalar, applied to all subpopulations
+#'   recovering (vs. death). , values between 0 and 1. If scalar, applied to all subpopulations.
 #' @param dr Numeric vector or scalar. Mean duration (days) of immunity in
 #'   recovered state. If scalar, applied to all subpopulations
-#' @param ve Numeric vector or scalar. Vaccine effectiveness (proportion).
-#'   Range: [0,1]. If scalar, applied to all subpopulations
+#' @param ve Numeric vector or scalar. Vaccine effectiveness (proportion)
+#'   , values between 0 and 1. If scalar, applied to all subpopulations
 #' @param nsteps Integer. Total number of discrete time evolution steps in simulation
 #' @param is.stoch Logical. Whether to run stochastic simulation (TRUE) or
 #'   deterministic simulation (FALSE). Default: FALSE
