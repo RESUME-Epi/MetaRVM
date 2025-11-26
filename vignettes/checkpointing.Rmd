@@ -1,0 +1,162 @@
+---
+title: "Checkpointing in MetaRVM"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Checkpointing in MetaRVM}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+## Introduction
+
+This vignette demonstrates how to configure and use the checkpointing functionality in MetaRVM with  examples. Checkpointing allows to store the model state 
+at specific time points during the simulation, allowing one to resume runs from saved states.
+
+## How Checkpointing Works
+
+MetaRVM's checkpointing system is configured through the YAML configuration file. 
+
+1. **Saving checkpoints**: During simulation, the complete state (compartments, parameters, time step) is saved to disk at specified dates
+2. **Restoring from checkpoints**: A new simulation can be initialized from a previously saved checkpoint, continuing from that point forward
+3. **Flexible scheduling**: Exact dates when checkpoints should be saved are to be supplied, or by default it will checkpoint at the end-of-simulation date.
+
+### Configuration Parameters
+
+The checkpointing system uses three main configuration options in the `simulation_config` section:
+
+- **`checkpoint_dir`**: Directory where checkpoint files will be saved (created if it doesn't exist)
+- **`checkpoint_dates`**: (Optional) List of specific dates when checkpoints should be saved
+- **`restore_from`**: (Optional) Path to a checkpoint file to resume from
+
+## Example
+
+For the purpose of this example, we will set the checkpointed directory to be a temporary directory, and will create a temporary yaml configuration file based on a template. 
+
+### Set Up
+
+```{r setup}
+library(MetaRVM)
+
+# Get the example configuration file
+example_config <- system.file("extdata", "example_config_checkpoint.yaml", 
+                              package = "MetaRVM")
+
+# Create a temporary directory for checkpoints
+checkpoint_dir <- tempdir()
+cat("Checkpoint directory:", checkpoint_dir, "\n")
+```
+
+### Create a Configuration with Checkpointing
+
+Now copy the example configuration and modify it to add checkpointing:
+
+```{r create_config}
+# Read the example configuration
+yml <- yaml::read_yaml(example_config)
+yml_tmp <- data.table::copy(yml)
+
+# Assign checkpoint directory
+yml_tmp$simulation_config$checkpoint_dir <- checkpoint_dir
+
+# Create a temporary config
+temp_config <- tempfile(tmpdir = dirname(example_config), fileext = ".yaml")
+yaml::write_yaml(yml_tmp, temp_config)
+temp_config <- normalizePath(temp_config)
+
+```
+
+### Run Simulation with Checkpoints
+
+```{r run_simulation}
+
+# Run the simulation
+results <- metaRVM(temp_config)
+
+# Check what checkpoint files were created
+checkpoint_files <- list.files(checkpoint_dir, 
+                               pattern = "^chk_.*\\.Rda$",
+                               full.names = FALSE)
+
+if (length(checkpoint_files) > 0) {
+  for (file in checkpoint_files) {
+    cat("  -", file, "\n")
+  }
+} else {
+  cat("  (No checkpoint files found)\n")
+}
+
+```
+
+### Examine the Results
+
+```{r examine_results}
+cat("Number of instances:", results$run_info$n_instances, "\n")
+cat("Date range:", format(results$run_info$date_range[1]), "to", 
+    format(results$run_info$date_range[2]), "\n")
+
+# Display first few rows
+print(head(results$results, 10))
+```
+
+### Resume from a Checkpoint
+
+We'll create a new configuration that restores from the checkpoint. We need to provide the checkpoint file name, and a start date which should be the next day of the end date in the previous run.
+
+```{r resume_from_checkpoint, eval = F}
+# Get the first checkpoint file
+checkpoint_files_full <- list.files(checkpoint_dir, 
+                                    pattern = "^chk_.*\\.Rda$",
+                                    full.names = TRUE)
+
+if (length(checkpoint_files_full) > 0) {
+  checkpoint_to_restore <- checkpoint_files_full[1]
+  
+  cat(checkpoint_to_restore, "\n\n")
+  
+  new_start_date <- "12/30/2024"
+  yml_tmp <- copy(yml)
+  yml_tmp$simulation_config$start_date <- new_start_date
+  yml_tmp$simulation_config$restore_from <- checkpoint_to_restore
+  yml_tmp$population_data$initialization <- NULL # ensure that we don't want to reinitialize the population from the initialization file
+  
+  temp_config_resume <- tempfile(tmpdir = dirname(example_config),fileext = ".yaml")
+  yaml::write_yaml(yml_tmp, temp_config_resume)
+  temp_config_resume <- normalizePath(temp_config_resume)
+  
+  
+  # Run the resumed simulation
+  results_resumed <- metaRVM(temp_config_resume)
+  
+  cat("Number of instances:", results_resumed$run_info$n_instances, "\n")
+  cat("Date range:", format(results_resumed$run_info$date_range[1]), "to", 
+      format(results_resumed$run_info$date_range[2]), "\n")
+  
+} else {
+  cat("No checkpoint files found to resume from.\n")
+}
+```
+
+## Understanding Checkpoint Files
+
+When checkpointing is enabled, MetaRVM creates checkpoint files with the following naming convention:
+
+```
+chk_YYYY-MM-DD_N.Rda
+```
+
+Where:
+- `YYYY-MM-DD` is the checkpoint date
+- `N` is the simulation instance number (1 to nsim)
+
+
+
+For more information on configuring MetaRVM simulations, see the [YAML Configuration](yaml-configuration.html) vignette.
+
+

@@ -2,10 +2,11 @@ pandoc: 3.6.3
 pkgdown: 2.1.1
 pkgdown_sha: ~
 articles:
+  checkpointing: checkpointing.html
   getting-started: getting-started.html
   running-a-simulation: running-a-simulation.html
   yaml-configuration: yaml-configuration.html
-last_built: 2025-11-25T19:47Z
+last_built: 2025-11-26T04:30Z
 urls:
   reference: https://RESUME-Epi.github.io/MetaRVM/reference
   article: https://RESUME-Epi.github.io/MetaRVM/articles

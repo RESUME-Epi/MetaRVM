@@ -26,3 +26,9 @@ This function formats raw MetaRVM simulation output by:
 }
 }
 }
+\section{Note}{
+
+This function is used for formatting the \code{\link{meta_sim}} output when \code{\link{MetaRVM}}
+function is called.
+}
+

@@ -80,7 +80,7 @@
 #'   Each element of the list corresponds to a time step in `chk_time_steps`.
 #'
 #' @details
-#' The model implements a complex epidemiological framework with the following features:
+#' The model implements a metapopulation epidemiological framework with the following features:
 #'
 #' \strong{Compartmental Structure:}
 #' \itemize{
@@ -172,18 +172,10 @@
 #'   \item Population structure information
 #' }
 #'
-#' @section Performance Considerations:
-#' \itemize{
-#'   \item Runtime scales approximately as O(N_pop² × nsteps)
-#'   \item Memory usage increases with output frequency and population complexity
-#'   \item Stochastic mode adds computational overhead for random number generation
-#'   \item Large contact matrices (high N_pop) significantly impact performance
-#' }
-#'
 #' @examples
-#' \dontrun{
+#'
 #' # Basic deterministic simulation
-#' N_pop <- 30
+#' N_pop <- 2
 #' nsteps <- 400
 #' 
 #' # Initialize populations
@@ -193,11 +185,12 @@
 #' R0 <- rep(0, N_pop)
 #' 
 #' # Contact matrices (simplified - identity matrices)
-#' contact_matrix <- diag(N_pop) * 0.1
+#' contact_matrix <- diag(N_pop)
 #' 
-#' # Basic vaccination schedule (no vaccination)
+#' # Basic vaccination schedule (10% vaccination)
 #' vac_mat <- matrix(0, nrow = nsteps + 1, ncol = N_pop + 1)
 #' vac_mat[, 1] <- 0:nsteps
+#' vac_mat[1, 1 + (1:N_pop)] <- P0 * 0.1
 #' 
 #' # Run simulation
 #' results <- meta_sim(
@@ -209,9 +202,9 @@
 #'   P0 = P0,
 #'   R0 = R0,
 #'   m_weekday_day = contact_matrix,
-#'   m_weekday_night = contact_matrix * 0.5,
-#'   m_weekend_day = contact_matrix * 0.8,
-#'   m_weekend_night = contact_matrix * 0.3,
+#'   m_weekday_night = contact_matrix,
+#'   m_weekend_day = contact_matrix,
+#'   m_weekend_night = contact_matrix,
 #'   delta_t = 0.5,
 #'   vac_mat = vac_mat,
 #'   dv = 365,
@@ -225,18 +218,11 @@
 #'   phr = 0.9,
 #'   dr = 180,
 #'   ve = 0.8,
-#'   nsteps = nsteps
+#'   nsteps = nsteps,
+#'   is.stoch = FALSE
 #' )
 #' 
-#' # Stochastic simulation with checkpointing
-#' results_stoch <- meta_sim(
-#'   # ... same parameters as above ...
-#'   is.stoch = TRUE,
-#'   seed = 12345,
-#'   do_chk = TRUE,
-#'   chk_file_name = "simulation_checkpoint.rds"
-#' )
-#' }
+#'
 #'
 #' @seealso
 #' \code{\link{metaRVM}} for high-level simulation interface with configuration files
@@ -581,7 +567,7 @@ meta_sim <- function(N_pop, ts, tv,
   V0 <- vac_mat[1, ] + V0
 
 
-  model <- metaODIN$new(stoch = is.stoch,
+  model <- metaODIN$new(stoch = as.numeric(is.stoch),
                         N_pop = N_pop,
                         beta_i = ts,
                         beta_v = tv,

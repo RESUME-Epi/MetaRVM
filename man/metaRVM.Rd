@@ -42,7 +42,8 @@ The returned object supports method chaining for analysis:
 Executes a meta-population compartmental epidemic model simulation using specified
 configuration parameters. The function runs multiple simulation instances with
 stochastic parameter variations and returns formatted results with calendar dates
-and demographic attributes for comprehensive analysis and visualization.
+and demographic attributes for comprehensive analysis and visualization. Under the hood,
+it calls \code{\link{meta_sim}} function after parsing the inputs.
 }
 \details{
 The MetaRVM simulation implements a meta-population SEIRD (Susceptible-Exposed-Infected-Recovered-Dead)
@@ -62,15 +63,6 @@ hospitalization states, and vaccination dynamics. The model accounts for:
 \item \strong{P}: Protected/vaccinated individuals
 }
 
-\strong{Model Features:}
-\itemize{
-\item Multiple population groups with demographic stratification (age, race, geography)
-\item Time-varying contact patterns (weekday/weekend, day/night mixing matrices)
-\item Stochastic parameter variations across simulation instances
-\item Vaccination schedules with time-varying administration
-\item Checkpointing capability for long simulations
-}
-
 \strong{Disease Parameters:}
 The model uses the following key parameters (can be stochastic across instances):
 \itemize{
@@ -78,7 +70,7 @@ The model uses the following key parameters (can be stochastic across instances)
 \item \code{tv}: Transmission rate for vaccinated individuals
 \item \code{ve}: Vaccine effectiveness
 \item \code{de, dp, da, ds, dh, dr}: Duration parameters for disease states
-\item \code{pea, psr, phr}: Probability parameters for state transitions
+\item \code{pea, psr, phr}: Proportion parameters for state transitions
 }
 
 \strong{Simulation Process:}
@@ -86,7 +78,7 @@ For each simulation instance, the function:
 \enumerate{
 \item Initializes population compartments from configuration
 \item Applies instance-specific stochastic parameter values
-\item Runs the ODE solver (\code{meta_sim}) with specified time steps
+\item Runs the ODE solver (\code{\link{meta_sim}}) with specified time steps
 \item Collects output for all time points and populations
 \item Combines results across all instances
 \item Formats output with calendar dates and demographic information
@@ -101,35 +93,14 @@ The configuration must include:
 \item \strong{Disease parameters}: Transmission rates, durations, probabilities
 \item \strong{Contact matrices}: Weekday/weekend and day/night mixing patterns
 \item \strong{Simulation settings}: Start date, length, number of instances
-\item \strong{Vaccination schedule}: Time-varying vaccination rates (optional)
-}
-}
-
-\section{Performance Notes}{
-
-\itemize{
-\item Simulation time scales with \code{nsim × nsteps × N_pop}
-  \item Large population numbers or long time periods may require substantial memory
-\item Consider checkpointing (\code{do_chk = TRUE}) for long simulations
-\item Output formatting adds overhead but provides analysis-ready data structure
-}
-}
-
-\section{Error Handling}{
-
-The function validates input configuration and will stop with informative messages for:
-\itemize{
-\item Invalid \code{config_input} type or format
-\item Missing required configuration parameters
-\item Inconsistent population or parameter dimensions
-\item File access issues for configuration or checkpoint files
+\item \strong{Vaccination schedule}: Time-varying vaccination rates
 }
 }
 
 \examples{
-\dontrun{
+example_config <- system.file("extdata", "example_config.yaml", package = "MetaRVM")
 # Basic usage with YAML configuration file
-results <- metaRVM("path/to/config.yaml")
+results <- metaRVM(example_config)
 
 # Print summary
 results
@@ -152,14 +123,14 @@ subset_results <- results$subset_data(
 )
 
 # Using with pre-parsed configuration
-config <- parse_config("config.yaml")
-config_obj <- MetaRVMConfig$new(config)
+config_obj <- parse_config(example_config, return_object = TRUE)
 results <- metaRVM(config_obj)
 
 # Accessing run metadata
 results$run_info$n_instances
 results$run_info$date_range
-}
+
+
 
 }
 \references{

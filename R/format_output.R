@@ -10,6 +10,10 @@
 #' @param sim_output data.table containing raw simulation output
 #' @param config MetaRVMConfig object or config list containing parameters
 #' @return data.table with formatted output including calendar dates and demographics
+#' 
+#' @section Note: 
+#' This function is used for formatting the \code{\link{meta_sim}} output when \code{\link{MetaRVM}}
+#' function is called.
 #' @export
 format_metarvm_output <- function(sim_output, config) {
   

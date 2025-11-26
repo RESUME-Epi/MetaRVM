@@ -40,12 +40,12 @@ all necessary parameters for epidemic modeling including population data,
 disease parameters, mixing matrices, vaccination schedules, and simulation settings.
 }
 \details{
-The function processes a comprehensive YAML configuration file with the following
+The function processes a YAML configuration file with the following
 main sections:
 
 \strong{Simulation Configuration:}
 \itemize{
-\item \code{random_seed}: Optional random seed for reproducibility
+\item \code{random_seed}: Optional random seed for reproducibility in case of stochastic simulations or stochastic parameters
 \item \code{nsim}: Number of simulation instances (default: 1)
 \item \code{start_date}: Simulation start date in MM/DD/YYYY format
 \item \code{length}: Simulation length in days
@@ -56,13 +56,18 @@ main sections:
 
 \strong{Population Data:}
 \itemize{
-\item \code{mapping}: CSV file path containing population mapping with demographic categories
-\item \code{initialization}: CSV file with initial population states (S0, I0, V0, R0, N)
-\item \code{vaccination}: CSV file with vaccination schedule over time
+\item \code{mapping}: CSV file path containing population mapping with demographic categories age, race, zone.
+The file must contains columns \code{population_id}, \code{age}, \code{race}, \code{zone},
+where the \code{population_id} is defined using natural numbers.
+\item \code{initialization}: CSV file with initial population states. The file must contains columns \code{population_id}, \code{N}, \code{S0}, \code{I0}, \code{V0}, \code{R0}.
+\item \code{vaccination}: CSV file with vaccination schedule over time. The first column must be dates
+in MM/DD/YYYY format. The rest of the columns must corresponds to respective
+subpopulations in the numeric order of population_id.
 }
 
 \strong{Mixing Matrices:}
-Contact matrices for different time periods:
+Contact matrices for different time periods. Each CSV file must have a matrix of order (N_pop x N_pop), where,
+N_pop is the number of subpopulations. It is assumed that the i-th row and j-th column correspond to i-th and j-th subpopulations.
 \itemize{
 \item \code{weekday_day}, \code{weekday_night}: Weekday contact patterns
 \item \code{weekend_day}, \code{weekend_night}: Weekend contact patterns
@@ -101,7 +106,7 @@ Disease parameters can be specified as distributions for stochastic modeling:
 
 \strong{Population mapping file} must contain columns:
 \itemize{
-\item \code{population_id}: Unique identifier for each population group
+\item \code{population_id}: Unique identifier for each population group, natural numbers
 \item \code{age}: Age category (e.g., "0-4", "5-11", "12-17", "18-49", "50-64", "65+")
 \item \code{race}: Race/ethnicity category
 \item \code{zone}: Geographic zone identifier
@@ -115,12 +120,13 @@ Disease parameters can be specified as distributions for stochastic modeling:
 }
 
 \examples{
-\dontrun{
+
+example_config <- system.file("extdata", "example_config.yaml", package = "MetaRVM")
 # Parse configuration file and return list (backward compatible)
-config <- parse_config("path/to/config.yaml")
+config <- parse_config(example_config)
 
 # Parse and return MetaRVMConfig object for method chaining
-config_obj <- parse_config("path/to/config.yaml", return_object = TRUE)
+config_obj <- parse_config(example_config, return_object = TRUE)
 
 # Access parameters from config object
 config_obj$get("N_pop")
@@ -128,7 +134,7 @@ config_obj$list_parameters()
 
 # Use with MetaRVM simulation
 results <- metaRVM(config_obj)
-}
+
 
 }
 \seealso{

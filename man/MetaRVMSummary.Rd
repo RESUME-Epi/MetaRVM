@@ -37,7 +37,9 @@ Plotting behavior adapts automatically:
 }
 
 \examples{
-\dontrun{
+example_config <- system.file("extdata", "example_config_dist.yaml", package = "MetaRVM")
+# Run simulation
+results <- metaRVM(example_config)
 # Typically created through method chaining
 summary_obj <- results$summarize(
   group_by = c("age", "race"), 
@@ -49,11 +51,10 @@ summary_obj <- results$summarize(
 summary_obj$plot()
 
 # Plot with custom theme and confidence level
-summary_obj$plot(ci_level = 0.5, theme = theme_bw())
+summary_obj$plot(ci_level = 0.5, theme = ggplot2::theme_bw())
 
 # Complete method chaining workflow
 results$summarize(group_by = "age", stats = c("median", "quantile"))$plot()
-}
 
 }
 \author{

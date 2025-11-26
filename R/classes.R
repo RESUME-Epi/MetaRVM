@@ -11,9 +11,9 @@
 #' population mappings, and other simulation settings.
 #' 
 #' @examples
-#' \dontrun{
 #' # Initialize from YAML file
-#' config <- MetaRVMConfig$new("path/to/config.yaml")
+#' example_config <- system.file("extdata", "example_config.yaml", package = "MetaRVM")
+#' config <- MetaRVMConfig$new(example_config)
 #' 
 #' # Access parameters
 #' config$get("N_pop")
@@ -23,7 +23,6 @@
 #' ages <- config$get_age_categories()
 #' races <- config$get_race_categories()
 #' zones <- config$get_zones()
-#' }
 #' 
 #' @import R6
 #' @import data.table
@@ -212,10 +211,9 @@ MetaRVMConfig <- R6::R6Class(
 #' geographic zone categories, plus method chaining for streamlined analysis workflows.
 #' 
 #' @examples
-#' \dontrun{
-#' # Create from simulation results
-#' results_obj <- MetaRVMResults$new(raw_results, config_obj)
-#' 
+#' example_config <- system.file("extdata", "example_config.yaml", package = "MetaRVM")
+#' # Run simulation
+#' results_obj <- metaRVM(example_config)
 #' # Access formatted results
 #' head(results_obj$results)
 #' 
@@ -232,7 +230,7 @@ MetaRVMConfig <- R6::R6Class(
 #'   stats = c("median", "quantile"),
 #'   quantiles = c(0.25, 0.75)
 #' )$plot()
-#' }
+#' 
 #' 
 #' @import R6
 #' @import data.table
@@ -579,7 +577,9 @@ MetaRVMResults <- R6::R6Class(
 #' }
 #' 
 #' @examples
-#' \dontrun{
+#' example_config <- system.file("extdata", "example_config_dist.yaml", package = "MetaRVM")
+#' # Run simulation
+#' results <- metaRVM(example_config)
 #' # Typically created through method chaining
 #' summary_obj <- results$summarize(
 #'   group_by = c("age", "race"), 
@@ -591,11 +591,10 @@ MetaRVMResults <- R6::R6Class(
 #' summary_obj$plot()
 #' 
 #' # Plot with custom theme and confidence level
-#' summary_obj$plot(ci_level = 0.5, theme = theme_bw())
+#' summary_obj$plot(ci_level = 0.5, theme = ggplot2::theme_bw())
 #' 
 #' # Complete method chaining workflow
 #' results$summarize(group_by = "age", stats = c("median", "quantile"))$plot()
-#' }
 #' 
 #' @import R6
 #' @import data.table

@@ -15,10 +15,9 @@ methods for flexible data summarization across any combination of age, race, and
 geographic zone categories, plus method chaining for streamlined analysis workflows.
 }
 \examples{
-\dontrun{
-# Create from simulation results
-results_obj <- MetaRVMResults$new(raw_results, config_obj)
-
+example_config <- system.file("extdata", "example_config.yaml", package = "MetaRVM")
+# Run simulation
+results_obj <- metaRVM(example_config)
 # Access formatted results
 head(results_obj$results)
 
@@ -35,7 +34,7 @@ results_obj$summarize(
   stats = c("median", "quantile"),
   quantiles = c(0.25, 0.75)
 )$plot()
-}
+
 
 }
 \author{

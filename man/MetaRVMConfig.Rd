@@ -15,9 +15,9 @@ completeness and provides convenient methods for accessing demographic categorie
 population mappings, and other simulation settings.
 }
 \examples{
-\dontrun{
 # Initialize from YAML file
-config <- MetaRVMConfig$new("path/to/config.yaml")
+example_config <- system.file("extdata", "example_config.yaml", package = "MetaRVM")
+config <- MetaRVMConfig$new(example_config)
 
 # Access parameters
 config$get("N_pop")
@@ -27,7 +27,6 @@ config$get("start_date")
 ages <- config$get_age_categories()
 races <- config$get_race_categories()
 zones <- config$get_zones()
-}
 
 }
 \author{

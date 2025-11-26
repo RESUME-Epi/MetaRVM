@@ -37,4 +37,4 @@ disease_params:
 simulation_config:
   start_date: 01/01/2023 # m/d/Y
   length: 150
-  nsim: 100 # Increased nsim for meaningful summary statistics
+  nsim: 20 # Increased nsim for meaningful summary statistics
