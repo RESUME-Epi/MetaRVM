@@ -284,7 +284,7 @@ results_obj <- metaRVM(example_config)
 #>       |                             size_t {aka long unsigned int}
 #> gcc -std=gnu2x -I"/opt/R/4.5.2/lib/R/include" -DNDEBUG   -I/usr/local/include    -fpic  -g -O2  -UNDEBUG -Wall -pedantic -g -O0 -fdiagnostics-color=always -c registration.c -o registration.o
 #> gcc -std=gnu2x -shared -L/opt/R/4.5.2/lib/R/lib -L/usr/local/lib -o odin838871ae.so odin.o registration.o -L/opt/R/4.5.2/lib/R/lib -lR
-#> installing to /tmp/RtmpKBILgz/devtools_install_183b5f4348fa/00LOCK-file183b457f3ae7/00new/odin838871ae/libs
+#> installing to /tmp/Rtmp8MQLYd/devtools_install_1841218f7ccd/00LOCK-file184158c4f620/00new/odin838871ae/libs
 #> ** checking absolute paths in shared objects and dynamic libraries
 #> * DONE (odin838871ae)
 #> ℹ Loading odin838871ae
