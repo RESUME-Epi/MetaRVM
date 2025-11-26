@@ -29,6 +29,7 @@ contact patterns, vaccination dynamics, and complex disease progression pathways
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/getting-started.html">Getting Started</a></li>
     <li><a class="dropdown-item" href="../articles/yaml-configuration.html">Model Configurations</a></li>
     <li><a class="dropdown-item" href="../articles/running-a-simulation.html">Running Simulation</a></li>
+    <li><a class="dropdown-item" href="../articles/checkpointing.html">Checkpointing and Restoring</a></li>
   </ul></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">News</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><a class="external-link nav-link" href="https://github.com/RESUME-Epi/MetaRVM" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
@@ -301,7 +302,7 @@ Each element of the list corresponds to a time step in <code>chk_time_steps</cod
 </ul></div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
-    <p>The model implements a complex epidemiological framework with the following features:</p>
+    <p>The model implements a metapopulation epidemiological framework with the following features:</p>
 <p><strong>Compartmental Structure:</strong></p><ul><li><p><strong>S</strong>: Susceptible individuals</p></li>
 <li><p><strong>E</strong>: Exposed (incubating) individuals</p></li>
 <li><p><strong>I_presymp</strong>: Presymptomatic infectious individuals</p></li>
@@ -355,15 +356,6 @@ This allows flexible specification of homogeneous or heterogeneous parameters.</
 <li><p>Population structure information</p></li>
 </ul></div>
     <div class="section level2">
-    <h2 id="performance-considerations">Performance Considerations<a class="anchor" aria-label="anchor" href="#performance-considerations"></a></h2>
-
-
-<ul><li><p>Runtime scales approximately as O(N_pop² × nsteps)</p></li>
-<li><p>Memory usage increases with output frequency and population complexity</p></li>
-<li><p>Stochastic mode adds computational overhead for random number generation</p></li>
-<li><p>Large contact matrices (high N_pop) significantly impact performance</p></li>
-</ul></div>
-    <div class="section level2">
     <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a></h2>
 
 <ul><li><p>ODIN package: <a href="https://mrc-ide.github.io/odin/" class="external-link">https://mrc-ide.github.io/odin/</a></p></li>
@@ -382,9 +374,9 @@ This allows flexible specification of homogeneous or heterogeneous parameters.</
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># \dontrun{</span></span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Basic deterministic simulation</span></span></span>
-<span class="r-in"><span><span class="va">N_pop</span> <span class="op">&lt;-</span> <span class="fl">30</span></span></span>
+<span class="r-in"><span><span class="va">N_pop</span> <span class="op">&lt;-</span> <span class="fl">2</span></span></span>
 <span class="r-in"><span><span class="va">nsteps</span> <span class="op">&lt;-</span> <span class="fl">400</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Initialize populations</span></span></span>
@@ -394,11 +386,12 @@ This allows flexible specification of homogeneous or heterogeneous parameters.</
 <span class="r-in"><span><span class="va">R0</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">0</span>, <span class="va">N_pop</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Contact matrices (simplified - identity matrices)</span></span></span>
-<span class="r-in"><span><span class="va">contact_matrix</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/diag.html" class="external-link">diag</a></span><span class="op">(</span><span class="va">N_pop</span><span class="op">)</span> <span class="op">*</span> <span class="fl">0.1</span></span></span>
+<span class="r-in"><span><span class="va">contact_matrix</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/diag.html" class="external-link">diag</a></span><span class="op">(</span><span class="va">N_pop</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># Basic vaccination schedule (no vaccination)</span></span></span>
+<span class="r-in"><span><span class="co"># Basic vaccination schedule (10% vaccination)</span></span></span>
 <span class="r-in"><span><span class="va">vac_mat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fl">0</span>, nrow <span class="op">=</span> <span class="va">nsteps</span> <span class="op">+</span> <span class="fl">1</span>, ncol <span class="op">=</span> <span class="va">N_pop</span> <span class="op">+</span> <span class="fl">1</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">vac_mat</span><span class="op">[</span>, <span class="fl">1</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fl">0</span><span class="op">:</span><span class="va">nsteps</span></span></span>
+<span class="r-in"><span><span class="va">vac_mat</span><span class="op">[</span><span class="fl">1</span>, <span class="fl">1</span> <span class="op">+</span> <span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="va">N_pop</span><span class="op">)</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="va">P0</span> <span class="op">*</span> <span class="fl">0.1</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Run simulation</span></span></span>
 <span class="r-in"><span><span class="va">results</span> <span class="op">&lt;-</span> <span class="fu">meta_sim</span><span class="op">(</span></span></span>
@@ -410,9 +403,9 @@ This allows flexible specification of homogeneous or heterogeneous parameters.</
 <span class="r-in"><span>  P0 <span class="op">=</span> <span class="va">P0</span>,</span></span>
 <span class="r-in"><span>  R0 <span class="op">=</span> <span class="va">R0</span>,</span></span>
 <span class="r-in"><span>  m_weekday_day <span class="op">=</span> <span class="va">contact_matrix</span>,</span></span>
-<span class="r-in"><span>  m_weekday_night <span class="op">=</span> <span class="va">contact_matrix</span> <span class="op">*</span> <span class="fl">0.5</span>,</span></span>
-<span class="r-in"><span>  m_weekend_day <span class="op">=</span> <span class="va">contact_matrix</span> <span class="op">*</span> <span class="fl">0.8</span>,</span></span>
-<span class="r-in"><span>  m_weekend_night <span class="op">=</span> <span class="va">contact_matrix</span> <span class="op">*</span> <span class="fl">0.3</span>,</span></span>
+<span class="r-in"><span>  m_weekday_night <span class="op">=</span> <span class="va">contact_matrix</span>,</span></span>
+<span class="r-in"><span>  m_weekend_day <span class="op">=</span> <span class="va">contact_matrix</span>,</span></span>
+<span class="r-in"><span>  m_weekend_night <span class="op">=</span> <span class="va">contact_matrix</span>,</span></span>
 <span class="r-in"><span>  delta_t <span class="op">=</span> <span class="fl">0.5</span>,</span></span>
 <span class="r-in"><span>  vac_mat <span class="op">=</span> <span class="va">vac_mat</span>,</span></span>
 <span class="r-in"><span>  dv <span class="op">=</span> <span class="fl">365</span>,</span></span>
@@ -426,18 +419,13 @@ This allows flexible specification of homogeneous or heterogeneous parameters.</
 <span class="r-in"><span>  phr <span class="op">=</span> <span class="fl">0.9</span>,</span></span>
 <span class="r-in"><span>  dr <span class="op">=</span> <span class="fl">180</span>,</span></span>
 <span class="r-in"><span>  ve <span class="op">=</span> <span class="fl">0.8</span>,</span></span>
-<span class="r-in"><span>  nsteps <span class="op">=</span> <span class="va">nsteps</span></span></span>
+<span class="r-in"><span>  nsteps <span class="op">=</span> <span class="va">nsteps</span>,</span></span>
+<span class="r-in"><span>  is.stoch <span class="op">=</span> <span class="cn">FALSE</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Generating model in c</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Using cached model</span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># Stochastic simulation with checkpointing</span></span></span>
-<span class="r-in"><span><span class="va">results_stoch</span> <span class="op">&lt;-</span> <span class="fu">meta_sim</span><span class="op">(</span></span></span>
-<span class="r-in"><span>  <span class="co"># ... same parameters as above ...</span></span></span>
-<span class="r-in"><span>  is.stoch <span class="op">=</span> <span class="cn">TRUE</span>,</span></span>
-<span class="r-in"><span>  seed <span class="op">=</span> <span class="fl">12345</span>,</span></span>
-<span class="r-in"><span>  do_chk <span class="op">=</span> <span class="cn">TRUE</span>,</span></span>
-<span class="r-in"><span>  chk_file_name <span class="op">=</span> <span class="st">"simulation_checkpoint.rds"</span></span></span>
-<span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
+<span class="r-in"><span></span></span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>

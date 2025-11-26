@@ -82,12 +82,13 @@ for parameter access and validation.
 
 ## Details
 
-The function processes a comprehensive YAML configuration file with the
-following main sections:
+The function processes a YAML configuration file with the following main
+sections:
 
 **Simulation Configuration:**
 
-- `random_seed`: Optional random seed for reproducibility
+- `random_seed`: Optional random seed for reproducibility in case of
+  stochastic simulations or stochastic parameters
 
 - `nsim`: Number of simulation instances (default: 1)
 
@@ -105,14 +106,22 @@ following main sections:
 **Population Data:**
 
 - `mapping`: CSV file path containing population mapping with
-  demographic categories
+  demographic categories age, race, zone. The file must contains columns
+  `population_id`, `age`, `race`, `zone`, where the `population_id` is
+  defined using natural numbers.
 
-- `initialization`: CSV file with initial population states (S0, I0, V0,
-  R0, N)
+- `initialization`: CSV file with initial population states. The file
+  must contains columns `population_id`, `N`, `S0`, `I0`, `V0`, `R0`.
 
-- `vaccination`: CSV file with vaccination schedule over time
+- `vaccination`: CSV file with vaccination schedule over time. The first
+  column must be dates in MM/DD/YYYY format. The rest of the columns
+  must corresponds to respective subpopulations in the numeric order of
+  population_id.
 
-**Mixing Matrices:** Contact matrices for different time periods:
+**Mixing Matrices:** Contact matrices for different time periods. Each
+CSV file must have a matrix of order (N_pop x N_pop), where, N_pop is
+the number of subpopulations. It is assumed that the i-th row and j-th
+column correspond to i-th and j-th subpopulations.
 
 - `weekday_day`, `weekday_night`: Weekday contact patterns
 
@@ -158,7 +167,8 @@ modeling:
 
 **Population mapping file** must contain columns:
 
-- `population_id`: Unique identifier for each population group
+- `population_id`: Unique identifier for each population group, natural
+  numbers
 
 - `age`: Age category (e.g., "0-4", "5-11", "12-17", "18-49", "50-64",
   "65+")
@@ -189,18 +199,31 @@ Arindam Fadikar
 ## Examples
 
 ``` r
-if (FALSE) { # \dontrun{
+example_config <- system.file("extdata", "example_config.yaml", package = "MetaRVM")
 # Parse configuration file and return list (backward compatible)
-config <- parse_config("path/to/config.yaml")
+config <- parse_config(example_config)
 
 # Parse and return MetaRVMConfig object for method chaining
-config_obj <- parse_config("path/to/config.yaml", return_object = TRUE)
+config_obj <- parse_config(example_config, return_object = TRUE)
 
 # Access parameters from config object
 config_obj$get("N_pop")
+#> [1] 24
 config_obj$list_parameters()
+#>  [1] "N_pop"          "pop_map"        "S_ini"          "E_ini"         
+#>  [5] "I_asymp_ini"    "I_presymp_ini"  "I_symp_ini"     "H_ini"         
+#>  [9] "D_ini"          "P_ini"          "V_ini"          "R_ini"         
+#> [13] "vac_time_id"    "vac_counts"     "vac_mat"        "m_wd_d"        
+#> [17] "m_wd_n"         "m_we_d"         "m_we_n"         "ts"            
+#> [21] "tv"             "ve"             "dv"             "de"            
+#> [25] "dp"             "da"             "ds"             "dh"            
+#> [29] "dr"             "pea"            "psr"            "phr"           
+#> [33] "start_date"     "sim_length"     "nsim"           "random_seed"   
+#> [37] "delta_t"        "chk_file_names" "chk_time_steps" "do_chk"        
 
 # Use with MetaRVM simulation
 results <- metaRVM(config_obj)
-} # }
+#> Generating model in c
+#> Using cached model
+
 ```

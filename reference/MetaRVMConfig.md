@@ -253,17 +253,18 @@ The objects of this class are cloneable with this method.
 ## Examples
 
 ``` r
-if (FALSE) { # \dontrun{
 # Initialize from YAML file
-config <- MetaRVMConfig$new("path/to/config.yaml")
+example_config <- system.file("extdata", "example_config.yaml", package = "MetaRVM")
+config <- MetaRVMConfig$new(example_config)
 
 # Access parameters
 config$get("N_pop")
+#> [1] 24
 config$get("start_date")
+#> [1] "2023-09-30"
 
 # Get demographic categories
 ages <- config$get_age_categories()
 races <- config$get_race_categories()
 zones <- config$get_zones()
-} # }
 ```

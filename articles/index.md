@@ -2,6 +2,8 @@
 
 ### All vignettes
 
+- [Checkpointing in
+  MetaRVM](https://RESUME-Epi.github.io/MetaRVM/articles/checkpointing.md):
 - [Getting Started with
   MetaRVM](https://RESUME-Epi.github.io/MetaRVM/articles/getting-started.md):
 - [Running a Simulation with

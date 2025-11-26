@@ -32,3 +32,11 @@ format_metarvm_output(sim_output, config)
 
 data.table with formatted output including calendar dates and
 demographics
+
+## Note
+
+This function is used for formatting the
+[`meta_sim`](https://RESUME-Epi.github.io/MetaRVM/reference/meta_sim.md)
+output when
+[`MetaRVM`](https://RESUME-Epi.github.io/MetaRVM/reference/MetaRVM-package.md)
+function is called.

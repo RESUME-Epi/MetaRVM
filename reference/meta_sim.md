@@ -275,7 +275,7 @@ Available disease states in output:
 
 ## Details
 
-The model implements a complex epidemiological framework with the
+The model implements a metapopulation epidemiological framework with the
 following features:
 
 **Compartmental Structure:**
@@ -373,17 +373,6 @@ When do_chk = TRUE, the function saves a checkpoint file containing:
 
 - Population structure information
 
-## Performance Considerations
-
-- Runtime scales approximately as O(N_pop² × nsteps)
-
-- Memory usage increases with output frequency and population complexity
-
-- Stochastic mode adds computational overhead for random number
-  generation
-
-- Large contact matrices (high N_pop) significantly impact performance
-
 ## References
 
 - ODIN package: <https://mrc-ide.github.io/odin/>
@@ -408,9 +397,8 @@ Arindam Fadikar, Charles Macal, Ignacio Martinez-Moyano, Jonathan Ozik
 ## Examples
 
 ``` r
-if (FALSE) { # \dontrun{
 # Basic deterministic simulation
-N_pop <- 30
+N_pop <- 2
 nsteps <- 400
 
 # Initialize populations
@@ -420,11 +408,12 @@ P0 <- S0 + I0
 R0 <- rep(0, N_pop)
 
 # Contact matrices (simplified - identity matrices)
-contact_matrix <- diag(N_pop) * 0.1
+contact_matrix <- diag(N_pop)
 
-# Basic vaccination schedule (no vaccination)
+# Basic vaccination schedule (10% vaccination)
 vac_mat <- matrix(0, nrow = nsteps + 1, ncol = N_pop + 1)
 vac_mat[, 1] <- 0:nsteps
+vac_mat[1, 1 + (1:N_pop)] <- P0 * 0.1
 
 # Run simulation
 results <- meta_sim(
@@ -436,9 +425,9 @@ results <- meta_sim(
   P0 = P0,
   R0 = R0,
   m_weekday_day = contact_matrix,
-  m_weekday_night = contact_matrix * 0.5,
-  m_weekend_day = contact_matrix * 0.8,
-  m_weekend_night = contact_matrix * 0.3,
+  m_weekday_night = contact_matrix,
+  m_weekend_day = contact_matrix,
+  m_weekend_night = contact_matrix,
   delta_t = 0.5,
   vac_mat = vac_mat,
   dv = 365,
@@ -452,16 +441,11 @@ results <- meta_sim(
   phr = 0.9,
   dr = 180,
   ve = 0.8,
-  nsteps = nsteps
+  nsteps = nsteps,
+  is.stoch = FALSE
 )
+#> Generating model in c
+#> Using cached model
 
-# Stochastic simulation with checkpointing
-results_stoch <- meta_sim(
-  # ... same parameters as above ...
-  is.stoch = TRUE,
-  seed = 12345,
-  do_chk = TRUE,
-  chk_file_name = "simulation_checkpoint.rds"
-)
-} # }
+
 ```
