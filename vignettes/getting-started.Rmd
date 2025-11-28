@@ -83,7 +83,7 @@ simulation_config:
 
 For a detailed explanation of all the configuration options, please see the [Model Configurations](articles/yaml-configuration.html) vignette.
 
-# Running the Simulation
+## Running the Simulation
 
 Once we have the path to the configuration file, the simulation can be run using the `metaRVM()` function.
 

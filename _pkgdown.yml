@@ -1,7 +1,10 @@
 url: https://RESUME-Epi.github.io/MetaRVM/
 template:
   bootstrap: 5
-  bootswatch: litera
+  bslib:
+    primary: "#0051BA"
+    border-radius: 0.25rem
+    btn-border-radius: 0.25rem
   light-switch: false
   logo: man/figures/logo.png
   
@@ -15,7 +18,7 @@ navbar:
   structure:
     # left:  [home, reference, articles, news]
     left:  [reference, articles, news]
-    right: [github]
+    right: [search, github]
   components:
     # home:
     #   icon: fa-home

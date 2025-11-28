@@ -64,7 +64,7 @@ simulation_config:
 
 ### Input File Structures
 
-The `metaRVM` package requires several CSV files to be structured in a specific way. Below are the descriptions for each of the required input files.
+The `metaRVM` package requires several CSV files to be structured in a specific way. Below are the descriptions for each of the required input files, along with examples of what they should look like.
 
 #### Population Data Files
 
@@ -74,18 +74,63 @@ The `metaRVM` package requires several CSV files to be structured in a specific 
     -   `race`: The race or ethnicity of the subpopulation.
     -   `zone`: The healthcare zone or geographic region of the subpopulation.
 
+**Example of a population mapping file:**
+
+```{r mapping_example, echo=FALSE}
+mapping_file <- system.file("extdata", "demographic_mapping_n24.csv", package = "MetaRVM")
+mapping_data <- read.csv(mapping_file)
+cat("First 10 rows of demographic_mapping_n24.csv:\n\n")
+print(head(mapping_data, 10))
+cat("\n... (", nrow(mapping_data), " total rows)\n", sep = "")
+```
+
 -   **`initialization`**: This file specifies the initial state of the population for the simulation. It must contain the following columns:
+    -   `population_id`: Identifier matching the mapping file.
     -   `N`: The total number of individuals in each subpopulation.
     -   `S0`: The initial number of susceptible individuals.
     -   `I0`: The initial number of symptomatic infected individuals.
     -   `V0`: The initial number of vaccinated individuals.
     -   `R0`: The initial number of recovered individuals.
 
+**Example of a population initialization file:**
+
+```{r init_example, echo=FALSE}
+init_file <- system.file("extdata", "population_init_n24.csv", package = "MetaRVM")
+init_data <- read.csv(init_file)
+cat("First 10 rows of population_init_n24.csv:\n\n")
+print(head(init_data, 10))
+cat("\n... (", nrow(init_data), " total rows)\n", sep = "")
+```
+
 -   **`vaccination`**: The vaccination schedule file contains the number of vaccinations administered over time. The first column must be `date` in `MM/DD/YYYY` format, followed by columns for each subpopulation in the same order that they are assigned a `population_id` in the mapping file.
+
+**Example of a vaccination schedule file:**
+
+```{r vac_example, echo=FALSE}
+vac_file <- system.file("extdata", "vaccination_n24.csv", package = "MetaRVM")
+vac_data <- read.csv(vac_file)
+cat("First 10 rows of vaccination_n24.csv:\n\n")
+print(head(vac_data, 10))
+cat("\n... (", nrow(vac_data), " total rows)\n", sep = "")
+cat("\nNote: Columns represent vaccination counts for each population_id (1-24)\n")
+```
 
 #### Mixing Matrix Files
 
 The mixing matrix files define the contact patterns between different subpopulations. Each file should be a CSV without a header, where the rows and columns correspond to the subpopulations in the same order as the population mapping file. The values in the matrix represent the proportion of time that individuals from one subpopulation spend with individuals from another. The sum of each row must equal 1.
+
+**Example of a mixing matrix file (weekday day):**
+
+```{r mixing_example, echo=FALSE}
+mixing_file <- system.file("extdata", "m_weekday_day.csv", package = "MetaRVM")
+mixing_data <- read.csv(mixing_file, header = FALSE)
+cat("First 10 rows and 10 columns of m_weekday_day.csv:\n\n")
+print(head(mixing_data[, 1:10], 10))
+cat("\nMatrix dimensions:", nrow(mixing_data), "x", ncol(mixing_data), "\n")
+cat("Row sums (should all equal 1):\n")
+row_sums <- rowSums(mixing_data)
+print(head(row_sums, 10))
+```
 
 ### Disease Parameter Descriptions
 

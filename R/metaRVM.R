@@ -1,123 +1,94 @@
-#' Run MetaRVM Epidemic Simulation
+#' Run a MetaRVM epidemic simulation
 #'
 #' @description
-#' Executes a meta-population compartmental epidemic model simulation using specified
-#' configuration parameters. The function runs multiple simulation instances with
-#' stochastic parameter variations and returns formatted results with calendar dates
-#' and demographic attributes for comprehensive analysis and visualization. Under the hood,
-#' it calls \code{\link{meta_sim}} function after parsing the inputs.
-#'
-#' @param config_input Configuration input in one of three formats:
-#'   \itemize{
-#'     \item Character string: File path to YAML configuration file
-#'     \item MetaRVMConfig object: Pre-initialized configuration object
-#'     \item Named list: Parsed configuration data from \code{\link{parse_config}}
-#'   }
+#' `metaRVM()` is the high-level entry point for running a MetaRVM
+#' metapopulation respiratory virus simulation. It parses the configuration,
+#' runs one or more simulation instances (deterministic or stochastic),
+#' formats the ODIN/MetaRVM output into a tidy long table with calendar
+#' dates and demographic attributes, and returns a [`MetaRVMResults`]
+#' object for downstream analysis and plotting.
 #'
 #' @details
-#' The MetaRVM simulation implements a meta-population SEIRD (Susceptible-Exposed-Infected-Recovered-Dead)
-#' compartmental model with additional complexity for asymptomatic and presymptomatic infections,
-#' hospitalization states, and vaccination dynamics. The model accounts for:
+#' The configuration input controls:
 #'
-#' \strong{Compartmental Structure:}
-#' \itemize{
-#'   \item \strong{S}: Susceptible individuals
-#'   \item \strong{E}: Exposed (incubating) individuals  
-#'   \item \strong{I_asymp}: Asymptomatic infectious individuals
-#'   \item \strong{I_presymp}: Presymptomatic infectious individuals
-#'   \item \strong{I_symp}: Symptomatic infectious individuals
-#'   \item \strong{H}: Hospitalized individuals
-#'   \item \strong{R}: Recovered individuals
-#'   \item \strong{D}: Dead individuals
-#'   \item \strong{P}: Protected/vaccinated individuals
-#' }
+#' - **Population structure** (e.g., age, race, zone)
+#' - **Disease parameters** (`ts`, `tv`, `ve`, `de`, `dp`, `da`, `ds`,
+#'   `dh`, `dr`, `pea`, `psr`, `phr`, `dv`, etc.)
+#' - **Mixing matrices** (weekday/weekend, day/night contact patterns)
+#' - **Vaccination schedule** and immunity waning
+#' - **Simulation settings** (start date, length, number of instances,
+#'   stochastic vs. deterministic mode, checkpointing)
 #'
+#' Internally, `metaRVM()`:
 #'
-#' \strong{Disease Parameters:}
-#' The model uses the following key parameters (can be stochastic across instances):
-#' \itemize{
-#'   \item \code{ts}: Transmission rate for symptomatic individuals
-#'   \item \code{tv}: Transmission rate for vaccinated individuals
-#'   \item \code{ve}: Vaccine effectiveness
-#'   \item \code{de, dp, da, ds, dh, dr}: Duration parameters for disease states
-#'   \item \code{pea, psr, phr}: Proportion parameters for state transitions
-#' }
+#' 1. Parses the YAML configuration via [parse_config()].
+#' 2. Calls the ODIN-based simulation engine [meta_sim()] for each instance.
+#' 3. Uses [format_metarvm_output()] to convert time steps to dates and
+#'    attach demographic attributes.
+#' 4. Wraps the formatted output and metadata in a [`MetaRVMResults`]
+#'    object that supports method chaining for subsetting, summarizing,
+#'    and plotting.
+#'
+#' @param config_input Configuration specification in one of three forms:
+#'   \itemize{
+#'     \item **Character string**: path to a YAML configuration file.
+#'     \item **[`MetaRVMConfig`] object**: pre-initialized configuration.
+#'     \item **Named list**: output from [parse_config()] with
+#'       `return_object = FALSE`.
+#'   }
 #'
 #' @return
-#' Returns a \code{\link{MetaRVMResults}} object containing:
+#' A [`MetaRVMResults`] R6 object with three key components:
 #' \describe{
-#'   \item{results}{Formatted data.table with columns:}
+#'   \item{$results}{A tidy `data.table` with one row per
+#'     date–subpopulation–disease state–instance combination. Typical
+#'     columns include:
 #'     \itemize{
-#'       \item \code{date}: Calendar date (Date class)
-#'       \item \code{age}: Age category (e.g., "0-4", "5-11", "18-49")
-#'       \item \code{race}: Race/ethnicity category
-#'       \item \code{zone}: Geographic zone identifier
-#'       \item \code{disease_state}: Compartment name (S, E, I_asymp, H, etc.)
-#'       \item \code{value}: Population count in compartment
-#'       \item \code{instance}: Simulation instance number
+#'       \item `date`: calendar date (`Date`)
+#'       \item `age`, `race`, `zone`: demographic categories (if present
+#'             in the population mapping)
+#'       \item `disease_state`: compartment or flow label (e.g., `S`, `E`,
+#'             `I_symp`, `H`, `R`, `D`, `n_SE`, `n_IsympH`, etc.)
+#'       \item `value`: population count or daily flow
+#'       \item `instance`: simulation instance index (1, 2, …)
 #'     }
-#'   \item{config}{Original MetaRVMConfig object}
-#'   \item{run_info}{Simulation metadata including date range, instance count}
+#'   }
+#'   \item{$config}{The [`MetaRVMConfig`] object used for the run.}
+#'   \item{$run_info}{A list with metadata such as `n_instances`,
+#'     `date_range`, `delta_t`, and checkpoint information.}
 #' }
-#'
-#' The returned object supports method chaining for analysis:
-#' \itemize{
-#'   \item \code{subset_data()}: Filter by demographics, disease states, dates
-#'   \item \code{summarize()}: Aggregate across demographic categories with statistics
-#'   \item \code{plot()}: Create time series visualizations (via method chaining)
-#' }
-#'
-#' @section Configuration Requirements:
-#' The configuration must include:
-#' \itemize{
-#'   \item \strong{Population data}: Initial compartment values, demographic mapping
-#'   \item \strong{Disease parameters}: Transmission rates, durations, probabilities
-#'   \item \strong{Contact matrices}: Weekday/weekend and day/night mixing patterns
-#'   \item \strong{Simulation settings}: Start date, length, number of instances
-#'   \item \strong{Vaccination schedule}: Time-varying vaccination rates
-#' }
-#' @examples
-#' example_config <- system.file("extdata", "example_config.yaml", package = "MetaRVM")
-#' # Basic usage with YAML configuration file
-#' results <- metaRVM(example_config)
-#' 
-#' # Print summary
-#' results
-#' 
-#' # Access formatted data directly
-#' head(results$results)
-#' 
-#' # Method chaining for analysis and visualization
-#' results$summarize(
-#'   group_by = c("age", "race"),
-#'   stats = c("median", "quantile"),
-#'   disease_states = c("H", "D")
-#' )$plot()
-#' 
-#' # Subset and analyze specific populations
-#' subset_results <- results$subset_data(
-#'   age = c("65+"),
-#'   disease_states = c("H", "D"),
-#'   date_range = c(as.Date("2024-01-01"), as.Date("2024-03-01"))
-#' )
-#' 
-#' # Using with pre-parsed configuration
-#' config_obj <- parse_config(example_config, return_object = TRUE)
-#' results <- metaRVM(config_obj)
-#' 
-#' # Accessing run metadata
-#' results$run_info$n_instances
-#' results$run_info$date_range
-#' 
-#'
 #'
 #' @seealso
-#' \code{\link{parse_config}} for configuration file parsing
-#' \code{\link{MetaRVMConfig}} for configuration object class
-#' \code{\link{MetaRVMResults}} for results object and analysis methods
-#' \code{\link{format_metarvm_output}} for output formatting details
-#' \code{\link{meta_sim}} for the underlying ODE simulation engine
+#' [parse_config()] for reading YAML configurations,
+#' [MetaRVMConfig] for configuration management,
+#' [MetaRVMResults] for analysis and plotting,
+#' [meta_sim()] for the low-level simulation engine.
 #'
+#' @examples
+#' example_config <- system.file("extdata", "example_config.yaml",
+#'                               package = "MetaRVM")
+#'
+#' # Run a single-instance simulation from a YAML file
+#' results <- metaRVM(example_config)
+#'
+#' # Print a high-level summary
+#' results
+#'
+#' # Access the tidy results table
+#' head(results$results)
+#'
+#' # Summarize and plot hospitalizations and deaths by age and race
+#' results$summarize(
+#'   group_by       = c("age", "race"),
+#'   disease_states = c("H", "D"),
+#'   stats          = c("median", "quantile"),
+#'   quantiles      = c(0.25, 0.75)
+#' )$plot()
+#'
+#' # Using a pre-parsed configuration object
+#' cfg <- parse_config(example_config, return_object = TRUE)
+#' results2 <- metaRVM(cfg)
+#' 
 #' @references
 #' Fadikar, A., et al. "Developing and deploying a use-inspired metapopulation modeling framework for detailed tracking of stratified health outcomes"
 #'
