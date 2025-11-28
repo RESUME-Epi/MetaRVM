@@ -52,6 +52,9 @@
 <li class="nav-item"><a class="nav-link" href="news/index.html">News</a></li>
       </ul>
 <ul class="navbar-nav">
+<li class="nav-item"><form class="form-inline" role="search">
+ <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="search.json">
+</form></li>
 <li class="nav-item"><a class="external-link nav-link" href="https://github.com/RESUME-Epi/MetaRVM" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
       </ul>
 </div>
@@ -69,27 +72,311 @@
 
 <p>This is a compartmental model simulation code for generic respiratory virus diseases.</p>
 <div class="section level2">
-<h2 id="background">Background<a class="anchor" aria-label="anchor" href="#background"></a>
+<h2 id="model">Model<a class="anchor" aria-label="anchor" href="#model"></a>
 </h2>
 <p><code>MetaRVM</code> is an open-source R package for modeling the spread of infectious diseases in subpopulations, which can be flexibly defined by geography, demographics, or other stratifications. It is designed to support real-time public health decision-making. <code>MetaRVM</code> is a metapopulation model, which extends the classic Susceptible-Infected-Recovered (SIR) framework by propagating infection across interacting subpopulations (e.g., age groups, neighborhoods), whose interactions are governed by realistic mixing patterns.</p>
 <p>The <code>MetaRVM</code> model builds upon the SEIR framework by introducing additional compartments to capture more detailed dynamics of disease progression, while allowing for heterogeneous mixing among different demographic stratum. These generalizations allow the model to account for factors such as vaccinations, hospitalizations, and fatalities.</p>
-<p>For more details, please refer to the paper: <a href="https://www.medrxiv.org/content/10.1101/2025.05.05.25327021v1.full-text" class="external-link">Developing and deploying a use-inspired metapopulation modeling framework for detailed tracking of stratified health outcomes</a></p>
+<figure><img src="reference/figures/GIRD-Vensim.svg" alt="Model schematics"><figcaption aria-hidden="true">
+Model schematics
+</figcaption></figure><p>For more details, please refer to the paper: <a href="https://www.medrxiv.org/content/10.1101/2025.05.05.25327021v1.full-text" class="external-link">Developing and deploying a use-inspired metapopulation modeling framework for detailed tracking of stratified health outcomes</a></p>
 </div>
 <div class="section level2">
 <h2 id="documentation">Documentation<a class="anchor" aria-label="anchor" href="#documentation"></a>
 </h2>
 <p>Full documentation is available at: <a href="https://RESUME-Epi.github.io/MetaRVM/" class="uri">https://RESUME-Epi.github.io/MetaRVM/</a></p>
-<figure><img src="reference/figures/GIRD-Vensim.svg" alt="Model schematics"><figcaption aria-hidden="true">
-Model schematics
-</figcaption></figure>
 </div>
 <div class="section level2">
-<h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
+<h2 id="quickstart-guide">Quickstart guide<a class="anchor" aria-label="anchor" href="#quickstart-guide"></a>
 </h2>
-<p>You can install the development version of MetaRVM from <a href="https://github.com/" class="external-link">GitHub</a> with:</p>
+<div class="section level3">
+<h3 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
+</h3>
+<p>The development version of <code>MetaRVM</code> can be installed from <a href="https://github.com/" class="external-link">GitHub</a> with:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># install.packages("devtools")</span></span>
 <span><span class="fu">devtools</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"NSF-RESUME/MetaRVM"</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level3">
+<h3 id="running-a-simulation">Running a simulation<a class="anchor" aria-label="anchor" href="#running-a-simulation"></a>
+</h3>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://RESUME-Epi.github.io/MetaRVM/">MetaRVM</a></span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">options</a></span><span class="op">(</span>odin.verbose <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co">## prepare the configuration file</span></span>
+<span><span class="va">cfg</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, <span class="st">"example_config.yaml"</span>, package <span class="op">=</span> <span class="st">"MetaRVM"</span><span class="op">)</span></span></code></pre></div>
+<p>The content of the yaml configuration file:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="fu">run_id</span><span class="kw">:</span><span class="at"> ExampleRun</span></span>
+<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a><span class="fu">population_data</span><span class="kw">:</span></span>
+<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a><span class="at">  </span><span class="fu">mapping</span><span class="kw">:</span><span class="at"> demographic_mapping_n24.csv</span></span>
+<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a><span class="at">  </span><span class="fu">initialization</span><span class="kw">:</span><span class="at"> population_init_n24.csv</span></span>
+<span id="cb3-5"><a href="#cb3-5" tabindex="-1"></a><span class="at">  </span><span class="fu">vaccination</span><span class="kw">:</span><span class="at"> vaccination_n24.csv</span></span>
+<span id="cb3-6"><a href="#cb3-6" tabindex="-1"></a><span class="fu">mixing_matrix</span><span class="kw">:</span></span>
+<span id="cb3-7"><a href="#cb3-7" tabindex="-1"></a><span class="at">  </span><span class="fu">weekday_day</span><span class="kw">:</span><span class="at"> m_weekday_day.csv</span></span>
+<span id="cb3-8"><a href="#cb3-8" tabindex="-1"></a><span class="at">  </span><span class="fu">weekday_night</span><span class="kw">:</span><span class="at"> m_weekday_night.csv</span></span>
+<span id="cb3-9"><a href="#cb3-9" tabindex="-1"></a><span class="at">  </span><span class="fu">weekend_day</span><span class="kw">:</span><span class="at"> m_weekend_day.csv</span></span>
+<span id="cb3-10"><a href="#cb3-10" tabindex="-1"></a><span class="at">  </span><span class="fu">weekend_night</span><span class="kw">:</span><span class="at"> m_weekend_night.csv</span></span>
+<span id="cb3-11"><a href="#cb3-11" tabindex="-1"></a><span class="fu">disease_params</span><span class="kw">:</span></span>
+<span id="cb3-12"><a href="#cb3-12" tabindex="-1"></a><span class="at">  </span><span class="fu">ts</span><span class="kw">:</span><span class="at"> </span><span class="fl">0.5</span></span>
+<span id="cb3-13"><a href="#cb3-13" tabindex="-1"></a><span class="at">  </span><span class="fu">tv</span><span class="kw">:</span><span class="at"> </span><span class="fl">0.25</span></span>
+<span id="cb3-14"><a href="#cb3-14" tabindex="-1"></a><span class="at">  </span><span class="fu">ve</span><span class="kw">:</span><span class="at"> </span><span class="fl">0.4</span></span>
+<span id="cb3-15"><a href="#cb3-15" tabindex="-1"></a><span class="at">  </span><span class="fu">dv</span><span class="kw">:</span><span class="at"> </span><span class="dv">180</span></span>
+<span id="cb3-16"><a href="#cb3-16" tabindex="-1"></a><span class="at">  </span><span class="fu">dp</span><span class="kw">:</span><span class="at"> </span><span class="dv">1</span></span>
+<span id="cb3-17"><a href="#cb3-17" tabindex="-1"></a><span class="at">  </span><span class="fu">de</span><span class="kw">:</span><span class="at"> </span><span class="dv">3</span></span>
+<span id="cb3-18"><a href="#cb3-18" tabindex="-1"></a><span class="at">  </span><span class="fu">da</span><span class="kw">:</span><span class="at"> </span><span class="dv">5</span></span>
+<span id="cb3-19"><a href="#cb3-19" tabindex="-1"></a><span class="at">  </span><span class="fu">ds</span><span class="kw">:</span><span class="at"> </span><span class="dv">6</span></span>
+<span id="cb3-20"><a href="#cb3-20" tabindex="-1"></a><span class="at">  </span><span class="fu">dh</span><span class="kw">:</span><span class="at"> </span><span class="dv">8</span></span>
+<span id="cb3-21"><a href="#cb3-21" tabindex="-1"></a><span class="at">  </span><span class="fu">dr</span><span class="kw">:</span><span class="at"> </span><span class="dv">180</span></span>
+<span id="cb3-22"><a href="#cb3-22" tabindex="-1"></a><span class="at">  </span><span class="fu">pea</span><span class="kw">:</span><span class="at"> </span><span class="fl">0.3</span></span>
+<span id="cb3-23"><a href="#cb3-23" tabindex="-1"></a><span class="at">  </span><span class="fu">psr</span><span class="kw">:</span><span class="at"> </span><span class="fl">0.95</span></span>
+<span id="cb3-24"><a href="#cb3-24" tabindex="-1"></a><span class="at">  </span><span class="fu">phr</span><span class="kw">:</span><span class="at"> </span><span class="fl">0.97</span></span>
+<span id="cb3-25"><a href="#cb3-25" tabindex="-1"></a><span class="fu">simulation_config</span><span class="kw">:</span></span>
+<span id="cb3-26"><a href="#cb3-26" tabindex="-1"></a><span class="at">  </span><span class="fu">start_date</span><span class="kw">:</span><span class="at"> 10/01/2023</span><span class="co"> # m/d/Y</span></span>
+<span id="cb3-27"><a href="#cb3-27" tabindex="-1"></a><span class="at">  </span><span class="fu">length</span><span class="kw">:</span><span class="at"> </span><span class="dv">150</span></span>
+<span id="cb3-28"><a href="#cb3-28" tabindex="-1"></a><span class="at">  </span><span class="fu">nsim</span><span class="kw">:</span><span class="at"> </span><span class="dv">1</span></span></code></pre></div>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># run simulation</span></span>
+<span><span class="va">sim_out</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/metaRVM.html">metaRVM</a></span><span class="op">(</span><span class="va">cfg</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Loading required namespace: pkgbuild</span></span>
+<span></span>
+<span><span class="co"># basic plot: daily hospitalizations by date</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org" class="external-link">ggplot2</a></span><span class="op">)</span></span>
+<span><span class="va">hosp</span> <span class="op">&lt;-</span> <span class="va">sim_out</span><span class="op">$</span><span class="va">results</span><span class="op">[</span><span class="va">disease_state</span> <span class="op">==</span> <span class="st">"H"</span><span class="op">]</span></span>
+<span><span class="va">hosp_sum</span> <span class="op">&lt;-</span> <span class="va">hosp</span><span class="op">[</span><span class="va">disease_state</span> <span class="op">==</span> <span class="st">"H"</span>, <span class="fu">.</span><span class="op">(</span>total <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="va">value</span><span class="op">)</span><span class="op">)</span>, by <span class="op">=</span> <span class="st">"date"</span><span class="op">]</span></span>
+<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">hosp_sum</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span><span class="va">date</span>, <span class="va">total</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html" class="external-link">geom_line</a></span><span class="op">(</span>, color <span class="op">=</span> <span class="st">"red"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>y <span class="op">=</span> <span class="st">"Hospitalizations"</span>, x <span class="op">=</span> <span class="st">"Date"</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html" class="external-link">theme_bw</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+<p><img src="reference/figures/README-unnamed-chunk-3-1.png" width="100%"></p>
+</div>
+</div>
+<div class="section level2">
+<h2 id="model-structure">Model structure<a class="anchor" aria-label="anchor" href="#model-structure"></a>
+</h2>
+<p><code>MetaRVM</code> implements a stratified SEIR-type metapopulation model with vaccination, hospitalization, immunity waning, and reinfection. The core health states in each demographic stratum are:</p>
+<ul>
+<li>
+<strong>Susceptible</strong> <code>S</code>
+</li>
+<li>
+<strong>Vaccinated</strong> <code>V</code>
+</li>
+<li>
+<strong>Exposed</strong> <code>E</code>
+</li>
+<li>
+<strong>Asymptomatic infectious</strong> <code>I_asymp</code>
+</li>
+<li>
+<strong>Presymptomatic infectious</strong> <code>I_presymp</code>
+</li>
+<li>
+<strong>Symptomatic infectious</strong> <code>I_symp</code>
+</li>
+<li>
+<strong>Hospitalized</strong> <code>H</code>
+</li>
+<li>
+<strong>Recovered</strong> <code>R</code>
+</li>
+<li>
+<strong>Deceased</strong> <code>D</code>
+</li>
+</ul>
+<p>At the start of a simulation, nearly all individuals are in <code>S</code>, with optional seeding of initial infections and/or vaccinated individuals in <code>V</code>. When susceptible or vaccinated individuals come into contact with infectious individuals, they become exposed (<code>E</code>) based on age/stratum-specific forces of infection and vaccine protection. Exposed individuals then progress through asymptomatic, presymptomatic, and symptomatic infectious states before either recovering, being hospitalized, or dying. Vaccinated and recovered immunity can wane over time, returning individuals to the susceptible pool, which allows <code>MetaRVM</code> to represent multiple respiratory pathogens with different natural histories.</p>
+<p>Transmission is stratified by user-defined demographic groups (e.g., age, zone, race). Time-varying mixing matrices define how these strata interact (daytime vs. nighttime, weekday vs. weekend), and <code>MetaRVM</code> computes stratum-specific forces of infection for susceptible and vaccinated individuals. Hospitalized and deceased individuals are excluded from the “effective” mixing population. The same model can be run in deterministic or stochastic mode, and parameters are supplied through a YAML configuration.</p>
+<hr>
+<div class="section level3">
+<h3 id="core-disease-progression-parameters">Core disease progression parameters<a class="anchor" aria-label="anchor" href="#core-disease-progression-parameters"></a>
+</h3>
+<table class="table">
+<colgroup>
+<col width="33%">
+<col width="33%">
+<col width="33%">
+</colgroup>
+<thead><tr class="header">
+<th>Parameter</th>
+<th>Description</th>
+<th>Units / notes</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td><code>ve</code></td>
+<td>Vaccine efficacy parameter controlling how strongly vaccination reduces infection risk.</td>
+<td>Dimensionless (0–1).</td>
+</tr>
+<tr class="even">
+<td><code>dv</code></td>
+<td>Average duration of vaccine-conferred immunity; vaccination wanes at rate <code>1/dv</code>.</td>
+<td>Days.</td>
+</tr>
+<tr class="odd">
+<td><code>de</code></td>
+<td>Average incubation period; duration in <code>E</code> before becoming infectious.</td>
+<td>Days.</td>
+</tr>
+<tr class="even">
+<td><code>pea</code></td>
+<td>Proportion of exposed individuals who become asymptomatic infectious (<code>Ia</code>).</td>
+<td>Probability (0–1).</td>
+</tr>
+<tr class="odd">
+<td><code>da</code></td>
+<td>Average duration in asymptomatic infectious state <code>Ia</code>.</td>
+<td>Days.</td>
+</tr>
+<tr class="even">
+<td><code>dp</code></td>
+<td>Average duration in presymptomatic infectious state <code>Ip</code>.</td>
+<td>Days.</td>
+</tr>
+<tr class="odd">
+<td><code>ds</code></td>
+<td>Average duration in symptomatic infectious state <code>Is</code> before recovery or hospitalization.</td>
+<td>Days.</td>
+</tr>
+<tr class="even">
+<td><code>psr</code></td>
+<td>Fraction of symptomatic (<code>Is</code>) individuals who recover directly without hospitalization.</td>
+<td>Probability (0–1).</td>
+</tr>
+<tr class="odd">
+<td><code>dh</code></td>
+<td>Average length of stay in the hospitalized state <code>H</code>.</td>
+<td>Days.</td>
+</tr>
+<tr class="even">
+<td><code>phd</code></td>
+<td>Proportion of hospitalized individuals who die (transition <code>H → D</code>); remaining recover.</td>
+<td>Probability (0–1).</td>
+</tr>
+<tr class="odd">
+<td><code>dr</code></td>
+<td>Average duration of post-infection immunity in <code>R</code> before waning; reinfection occurs at rate <code>1/dr</code>.</td>
+<td>Days.</td>
+</tr>
+</tbody>
+</table>
+<hr>
+</div>
+<div class="section level3">
+<h3 id="transmission-and-mixing-parameters">Transmission and mixing parameters<a class="anchor" aria-label="anchor" href="#transmission-and-mixing-parameters"></a>
+</h3>
+<table class="table">
+<colgroup>
+<col width="33%">
+<col width="33%">
+<col width="33%">
+</colgroup>
+<thead><tr class="header">
+<th>Parameter</th>
+<th>Description</th>
+<th>Units / notes</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td><code>ts</code></td>
+<td>Transmission scaling factor for susceptible individuals; controls strength of <code>S</code>–<code>I</code> transmission.</td>
+<td>Per-contact scaling factor.</td>
+</tr>
+<tr class="even">
+<td><code>tv</code></td>
+<td>Transmission scaling factor for vaccinated individuals.</td>
+<td>Same scale as <code>ts</code>.</td>
+</tr>
+<tr class="odd">
+<td><code>M</code></td>
+<td>Mixing matrix of order <code>J × J</code>, where <code>m_ij</code> is the fraction of contacts that a member of stratum <code>i</code> has with stratum <code>j</code>.</td>
+<td>Dimensionless; rows sum to 1.</td>
+</tr>
+</tbody>
+</table>
+<p>These parameters drive the transitions from <code>S</code> and <code>V</code> to <code>E</code>, and determine how quickly individuals move through infectious, hospitalized, recovered, and deceased states.</p>
+<hr>
+</div>
+<div class="section level3">
+<h3 id="required-input-data-and-configuration">Required input data and configuration<a class="anchor" aria-label="anchor" href="#required-input-data-and-configuration"></a>
+</h3>
+<p><code>MetaRVM</code> is configured through a YAML file and a small set of CSV inputs.</p>
+<table class="table">
+<colgroup>
+<col width="33%">
+<col width="33%">
+<col width="33%">
+</colgroup>
+<thead><tr class="header">
+<th>Input</th>
+<th>Required?</th>
+<th>Description</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td>Population mapping (<code>population.csv</code>)</td>
+<td>Yes</td>
+<td>Defines each demographic stratum (e.g., age, zone, race) and its population size. Column names must match those referenced in the YAML configuration.</td>
+</tr>
+<tr class="even">
+<td>Mixing matrices (<code>mixing_matrix_*.csv</code>)</td>
+<td>Yes</td>
+<td>Four contact matrices, consistent with the strata defined in <code>population.csv</code>. These typically represent weekday/weekend and day/night mixing patterns.</td>
+</tr>
+<tr class="odd">
+<td>Vaccination schedule (<code>vaccination.csv</code>)</td>
+<td>Yes</td>
+<td>Time-varying vaccination counts or rates by stratum, used to move individuals from <code>S</code> to <code>V</code>.</td>
+</tr>
+<tr class="even">
+<td>Model parameters</td>
+<td>Yes</td>
+<td>High-level model specification: simulation dates, <code>dt</code>, parameter values (e.g., <code>ve</code>, <code>de</code>, <code>dv</code>, <code>pea</code>, <code>psr</code>, <code>βs</code>, <code>βv</code>), output controls, and checkpointing options.</td>
+</tr>
+<tr class="odd">
+<td>Checkpoint files</td>
+<td>Optional</td>
+<td>Internal model state snapshots used to resume or branch simulations (e.g., for phased calibration).</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section level3">
+<h3 id="model-output-structure">Model output structure<a class="anchor" aria-label="anchor" href="#model-output-structure"></a>
+</h3>
+<p><code>MetaRVM</code> produces simulation results in a unified <strong>tidy long-format table</strong> that is easy to analyze with <code>data.table</code>, <code>dplyr</code>, or <code>ggplot2</code>. Every record corresponds to a single compartment count or flow quantity for a specific demographic stratum, simulation date, and scenario/instance.</p>
+<p>The core output is available in:</p>
+<ul>
+<li>
+<code>sim$results</code> — compartment counts and flows for each day<br>
+</li>
+<li>
+<code>sim$config</code> — the configuration object used to generate the run</li>
+</ul>
+<hr>
+</div>
+</div>
+<div class="section level2">
+<h2 id="further-examples-and-full-documentation">Further examples and full documentation<a class="anchor" aria-label="anchor" href="#further-examples-and-full-documentation"></a>
+</h2>
+<p>MetaRVM includes several vignettes that demonstrate common workflows using real model configurations and data. These provide detailed, step-by-step examples of how to prepare inputs, configure the model, run simulations, and analyze outputs.</p>
+<p>The vignettes can be accessed at:</p>
+<p><strong><a href="https://resume-epi.github.io/MetaRVM/articles/" class="external-link uri">https://resume-epi.github.io/MetaRVM/articles/</a></strong></p>
+<p>List of vignettes:</p>
+<ul>
+<li><p><strong>Getting Started</strong><br>
+A gentle introduction showing how to load a configuration file, run a simulation, and inspect outputs.</p></li>
+<li><p><strong>Model Configurations</strong><br>
+A detailed walkthrough of the YAML structure, required fields, parameter blocks, optional modules, and how to define population strata and mixing patterns.</p></li>
+<li><p><strong>Running Simulation</strong><br>
+Full example using a complete set of input files, showing how MetaRVM reads population mappings, mixing matrices, and vaccination schedules.</p></li>
+</ul>
+<!-- - **Understanding Outputs**
+  Explains the structure of `sim$results`, the meaning of disease states and flow variables, and how to compute aggregated quantities. --><ul>
+<li>
+<strong>Checkpointing and Restoring</strong><br>
+Demonstrates how to run many scenarios at scale, resume long runs, and store intermediate model states.</li>
+</ul>
+<!-- - **End-to-End Example** *(recommended)*
+  Uses a realistic toy city with multiple age groups and zones to show the entire workflow—from inputs and configuration to final epidemiological summaries and visualizations. --><p>For the complete function reference, visit:</p>
+<p><strong><a href="https://resume-epi.github.io/MetaRVM/reference/" class="external-link uri">https://resume-epi.github.io/MetaRVM/reference/</a></strong></p>
 </div>
 </div>
   </main><aside class="col-md-3"><div class="links">

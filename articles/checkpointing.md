@@ -52,7 +52,7 @@ example_config <- system.file("extdata", "example_config_checkpoint.yaml",
 # Create a temporary directory for checkpoints
 checkpoint_dir <- tempdir()
 cat("Checkpoint directory:", checkpoint_dir, "\n")
-#> Checkpoint directory: /tmp/RtmpORBwYC
+#> Checkpoint directory: /tmp/RtmprlPA4V
 ```
 
 ### Create a Configuration with Checkpointing
@@ -140,7 +140,7 @@ results <- metaRVM(temp_config)
 #>       |                             size_t {aka long unsigned int}
 #> gcc -std=gnu2x -I"/opt/R/4.5.2/lib/R/include" -DNDEBUG   -I/usr/local/include    -fpic  -g -O2  -UNDEBUG -Wall -pedantic -g -O0 -fdiagnostics-color=always -c registration.c -o registration.o
 #> gcc -std=gnu2x -shared -L/opt/R/4.5.2/lib/R/lib -L/usr/local/lib -o odin3a2926f6.so odin.o registration.o -L/opt/R/4.5.2/lib/R/lib -lR
-#> installing to /tmp/RtmpORBwYC/devtools_install_1a752fd6462e/00LOCK-file1a75447e4a60/00new/odin3a2926f6/libs
+#> installing to /tmp/RtmprlPA4V/devtools_install_1a2b627f93f2/00LOCK-file1a2bff97b96/00new/odin3a2926f6/libs
 #> ** checking absolute paths in shared objects and dynamic libraries
 #> * DONE (odin3a2926f6)
 #> ℹ Loading odin3a2926f6

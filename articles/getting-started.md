@@ -1,12 +1,12 @@
 # Getting Started with MetaRVM
 
-### Introduction
+## Introduction
 
 MetaRVM is a comprehensive R package for simulating respiratory virus
 epidemics using meta-population compartmental models. This vignette will
 guide you through the basic usage of the package.
 
-### Installation
+## Installation
 
 You can install the development version of MetaRVM from GitHub:
 
@@ -15,14 +15,14 @@ You can install the development version of MetaRVM from GitHub:
 devtools::install_github("RESUME-Epi/MetaRVM")
 ```
 
-### Loading the Package
+## Loading the Package
 
 ``` r
 library(MetaRVM)
 library(ggplot2)
 ```
 
-### Basic Example
+## Basic Example
 
 This example shows how to run a basic meta-population simulation.
 

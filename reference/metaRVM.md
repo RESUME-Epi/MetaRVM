@@ -1,12 +1,12 @@
-# Run MetaRVM Epidemic Simulation
+# Run a MetaRVM epidemic simulation
 
-Executes a meta-population compartmental epidemic model simulation using
-specified configuration parameters. The function runs multiple
-simulation instances with stochastic parameter variations and returns
-formatted results with calendar dates and demographic attributes for
-comprehensive analysis and visualization. Under the hood, it calls
-[`meta_sim`](https://RESUME-Epi.github.io/MetaRVM/reference/meta_sim.md)
-function after parsing the inputs.
+`metaRVM()` is the high-level entry point for running a MetaRVM
+metapopulation respiratory virus simulation. It parses the
+configuration, runs one or more simulation instances (deterministic or
+stochastic), formats the ODIN/MetaRVM output into a tidy long table with
+calendar dates and demographic attributes, and returns a
+[`MetaRVMResults`](https://RESUME-Epi.github.io/MetaRVM/reference/MetaRVMResults.md)
+object for downstream analysis and plotting.
 
 ## Usage
 
@@ -18,114 +18,84 @@ metaRVM(config_input)
 
 - config_input:
 
-  Configuration input in one of three formats:
+  Configuration specification in one of three forms:
 
-  - Character string: File path to YAML configuration file
+  - **Character string**: path to a YAML configuration file.
 
-  - MetaRVMConfig object: Pre-initialized configuration object
+  - **[`MetaRVMConfig`](https://RESUME-Epi.github.io/MetaRVM/reference/MetaRVMConfig.md)
+    object**: pre-initialized configuration.
 
-  - Named list: Parsed configuration data from
-    [`parse_config`](https://RESUME-Epi.github.io/MetaRVM/reference/parse_config.md)
+  - **Named list**: output from
+    [`parse_config()`](https://RESUME-Epi.github.io/MetaRVM/reference/parse_config.md)
+    with `return_object = FALSE`.
 
 ## Value
 
-Returns a
+A
 [`MetaRVMResults`](https://RESUME-Epi.github.io/MetaRVM/reference/MetaRVMResults.md)
-object containing:
+R6 object with three key components:
 
-results
+- \$results:
 
-:   Formatted data.table with columns:
+  A tidy `data.table` with one row per date–subpopulation–disease
+  state–instance combination. Typical columns include:
 
-config
+  - `date`: calendar date (`Date`)
 
-:   Original MetaRVMConfig object
+  - `age`, `race`, `zone`: demographic categories (if present in the
+    population mapping)
 
-run_info
+  - `disease_state`: compartment or flow label (e.g., `S`, `E`,
+    `I_symp`, `H`, `R`, `D`, `n_SE`, `n_IsympH`, etc.)
 
-:   Simulation metadata including date range, instance count
+  - `value`: population count or daily flow
 
-The returned object supports method chaining for analysis:
+  - `instance`: simulation instance index (1, 2, …)
 
-- `subset_data()`: Filter by demographics, disease states, dates
+- \$config:
 
-- `summarize()`: Aggregate across demographic categories with statistics
+  The
+  [`MetaRVMConfig`](https://RESUME-Epi.github.io/MetaRVM/reference/MetaRVMConfig.md)
+  object used for the run.
 
-- [`plot()`](https://rdrr.io/r/graphics/plot.default.html): Create time
-  series visualizations (via method chaining)
+- \$run_info:
+
+  A list with metadata such as `n_instances`, `date_range`, `delta_t`,
+  and checkpoint information.
 
 ## Details
 
-The MetaRVM simulation implements a meta-population SEIRD
-(Susceptible-Exposed-Infected-Recovered-Dead) compartmental model with
-additional complexity for asymptomatic and presymptomatic infections,
-hospitalization states, and vaccination dynamics. The model accounts
-for:
+The configuration input controls:
 
-**Compartmental Structure:**
+- **Population structure** (e.g., age, race, zone)
 
-- **S**: Susceptible individuals
+- **Disease parameters** (`ts`, `tv`, `ve`, `de`, `dp`, `da`, `ds`,
+  `dh`, `dr`, `pea`, `psr`, `phr`, `dv`, etc.)
 
-- **E**: Exposed (incubating) individuals
+- **Mixing matrices** (weekday/weekend, day/night contact patterns)
 
-- **I_asymp**: Asymptomatic infectious individuals
+- **Vaccination schedule** and immunity waning
 
-- **I_presymp**: Presymptomatic infectious individuals
+- **Simulation settings** (start date, length, number of instances,
+  stochastic vs. deterministic mode, checkpointing)
 
-- **I_symp**: Symptomatic infectious individuals
+Internally, `metaRVM()`:
 
-- **H**: Hospitalized individuals
+1.  Parses the YAML configuration via
+    [`parse_config()`](https://RESUME-Epi.github.io/MetaRVM/reference/parse_config.md).
 
-- **R**: Recovered individuals
+2.  Calls the ODIN-based simulation engine
+    [`meta_sim()`](https://RESUME-Epi.github.io/MetaRVM/reference/meta_sim.md)
+    for each instance.
 
-- **D**: Dead individuals
+3.  Uses
+    [`format_metarvm_output()`](https://RESUME-Epi.github.io/MetaRVM/reference/format_metarvm_output.md)
+    to convert time steps to dates and attach demographic attributes.
 
-- **P**: Protected/vaccinated individuals
-
-**Disease Parameters:** The model uses the following key parameters (can
-be stochastic across instances):
-
-- `ts`: Transmission rate for symptomatic individuals
-
-- `tv`: Transmission rate for vaccinated individuals
-
-- `ve`: Vaccine effectiveness
-
-- `de, dp, da, ds, dh, dr`: Duration parameters for disease states
-
-- `pea, psr, phr`: Proportion parameters for state transitions
-
-**Simulation Process:** For each simulation instance, the function:
-
-1.  Initializes population compartments from configuration
-
-2.  Applies instance-specific stochastic parameter values
-
-3.  Runs the ODE solver
-    ([`meta_sim`](https://RESUME-Epi.github.io/MetaRVM/reference/meta_sim.md))
-    with specified time steps
-
-4.  Collects output for all time points and populations
-
-5.  Combines results across all instances
-
-6.  Formats output with calendar dates and demographic information
-
-7.  Returns structured MetaRVMResults object for analysis
-
-## Configuration Requirements
-
-The configuration must include:
-
-- **Population data**: Initial compartment values, demographic mapping
-
-- **Disease parameters**: Transmission rates, durations, probabilities
-
-- **Contact matrices**: Weekday/weekend and day/night mixing patterns
-
-- **Simulation settings**: Start date, length, number of instances
-
-- **Vaccination schedule**: Time-varying vaccination rates
+4.  Wraps the formatted output and metadata in a
+    [`MetaRVMResults`](https://RESUME-Epi.github.io/MetaRVM/reference/MetaRVMResults.md)
+    object that supports method chaining for subsetting, summarizing,
+    and plotting.
 
 ## References
 
@@ -135,16 +105,14 @@ health outcomes"
 
 ## See also
 
-[`parse_config`](https://RESUME-Epi.github.io/MetaRVM/reference/parse_config.md)
-for configuration file parsing
-[`MetaRVMConfig`](https://RESUME-Epi.github.io/MetaRVM/reference/MetaRVMConfig.md)
-for configuration object class
-[`MetaRVMResults`](https://RESUME-Epi.github.io/MetaRVM/reference/MetaRVMResults.md)
-for results object and analysis methods
-[`format_metarvm_output`](https://RESUME-Epi.github.io/MetaRVM/reference/format_metarvm_output.md)
-for output formatting details
-[`meta_sim`](https://RESUME-Epi.github.io/MetaRVM/reference/meta_sim.md)
-for the underlying ODE simulation engine
+[`parse_config()`](https://RESUME-Epi.github.io/MetaRVM/reference/parse_config.md)
+for reading YAML configurations,
+[MetaRVMConfig](https://RESUME-Epi.github.io/MetaRVM/reference/MetaRVMConfig.md)
+for configuration management,
+[MetaRVMResults](https://RESUME-Epi.github.io/MetaRVM/reference/MetaRVMResults.md)
+for analysis and plotting,
+[`meta_sim()`](https://RESUME-Epi.github.io/MetaRVM/reference/meta_sim.md)
+for the low-level simulation engine.
 
 ## Author
 
@@ -153,13 +121,15 @@ Arindam Fadikar, Charles Macal, Ignacio Martinez-Moyano, Jonathan Ozik
 ## Examples
 
 ``` r
-example_config <- system.file("extdata", "example_config.yaml", package = "MetaRVM")
-# Basic usage with YAML configuration file
+example_config <- system.file("extdata", "example_config.yaml",
+                              package = "MetaRVM")
+
+# Run a single-instance simulation from a YAML file
 results <- metaRVM(example_config)
 #> Generating model in c
 #> Using cached model
 
-# Print summary
+# Print a high-level summary
 results
 #> MetaRVM Results Object
 #> =====================
@@ -169,7 +139,7 @@ results
 #> Total observations: 111600 
 #> Disease states: D, E, H, I_all, I_asymp, I_eff, I_presymp, I_symp, P, R, S, V, cum_V, mob_pop, n_EI, n_EIpresymp, n_HD, n_HR, n_HRD, n_IasympR, n_IsympH, n_IsympR, n_IsympRH, n_SE, n_SV, n_VE, n_VS, n_preIsymp, p_HRD, p_SE, p_VE 
 
-# Access formatted data directly
+# Access the tidy results table
 head(results$results)
 #>          date    age   race   zone disease_state        value instance
 #>        <Date> <char> <char> <char>        <char>        <num>    <int>
@@ -180,34 +150,18 @@ head(results$results)
 #> 5: 2023-10-01   0-17      A     11       I_asymp 3.227854e-01        1
 #> 6: 2023-10-01   0-17      A     11         I_eff 2.647304e+01        1
 
-# Method chaining for analysis and visualization
+# Summarize and plot hospitalizations and deaths by age and race
 results$summarize(
-  group_by = c("age", "race"),
-  stats = c("median", "quantile"),
-  disease_states = c("H", "D")
+  group_by       = c("age", "race"),
+  disease_states = c("H", "D"),
+  stats          = c("median", "quantile"),
+  quantiles      = c(0.25, 0.75)
 )$plot()
 
 
-# Subset and analyze specific populations
-subset_results <- results$subset_data(
-  age = c("65+"),
-  disease_states = c("H", "D"),
-  date_range = c(as.Date("2024-01-01"), as.Date("2024-03-01"))
-)
-#> 19723 
-#> 19783 
-
-# Using with pre-parsed configuration
-config_obj <- parse_config(example_config, return_object = TRUE)
-results <- metaRVM(config_obj)
+# Using a pre-parsed configuration object
+cfg <- parse_config(example_config, return_object = TRUE)
+results2 <- metaRVM(cfg)
 #> Generating model in c
 #> Using cached model
-
-# Accessing run metadata
-results$run_info$n_instances
-#> [1] 1
-results$run_info$date_range
-#> [1] "2023-10-01" "2024-02-27"
-
-
 ```

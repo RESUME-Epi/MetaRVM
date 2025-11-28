@@ -47,6 +47,9 @@
 <li class="nav-item"><a class="nav-link" href="../news/index.html">News</a></li>
       </ul>
 <ul class="navbar-nav">
+<li class="nav-item"><form class="form-inline" role="search">
+ <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json">
+</form></li>
 <li class="nav-item"><a class="external-link nav-link" href="https://github.com/RESUME-Epi/MetaRVM" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
       </ul>
 </div>
@@ -140,7 +143,8 @@ simulations.</li>
 </h3>
 <p>The <code>metaRVM</code> package requires several CSV files to be
 structured in a specific way. Below are the descriptions for each of the
-required input files.</p>
+required input files, along with examples of what they should look
+like.</p>
 <div class="section level4">
 <h4 id="population-data-files">Population Data Files<a class="anchor" aria-label="anchor" href="#population-data-files"></a>
 </h4>
@@ -163,11 +167,31 @@ subpopulation, set of natural numbers 1, 2, 3, …</li>
 subpopulation.</li>
 </ul>
 </li>
+</ul>
+<p><strong>Example of a population mapping file:</strong></p>
+<pre><code><span><span class="co">#&gt; First 10 rows of demographic_mapping_n24.csv:</span></span>
+<span><span class="co">#&gt;    population_id   age race zone</span></span>
+<span><span class="co">#&gt; 1              1  0-17    A   11</span></span>
+<span><span class="co">#&gt; 2              2 18-64    A   11</span></span>
+<span><span class="co">#&gt; 3              3   65+    A   11</span></span>
+<span><span class="co">#&gt; 4              4  0-17    B   11</span></span>
+<span><span class="co">#&gt; 5              5 18-64    B   11</span></span>
+<span><span class="co">#&gt; 6              6   65+    B   11</span></span>
+<span><span class="co">#&gt; 7              7  0-17    C   11</span></span>
+<span><span class="co">#&gt; 8              8 18-64    C   11</span></span>
+<span><span class="co">#&gt; 9              9   65+    C   11</span></span>
+<span><span class="co">#&gt; 10            10  0-17    D   11</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; ... (24 total rows)</span></span></code></pre>
+<ul>
 <li>
 <strong><code>initialization</code></strong>: This file specifies
 the initial state of the population for the simulation. It must contain
 the following columns:
 <ul>
+<li>
+<code>population_id</code>: Identifier matching the mapping
+file.</li>
 <li>
 <code>N</code>: The total number of individuals in each
 subpopulation.</li>
@@ -182,6 +206,23 @@ individuals.</li>
 <code>R0</code>: The initial number of recovered individuals.</li>
 </ul>
 </li>
+</ul>
+<p><strong>Example of a population initialization file:</strong></p>
+<pre><code><span><span class="co">#&gt; First 10 rows of population_init_n24.csv:</span></span>
+<span><span class="co">#&gt;    population_id      N     S0  I0 V0 R0</span></span>
+<span><span class="co">#&gt; 1              1  30742  30711  31  0  7</span></span>
+<span><span class="co">#&gt; 2              2  41429  41388  41  0  9</span></span>
+<span><span class="co">#&gt; 3              3   3321   3318   3  0  0</span></span>
+<span><span class="co">#&gt; 4              4  70138  70068  70  0  6</span></span>
+<span><span class="co">#&gt; 5              5  12298  12286  12  0 32</span></span>
+<span><span class="co">#&gt; 6              6  11549  11537  12  0  0</span></span>
+<span><span class="co">#&gt; 7              7  84178  84094  84  0 13</span></span>
+<span><span class="co">#&gt; 8              8 113521 113407 114  0 15</span></span>
+<span><span class="co">#&gt; 9              9  11924  11912  12  0  0</span></span>
+<span><span class="co">#&gt; 10            10 199686 199486 200  0 14</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; ... (24 total rows)</span></span></code></pre>
+<ul>
 <li>
 <strong><code>vaccination</code></strong>: The vaccination schedule
 file contains the number of vaccinations administered over time. The
@@ -190,6 +231,34 @@ format, followed by columns for each subpopulation in the same order
 that they are assigned a <code>population_id</code> in the mapping
 file.</li>
 </ul>
+<p><strong>Example of a vaccination schedule file:</strong></p>
+<pre><code><span><span class="co">#&gt; First 10 rows of vaccination_n24.csv:</span></span>
+<span><span class="co">#&gt;          date v1 v2 v3  v4 v5 v6  v7  v8  v9 v10 v11 v12 v13 v14 v15  v16 v17</span></span>
+<span><span class="co">#&gt; 1  09/16/2023  0  0  0   0  0  0  11   5   4   8   6   4   2   5   1    8  11</span></span>
+<span><span class="co">#&gt; 2  09/23/2023  5 12  1  11  7  2 180 187  99 362 293  72 311 163  24  519 203</span></span>
+<span><span class="co">#&gt; 3  09/30/2023  3  5  2  19 10  3 198 235  88 424 364  89 445 255  36  625 251</span></span>
+<span><span class="co">#&gt; 4  10/07/2023 20 14 15  46 19  8 403 385 124 846 580 187 675 389  45 1242 347</span></span>
+<span><span class="co">#&gt; 5  10/14/2023 28 29 19  81 50  7 471 425 105 997 511 162 727 400  42 1351 313</span></span>
+<span><span class="co">#&gt; 6  10/21/2023 37 55 24 110 43  8 378 499 115 980 483 160 623 511  39 1212 317</span></span>
+<span><span class="co">#&gt; 7  10/28/2023 28 43 19  86 48 16 339 464  88 809 438 126 548 411  52 1090 287</span></span>
+<span><span class="co">#&gt; 8  11/04/2023 22 53 19  91 49 28 329 391  70 765 431 147 522 391  22  956 259</span></span>
+<span><span class="co">#&gt; 9  11/11/2023 36 62 21 110 60 10 337 396  87 769 414 148 575 425  39  966 199</span></span>
+<span><span class="co">#&gt; 10 11/18/2023 40 65 14 102 55 14 340 431  97 875 392 118 513 417  28 1041 231</span></span>
+<span><span class="co">#&gt;    v18 v19 v20 v21 v22 v23 v24</span></span>
+<span><span class="co">#&gt; 1    5   0   0   0   0   0   3</span></span>
+<span><span class="co">#&gt; 2  113   2   3  26   4  13  10</span></span>
+<span><span class="co">#&gt; 3  119   4  22  27   2  18  27</span></span>
+<span><span class="co">#&gt; 4  193   8  41  50   4  70  44</span></span>
+<span><span class="co">#&gt; 5  161  10  98 217  36 123  98</span></span>
+<span><span class="co">#&gt; 6  202  18 160 214  51 149 168</span></span>
+<span><span class="co">#&gt; 7  152  32 199 273  60 153 267</span></span>
+<span><span class="co">#&gt; 8  126  26 168 239  33 149 225</span></span>
+<span><span class="co">#&gt; 9  149  26 197 255  52 142 275</span></span>
+<span><span class="co">#&gt; 10 141  26 212 242  50 153 191</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; ... (51 total rows)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Note: Columns represent vaccination counts for each population_id (1-24)</span></span></code></pre>
 </div>
 <div class="section level4">
 <h4 id="mixing-matrix-files">Mixing Matrix Files<a class="anchor" aria-label="anchor" href="#mixing-matrix-files"></a>
@@ -200,6 +269,34 @@ rows and columns correspond to the subpopulations in the same order as
 the population mapping file. The values in the matrix represent the
 proportion of time that individuals from one subpopulation spend with
 individuals from another. The sum of each row must equal 1.</p>
+<p><strong>Example of a mixing matrix file (weekday day):</strong></p>
+<pre><code><span><span class="co">#&gt; First 10 rows and 10 columns of m_weekday_day.csv:</span></span>
+<span><span class="co">#&gt;             V1           V2          V3          V4           V5          V6</span></span>
+<span><span class="co">#&gt; 1  0.860000000 0.0010475811 0.003377249 0.001710217 0.0011920273 0.006571116</span></span>
+<span><span class="co">#&gt; 2  0.003611954 0.9100000000 0.001328864 0.003596329 0.0027309903 0.004173784</span></span>
+<span><span class="co">#&gt; 3  0.001344397 0.0072452422 0.870000000 0.002513688 0.0050834111 0.009789632</span></span>
+<span><span class="co">#&gt; 4  0.006689671 0.0005482346 0.004749909 0.920000000 0.0070678313 0.001806128</span></span>
+<span><span class="co">#&gt; 5  0.007740689 0.0039632387 0.004643154 0.001091787 0.8700000000 0.009791262</span></span>
+<span><span class="co">#&gt; 6  0.006379144 0.0032865609 0.003432134 0.001761560 0.0071883914 0.890000000</span></span>
+<span><span class="co">#&gt; 7  0.001444749 0.0064237517 0.002656119 0.001968115 0.0043013059 0.001206245</span></span>
+<span><span class="co">#&gt; 8  0.002179355 0.0070411463 0.001587234 0.003439760 0.0033650992 0.006414028</span></span>
+<span><span class="co">#&gt; 9  0.005390480 0.0066530217 0.005482305 0.003007641 0.0006105881 0.003145261</span></span>
+<span><span class="co">#&gt; 10 0.001666809 0.0029011017 0.008534104 0.001698315 0.0098720801 0.004586367</span></span>
+<span><span class="co">#&gt;              V7           V8           V9          V10</span></span>
+<span><span class="co">#&gt; 1  1.464237e-02 0.0143653234 0.0118876071 0.0080742019</span></span>
+<span><span class="co">#&gt; 2  6.528305e-03 0.0041375710 0.0057636782 0.0054420004</span></span>
+<span><span class="co">#&gt; 3  8.763376e-03 0.0005057071 0.0007488488 0.0073198670</span></span>
+<span><span class="co">#&gt; 4  2.822754e-04 0.0070548564 0.0009509153 0.0012611329</span></span>
+<span><span class="co">#&gt; 5  1.004983e-02 0.0041073157 0.0088236656 0.0006445009</span></span>
+<span><span class="co">#&gt; 6  3.144937e-05 0.0085528740 0.0063335264 0.0023219191</span></span>
+<span><span class="co">#&gt; 7  9.200000e-01 0.0035656434 0.0070237063 0.0042256901</span></span>
+<span><span class="co">#&gt; 8  4.098307e-03 0.9100000000 0.0067478716 0.0100518811</span></span>
+<span><span class="co">#&gt; 9  9.597300e-04 0.0002268853 0.9200000000 0.0009418937</span></span>
+<span><span class="co">#&gt; 10 5.236045e-03 0.0065183293 0.0012107981 0.8700000000</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Matrix dimensions: 24 x 24</span></span>
+<span><span class="co">#&gt; Row sums (should all equal 1):</span></span>
+<span><span class="co">#&gt;  [1] 1 1 1 1 1 1 1 1 1 1</span></span></code></pre>
 </div>
 </div>
 <div class="section level3">
@@ -258,32 +355,32 @@ the parameters. <code>metaRVM</code> supports <code>uniform</code> and
 <code>lognormal</code> distributions.</p>
 <p>Here is an example of defining <code>ve</code>, <code>da</code>,
 <code>ds</code>, and <code>dh</code> with distributions:</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="fu">disease_params</span><span class="kw">:</span></span>
-<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a><span class="at">  </span><span class="fu">ts</span><span class="kw">:</span><span class="at"> </span><span class="fl">0.7</span></span>
-<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a><span class="at">  </span><span class="fu">tv</span><span class="kw">:</span><span class="at"> </span><span class="fl">0.35</span></span>
-<span id="cb2-4"><a href="#cb2-4" tabindex="-1"></a><span class="at">  </span><span class="fu">ve</span><span class="kw">:</span></span>
-<span id="cb2-5"><a href="#cb2-5" tabindex="-1"></a><span class="at">    </span><span class="fu">dist</span><span class="kw">:</span><span class="at"> uniform</span></span>
-<span id="cb2-6"><a href="#cb2-6" tabindex="-1"></a><span class="at">    </span><span class="fu">min</span><span class="kw">:</span><span class="at"> </span><span class="fl">0.29</span></span>
-<span id="cb2-7"><a href="#cb2-7" tabindex="-1"></a><span class="at">    </span><span class="fu">max</span><span class="kw">:</span><span class="at"> </span><span class="fl">0.53</span></span>
-<span id="cb2-8"><a href="#cb2-8" tabindex="-1"></a><span class="at">  </span><span class="fu">dv</span><span class="kw">:</span><span class="at"> </span><span class="dv">158</span></span>
-<span id="cb2-9"><a href="#cb2-9" tabindex="-1"></a><span class="at">  </span><span class="fu">dp</span><span class="kw">:</span><span class="at"> </span><span class="dv">1</span></span>
-<span id="cb2-10"><a href="#cb2-10" tabindex="-1"></a><span class="at">  </span><span class="fu">de</span><span class="kw">:</span><span class="at"> </span><span class="dv">3</span></span>
-<span id="cb2-11"><a href="#cb2-11" tabindex="-1"></a><span class="at">  </span><span class="fu">da</span><span class="kw">:</span></span>
-<span id="cb2-12"><a href="#cb2-12" tabindex="-1"></a><span class="at">    </span><span class="fu">dist</span><span class="kw">:</span><span class="at"> uniform</span></span>
-<span id="cb2-13"><a href="#cb2-13" tabindex="-1"></a><span class="at">    </span><span class="fu">min</span><span class="kw">:</span><span class="at"> </span><span class="dv">3</span></span>
-<span id="cb2-14"><a href="#cb2-14" tabindex="-1"></a><span class="at">    </span><span class="fu">max</span><span class="kw">:</span><span class="at"> </span><span class="dv">7</span></span>
-<span id="cb2-15"><a href="#cb2-15" tabindex="-1"></a><span class="at">  </span><span class="fu">ds</span><span class="kw">:</span></span>
-<span id="cb2-16"><a href="#cb2-16" tabindex="-1"></a><span class="at">    </span><span class="fu">dist</span><span class="kw">:</span><span class="at"> uniform</span></span>
-<span id="cb2-17"><a href="#cb2-17" tabindex="-1"></a><span class="at">    </span><span class="fu">min</span><span class="kw">:</span><span class="at"> </span><span class="dv">5</span></span>
-<span id="cb2-18"><a href="#cb2-18" tabindex="-1"></a><span class="at">    </span><span class="fu">max</span><span class="kw">:</span><span class="at"> </span><span class="dv">7</span></span>
-<span id="cb2-19"><a href="#cb2-19" tabindex="-1"></a><span class="at">  </span><span class="fu">dh</span><span class="kw">:</span></span>
-<span id="cb2-20"><a href="#cb2-20" tabindex="-1"></a><span class="at">    </span><span class="fu">dist</span><span class="kw">:</span><span class="at"> lognormal</span></span>
-<span id="cb2-21"><a href="#cb2-21" tabindex="-1"></a><span class="at">    </span><span class="fu">mu</span><span class="kw">:</span><span class="at"> </span><span class="dv">8</span></span>
-<span id="cb2-22"><a href="#cb2-22" tabindex="-1"></a><span class="at">    </span><span class="fu">sd</span><span class="kw">:</span><span class="at"> </span><span class="fl">8.9</span></span>
-<span id="cb2-23"><a href="#cb2-23" tabindex="-1"></a><span class="at">  </span><span class="fu">dr</span><span class="kw">:</span><span class="at"> </span><span class="dv">187</span></span>
-<span id="cb2-24"><a href="#cb2-24" tabindex="-1"></a><span class="at">  </span><span class="fu">pea</span><span class="kw">:</span><span class="at"> </span><span class="fl">0.333</span></span>
-<span id="cb2-25"><a href="#cb2-25" tabindex="-1"></a><span class="at">  </span><span class="fu">psr</span><span class="kw">:</span><span class="at"> </span><span class="fl">0.95</span></span>
-<span id="cb2-26"><a href="#cb2-26" tabindex="-1"></a><span class="at">  </span><span class="fu">phr</span><span class="kw">:</span><span class="at"> </span><span class="fl">0.97</span></span></code></pre></div>
+<div class="sourceCode" id="cb6"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a><span class="fu">disease_params</span><span class="kw">:</span></span>
+<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a><span class="at">  </span><span class="fu">ts</span><span class="kw">:</span><span class="at"> </span><span class="fl">0.7</span></span>
+<span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a><span class="at">  </span><span class="fu">tv</span><span class="kw">:</span><span class="at"> </span><span class="fl">0.35</span></span>
+<span id="cb6-4"><a href="#cb6-4" tabindex="-1"></a><span class="at">  </span><span class="fu">ve</span><span class="kw">:</span></span>
+<span id="cb6-5"><a href="#cb6-5" tabindex="-1"></a><span class="at">    </span><span class="fu">dist</span><span class="kw">:</span><span class="at"> uniform</span></span>
+<span id="cb6-6"><a href="#cb6-6" tabindex="-1"></a><span class="at">    </span><span class="fu">min</span><span class="kw">:</span><span class="at"> </span><span class="fl">0.29</span></span>
+<span id="cb6-7"><a href="#cb6-7" tabindex="-1"></a><span class="at">    </span><span class="fu">max</span><span class="kw">:</span><span class="at"> </span><span class="fl">0.53</span></span>
+<span id="cb6-8"><a href="#cb6-8" tabindex="-1"></a><span class="at">  </span><span class="fu">dv</span><span class="kw">:</span><span class="at"> </span><span class="dv">158</span></span>
+<span id="cb6-9"><a href="#cb6-9" tabindex="-1"></a><span class="at">  </span><span class="fu">dp</span><span class="kw">:</span><span class="at"> </span><span class="dv">1</span></span>
+<span id="cb6-10"><a href="#cb6-10" tabindex="-1"></a><span class="at">  </span><span class="fu">de</span><span class="kw">:</span><span class="at"> </span><span class="dv">3</span></span>
+<span id="cb6-11"><a href="#cb6-11" tabindex="-1"></a><span class="at">  </span><span class="fu">da</span><span class="kw">:</span></span>
+<span id="cb6-12"><a href="#cb6-12" tabindex="-1"></a><span class="at">    </span><span class="fu">dist</span><span class="kw">:</span><span class="at"> uniform</span></span>
+<span id="cb6-13"><a href="#cb6-13" tabindex="-1"></a><span class="at">    </span><span class="fu">min</span><span class="kw">:</span><span class="at"> </span><span class="dv">3</span></span>
+<span id="cb6-14"><a href="#cb6-14" tabindex="-1"></a><span class="at">    </span><span class="fu">max</span><span class="kw">:</span><span class="at"> </span><span class="dv">7</span></span>
+<span id="cb6-15"><a href="#cb6-15" tabindex="-1"></a><span class="at">  </span><span class="fu">ds</span><span class="kw">:</span></span>
+<span id="cb6-16"><a href="#cb6-16" tabindex="-1"></a><span class="at">    </span><span class="fu">dist</span><span class="kw">:</span><span class="at"> uniform</span></span>
+<span id="cb6-17"><a href="#cb6-17" tabindex="-1"></a><span class="at">    </span><span class="fu">min</span><span class="kw">:</span><span class="at"> </span><span class="dv">5</span></span>
+<span id="cb6-18"><a href="#cb6-18" tabindex="-1"></a><span class="at">    </span><span class="fu">max</span><span class="kw">:</span><span class="at"> </span><span class="dv">7</span></span>
+<span id="cb6-19"><a href="#cb6-19" tabindex="-1"></a><span class="at">  </span><span class="fu">dh</span><span class="kw">:</span></span>
+<span id="cb6-20"><a href="#cb6-20" tabindex="-1"></a><span class="at">    </span><span class="fu">dist</span><span class="kw">:</span><span class="at"> lognormal</span></span>
+<span id="cb6-21"><a href="#cb6-21" tabindex="-1"></a><span class="at">    </span><span class="fu">mu</span><span class="kw">:</span><span class="at"> </span><span class="dv">8</span></span>
+<span id="cb6-22"><a href="#cb6-22" tabindex="-1"></a><span class="at">    </span><span class="fu">sd</span><span class="kw">:</span><span class="at"> </span><span class="fl">8.9</span></span>
+<span id="cb6-23"><a href="#cb6-23" tabindex="-1"></a><span class="at">  </span><span class="fu">dr</span><span class="kw">:</span><span class="at"> </span><span class="dv">187</span></span>
+<span id="cb6-24"><a href="#cb6-24" tabindex="-1"></a><span class="at">  </span><span class="fu">pea</span><span class="kw">:</span><span class="at"> </span><span class="fl">0.333</span></span>
+<span id="cb6-25"><a href="#cb6-25" tabindex="-1"></a><span class="at">  </span><span class="fu">psr</span><span class="kw">:</span><span class="at"> </span><span class="fl">0.95</span></span>
+<span id="cb6-26"><a href="#cb6-26" tabindex="-1"></a><span class="at">  </span><span class="fu">phr</span><span class="kw">:</span><span class="at"> </span><span class="fl">0.97</span></span></code></pre></div>
 <ul>
 <li>For a <code>uniform</code> distribution, you must specify
 <code>min</code> and <code>max</code> values.</li>
@@ -307,39 +404,39 @@ columns and values in the population mapping CSV file specified under
 <code>population_data</code>.</p>
 <p>The following example defines different parameters for different age
 groups:</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="fu">sub_disease_params</span><span class="kw">:</span></span>
-<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a><span class="at">    </span><span class="fu">age</span><span class="kw">:</span></span>
-<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a><span class="at">      </span><span class="fu">0-4</span><span class="kw">:</span></span>
-<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a><span class="at">        </span><span class="fu">dh</span><span class="kw">:</span><span class="at"> </span><span class="dv">4</span></span>
-<span id="cb3-5"><a href="#cb3-5" tabindex="-1"></a><span class="at">        </span><span class="fu">pea</span><span class="kw">:</span><span class="at"> </span><span class="fl">0.08</span></span>
-<span id="cb3-6"><a href="#cb3-6" tabindex="-1"></a><span class="at">        </span><span class="fu">psr</span><span class="kw">:</span><span class="at"> </span><span class="fl">0.9303</span></span>
-<span id="cb3-7"><a href="#cb3-7" tabindex="-1"></a><span class="at">        </span><span class="fu">phr</span><span class="kw">:</span><span class="at"> </span><span class="fl">0.9920</span></span>
-<span id="cb3-8"><a href="#cb3-8" tabindex="-1"></a><span class="at">      </span><span class="fu">5-11</span><span class="kw">:</span></span>
-<span id="cb3-9"><a href="#cb3-9" tabindex="-1"></a><span class="at">        </span><span class="fu">dh</span><span class="kw">:</span><span class="at"> </span><span class="dv">4</span></span>
-<span id="cb3-10"><a href="#cb3-10" tabindex="-1"></a><span class="at">        </span><span class="fu">pea</span><span class="kw">:</span><span class="at"> </span><span class="fl">0.08</span></span>
-<span id="cb3-11"><a href="#cb3-11" tabindex="-1"></a><span class="at">        </span><span class="fu">psr</span><span class="kw">:</span><span class="at"> </span><span class="fl">0.9726</span></span>
-<span id="cb3-12"><a href="#cb3-12" tabindex="-1"></a><span class="at">        </span><span class="fu">phr</span><span class="kw">:</span><span class="at"> </span><span class="fl">0.9920</span></span>
-<span id="cb3-13"><a href="#cb3-13" tabindex="-1"></a><span class="at">      </span><span class="fu">12-17</span><span class="kw">:</span></span>
-<span id="cb3-14"><a href="#cb3-14" tabindex="-1"></a><span class="at">        </span><span class="fu">dh</span><span class="kw">:</span><span class="at"> </span><span class="dv">4</span></span>
-<span id="cb3-15"><a href="#cb3-15" tabindex="-1"></a><span class="at">        </span><span class="fu">pea</span><span class="kw">:</span><span class="at"> </span><span class="fl">0.08</span></span>
-<span id="cb3-16"><a href="#cb3-16" tabindex="-1"></a><span class="at">        </span><span class="fu">psr</span><span class="kw">:</span><span class="at"> </span><span class="fl">0.9726</span></span>
-<span id="cb3-17"><a href="#cb3-17" tabindex="-1"></a><span class="at">        </span><span class="fu">phr</span><span class="kw">:</span><span class="at"> </span><span class="fl">0.9920</span></span>
-<span id="cb3-18"><a href="#cb3-18" tabindex="-1"></a><span class="at">      </span><span class="fu">18-49</span><span class="kw">:</span></span>
-<span id="cb3-19"><a href="#cb3-19" tabindex="-1"></a><span class="at">        </span><span class="fu">ts</span><span class="kw">:</span><span class="at"> </span><span class="fl">0.01</span></span>
-<span id="cb3-20"><a href="#cb3-20" tabindex="-1"></a><span class="at">        </span><span class="fu">dh</span><span class="kw">:</span><span class="at"> </span><span class="dv">6</span></span>
-<span id="cb3-21"><a href="#cb3-21" tabindex="-1"></a><span class="at">        </span><span class="fu">pea</span><span class="kw">:</span><span class="at"> </span><span class="fl">0.12</span></span>
-<span id="cb3-22"><a href="#cb3-22" tabindex="-1"></a><span class="at">        </span><span class="fu">psr</span><span class="kw">:</span><span class="at"> </span><span class="fl">0.9439</span></span>
-<span id="cb3-23"><a href="#cb3-23" tabindex="-1"></a><span class="at">        </span><span class="fu">phr</span><span class="kw">:</span><span class="at"> </span><span class="fl">0.9690</span></span>
-<span id="cb3-24"><a href="#cb3-24" tabindex="-1"></a><span class="at">      </span><span class="fu">50-64</span><span class="kw">:</span></span>
-<span id="cb3-25"><a href="#cb3-25" tabindex="-1"></a><span class="at">        </span><span class="fu">dh</span><span class="kw">:</span><span class="at"> </span><span class="dv">6</span></span>
-<span id="cb3-26"><a href="#cb3-26" tabindex="-1"></a><span class="at">        </span><span class="fu">pea</span><span class="kw">:</span><span class="at"> </span><span class="fl">0.05</span></span>
-<span id="cb3-27"><a href="#cb3-27" tabindex="-1"></a><span class="at">        </span><span class="fu">psr</span><span class="kw">:</span><span class="at"> </span><span class="fl">0.9894</span></span>
-<span id="cb3-28"><a href="#cb3-28" tabindex="-1"></a><span class="at">        </span><span class="fu">phr</span><span class="kw">:</span><span class="at"> </span><span class="fl">0.9425</span></span>
-<span id="cb3-29"><a href="#cb3-29" tabindex="-1"></a><span class="at">      </span><span class="fu">65+</span><span class="kw">:</span></span>
-<span id="cb3-30"><a href="#cb3-30" tabindex="-1"></a><span class="at">        </span><span class="fu">dh</span><span class="kw">:</span><span class="at"> </span><span class="dv">7</span></span>
-<span id="cb3-31"><a href="#cb3-31" tabindex="-1"></a><span class="at">        </span><span class="fu">pea</span><span class="kw">:</span><span class="at"> </span><span class="fl">0.05</span></span>
-<span id="cb3-32"><a href="#cb3-32" tabindex="-1"></a><span class="at">        </span><span class="fu">psr</span><span class="kw">:</span><span class="at"> </span><span class="fl">0.9091</span></span>
-<span id="cb3-33"><a href="#cb3-33" tabindex="-1"></a><span class="at">        </span><span class="fu">phr</span><span class="kw">:</span><span class="at"> </span><span class="fl">0.9227</span></span></code></pre></div>
+<div class="sourceCode" id="cb7"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a><span class="fu">sub_disease_params</span><span class="kw">:</span></span>
+<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a><span class="at">    </span><span class="fu">age</span><span class="kw">:</span></span>
+<span id="cb7-3"><a href="#cb7-3" tabindex="-1"></a><span class="at">      </span><span class="fu">0-4</span><span class="kw">:</span></span>
+<span id="cb7-4"><a href="#cb7-4" tabindex="-1"></a><span class="at">        </span><span class="fu">dh</span><span class="kw">:</span><span class="at"> </span><span class="dv">4</span></span>
+<span id="cb7-5"><a href="#cb7-5" tabindex="-1"></a><span class="at">        </span><span class="fu">pea</span><span class="kw">:</span><span class="at"> </span><span class="fl">0.08</span></span>
+<span id="cb7-6"><a href="#cb7-6" tabindex="-1"></a><span class="at">        </span><span class="fu">psr</span><span class="kw">:</span><span class="at"> </span><span class="fl">0.9303</span></span>
+<span id="cb7-7"><a href="#cb7-7" tabindex="-1"></a><span class="at">        </span><span class="fu">phr</span><span class="kw">:</span><span class="at"> </span><span class="fl">0.9920</span></span>
+<span id="cb7-8"><a href="#cb7-8" tabindex="-1"></a><span class="at">      </span><span class="fu">5-11</span><span class="kw">:</span></span>
+<span id="cb7-9"><a href="#cb7-9" tabindex="-1"></a><span class="at">        </span><span class="fu">dh</span><span class="kw">:</span><span class="at"> </span><span class="dv">4</span></span>
+<span id="cb7-10"><a href="#cb7-10" tabindex="-1"></a><span class="at">        </span><span class="fu">pea</span><span class="kw">:</span><span class="at"> </span><span class="fl">0.08</span></span>
+<span id="cb7-11"><a href="#cb7-11" tabindex="-1"></a><span class="at">        </span><span class="fu">psr</span><span class="kw">:</span><span class="at"> </span><span class="fl">0.9726</span></span>
+<span id="cb7-12"><a href="#cb7-12" tabindex="-1"></a><span class="at">        </span><span class="fu">phr</span><span class="kw">:</span><span class="at"> </span><span class="fl">0.9920</span></span>
+<span id="cb7-13"><a href="#cb7-13" tabindex="-1"></a><span class="at">      </span><span class="fu">12-17</span><span class="kw">:</span></span>
+<span id="cb7-14"><a href="#cb7-14" tabindex="-1"></a><span class="at">        </span><span class="fu">dh</span><span class="kw">:</span><span class="at"> </span><span class="dv">4</span></span>
+<span id="cb7-15"><a href="#cb7-15" tabindex="-1"></a><span class="at">        </span><span class="fu">pea</span><span class="kw">:</span><span class="at"> </span><span class="fl">0.08</span></span>
+<span id="cb7-16"><a href="#cb7-16" tabindex="-1"></a><span class="at">        </span><span class="fu">psr</span><span class="kw">:</span><span class="at"> </span><span class="fl">0.9726</span></span>
+<span id="cb7-17"><a href="#cb7-17" tabindex="-1"></a><span class="at">        </span><span class="fu">phr</span><span class="kw">:</span><span class="at"> </span><span class="fl">0.9920</span></span>
+<span id="cb7-18"><a href="#cb7-18" tabindex="-1"></a><span class="at">      </span><span class="fu">18-49</span><span class="kw">:</span></span>
+<span id="cb7-19"><a href="#cb7-19" tabindex="-1"></a><span class="at">        </span><span class="fu">ts</span><span class="kw">:</span><span class="at"> </span><span class="fl">0.01</span></span>
+<span id="cb7-20"><a href="#cb7-20" tabindex="-1"></a><span class="at">        </span><span class="fu">dh</span><span class="kw">:</span><span class="at"> </span><span class="dv">6</span></span>
+<span id="cb7-21"><a href="#cb7-21" tabindex="-1"></a><span class="at">        </span><span class="fu">pea</span><span class="kw">:</span><span class="at"> </span><span class="fl">0.12</span></span>
+<span id="cb7-22"><a href="#cb7-22" tabindex="-1"></a><span class="at">        </span><span class="fu">psr</span><span class="kw">:</span><span class="at"> </span><span class="fl">0.9439</span></span>
+<span id="cb7-23"><a href="#cb7-23" tabindex="-1"></a><span class="at">        </span><span class="fu">phr</span><span class="kw">:</span><span class="at"> </span><span class="fl">0.9690</span></span>
+<span id="cb7-24"><a href="#cb7-24" tabindex="-1"></a><span class="at">      </span><span class="fu">50-64</span><span class="kw">:</span></span>
+<span id="cb7-25"><a href="#cb7-25" tabindex="-1"></a><span class="at">        </span><span class="fu">dh</span><span class="kw">:</span><span class="at"> </span><span class="dv">6</span></span>
+<span id="cb7-26"><a href="#cb7-26" tabindex="-1"></a><span class="at">        </span><span class="fu">pea</span><span class="kw">:</span><span class="at"> </span><span class="fl">0.05</span></span>
+<span id="cb7-27"><a href="#cb7-27" tabindex="-1"></a><span class="at">        </span><span class="fu">psr</span><span class="kw">:</span><span class="at"> </span><span class="fl">0.9894</span></span>
+<span id="cb7-28"><a href="#cb7-28" tabindex="-1"></a><span class="at">        </span><span class="fu">phr</span><span class="kw">:</span><span class="at"> </span><span class="fl">0.9425</span></span>
+<span id="cb7-29"><a href="#cb7-29" tabindex="-1"></a><span class="at">      </span><span class="fu">65+</span><span class="kw">:</span></span>
+<span id="cb7-30"><a href="#cb7-30" tabindex="-1"></a><span class="at">        </span><span class="fu">dh</span><span class="kw">:</span><span class="at"> </span><span class="dv">7</span></span>
+<span id="cb7-31"><a href="#cb7-31" tabindex="-1"></a><span class="at">        </span><span class="fu">pea</span><span class="kw">:</span><span class="at"> </span><span class="fl">0.05</span></span>
+<span id="cb7-32"><a href="#cb7-32" tabindex="-1"></a><span class="at">        </span><span class="fu">psr</span><span class="kw">:</span><span class="at"> </span><span class="fl">0.9091</span></span>
+<span id="cb7-33"><a href="#cb7-33" tabindex="-1"></a><span class="at">        </span><span class="fu">phr</span><span class="kw">:</span><span class="at"> </span><span class="fl">0.9227</span></span></code></pre></div>
 <p>In this configuration, individuals in the “0-4” age group will have a
 <code>dh</code> (duration of hospitalization) of 4, overriding any
 global <code>dh</code> value. Similarly, the transmission rate
@@ -369,13 +466,13 @@ is not provided, a single checkpoint will be saved at the end of the
 simulation.</li>
 </ul>
 <p>Here is an example of how to configure checkpointing:</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a><span class="fu">simulation_config</span><span class="kw">:</span></span>
-<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a><span class="at">  </span><span class="fu">start_date</span><span class="kw">:</span><span class="at"> 01/01/2025</span></span>
-<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a><span class="at">  </span><span class="fu">length</span><span class="kw">:</span><span class="at"> </span><span class="dv">90</span></span>
-<span id="cb4-4"><a href="#cb4-4" tabindex="-1"></a><span class="at">  </span><span class="fu">nsim</span><span class="kw">:</span><span class="at"> </span><span class="dv">10</span></span>
-<span id="cb4-5"><a href="#cb4-5" tabindex="-1"></a><span class="at">  </span><span class="fu">random_seed</span><span class="kw">:</span><span class="at"> </span><span class="dv">42</span></span>
-<span id="cb4-6"><a href="#cb4-6" tabindex="-1"></a><span class="at">  </span><span class="fu">checkpoint_dir</span><span class="kw">:</span><span class="at"> </span><span class="st">"path/to/checkpoints"</span></span>
-<span id="cb4-7"><a href="#cb4-7" tabindex="-1"></a><span class="at">  </span><span class="fu">checkpoint_dates</span><span class="kw">:</span><span class="at"> </span><span class="kw">[</span><span class="st">"01/15/2025"</span><span class="kw">,</span><span class="at"> </span><span class="st">"01/30/2025"</span><span class="kw">]</span></span></code></pre></div>
+<div class="sourceCode" id="cb8"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a><span class="fu">simulation_config</span><span class="kw">:</span></span>
+<span id="cb8-2"><a href="#cb8-2" tabindex="-1"></a><span class="at">  </span><span class="fu">start_date</span><span class="kw">:</span><span class="at"> 01/01/2025</span></span>
+<span id="cb8-3"><a href="#cb8-3" tabindex="-1"></a><span class="at">  </span><span class="fu">length</span><span class="kw">:</span><span class="at"> </span><span class="dv">90</span></span>
+<span id="cb8-4"><a href="#cb8-4" tabindex="-1"></a><span class="at">  </span><span class="fu">nsim</span><span class="kw">:</span><span class="at"> </span><span class="dv">10</span></span>
+<span id="cb8-5"><a href="#cb8-5" tabindex="-1"></a><span class="at">  </span><span class="fu">random_seed</span><span class="kw">:</span><span class="at"> </span><span class="dv">42</span></span>
+<span id="cb8-6"><a href="#cb8-6" tabindex="-1"></a><span class="at">  </span><span class="fu">checkpoint_dir</span><span class="kw">:</span><span class="at"> </span><span class="st">"path/to/checkpoints"</span></span>
+<span id="cb8-7"><a href="#cb8-7" tabindex="-1"></a><span class="at">  </span><span class="fu">checkpoint_dates</span><span class="kw">:</span><span class="at"> </span><span class="kw">[</span><span class="st">"01/15/2025"</span><span class="kw">,</span><span class="at"> </span><span class="st">"01/30/2025"</span><span class="kw">]</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="restoring-from-a-checkpoint">Restoring from a Checkpoint<a class="anchor" aria-label="anchor" href="#restoring-from-a-checkpoint"></a>
@@ -384,11 +481,11 @@ simulation.</li>
 <code>restore_from</code> parameter in the
 <code>simulation_config</code> section. This will initialize the model
 with the state saved in the specified checkpoint file.</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a><span class="fu">simulation_config</span><span class="kw">:</span></span>
-<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a><span class="at">  </span><span class="fu">start_date</span><span class="kw">:</span><span class="at"> 01/30/2025</span><span class="co"> # Should be the next date of the checkpoint date</span></span>
-<span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a><span class="at">  </span><span class="fu">length</span><span class="kw">:</span><span class="at"> </span><span class="dv">60</span><span class="co"> # Remaining simulation length</span></span>
-<span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a><span class="at">  </span><span class="fu">nsim</span><span class="kw">:</span><span class="at"> </span><span class="dv">10</span></span>
-<span id="cb5-5"><a href="#cb5-5" tabindex="-1"></a><span class="at">  </span><span class="fu">restore_from</span><span class="kw">:</span><span class="at"> </span><span class="st">"path/to/checkpoints/checkpoint_2025-01-30_instance_1.Rda"</span></span></code></pre></div>
+<div class="sourceCode" id="cb9"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a><span class="fu">simulation_config</span><span class="kw">:</span></span>
+<span id="cb9-2"><a href="#cb9-2" tabindex="-1"></a><span class="at">  </span><span class="fu">start_date</span><span class="kw">:</span><span class="at"> 01/30/2025</span><span class="co"> # Should be the next date of the checkpoint date</span></span>
+<span id="cb9-3"><a href="#cb9-3" tabindex="-1"></a><span class="at">  </span><span class="fu">length</span><span class="kw">:</span><span class="at"> </span><span class="dv">60</span><span class="co"> # Remaining simulation length</span></span>
+<span id="cb9-4"><a href="#cb9-4" tabindex="-1"></a><span class="at">  </span><span class="fu">nsim</span><span class="kw">:</span><span class="at"> </span><span class="dv">10</span></span>
+<span id="cb9-5"><a href="#cb9-5" tabindex="-1"></a><span class="at">  </span><span class="fu">restore_from</span><span class="kw">:</span><span class="at"> </span><span class="st">"path/to/checkpoints/checkpoint_2025-01-30_instance_1.Rda"</span></span></code></pre></div>
 <p>When restoring, the <code>start_date</code> should correspond to the
 next date of the checkpoint, and the <code>length</code> should be the
 remaining duration of the simulation. Note that each instance of a

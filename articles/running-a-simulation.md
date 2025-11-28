@@ -57,7 +57,7 @@ simulation_config:
   nsim: 1
 ```
 
-## Running the Simulation
+### Running the Simulation
 
 Once we have the path to the configuration file, the simulation can be
 run using the

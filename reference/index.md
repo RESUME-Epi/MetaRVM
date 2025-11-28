@@ -5,7 +5,7 @@
 Core simulation and modeling functions
 
 - [`metaRVM()`](https://RESUME-Epi.github.io/MetaRVM/reference/metaRVM.md)
-  : Run MetaRVM Epidemic Simulation
+  : Run a MetaRVM epidemic simulation
 - [`meta_sim()`](https://RESUME-Epi.github.io/MetaRVM/reference/meta_sim.md)
   : Metapopulation Respiratory Virus Model Simulator
 
