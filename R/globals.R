@@ -1,1 +1,2 @@
 utils::globalVariables(c(".", "time", "disease_state", "population_id", "age", "race", "zone", "day", "value", "instance", "date", "N", "S0", "I0", "V0", "R0"))
+utils::globalVariables(c("initial<-", "user", "update<-", "step", "interpolate", "j", "rbinom", "output<-"))
