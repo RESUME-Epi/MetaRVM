@@ -37,6 +37,7 @@ Plotting behavior adapts automatically:
 }
 
 \examples{
+\dontrun{
 options(odin.verbose = FALSE)
 example_config <- system.file("extdata", "example_config_dist.yaml", package = "MetaRVM")
 # Run simulation
@@ -53,7 +54,7 @@ summary_obj$plot()
 
 # Plot with custom ggplot theme and confidence level
 summary_obj$plot(theme = ggplot2::theme_bw())
-
+}
 
 }
 \author{

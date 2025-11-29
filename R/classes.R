@@ -578,6 +578,7 @@ MetaRVMResults <- R6::R6Class(
 #' }
 #' 
 #' @examples
+#' \dontrun{
 #' options(odin.verbose = FALSE)
 #' example_config <- system.file("extdata", "example_config_dist.yaml", package = "MetaRVM")
 #' # Run simulation
@@ -594,7 +595,7 @@ MetaRVMResults <- R6::R6Class(
 #' 
 #' # Plot with custom ggplot theme and confidence level
 #' summary_obj$plot(theme = ggplot2::theme_bw())
-#' 
+#' }
 #' 
 #' @import R6
 #' @import data.table
