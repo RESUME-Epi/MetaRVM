@@ -120,7 +120,7 @@ Disease parameters can be specified as distributions for stochastic modeling:
 }
 
 \examples{
-
+options(odin.verbose = FALSE)
 example_config <- system.file("extdata", "example_config.yaml", package = "MetaRVM")
 # Parse configuration file and return list (backward compatible)
 config <- parse_config(example_config)

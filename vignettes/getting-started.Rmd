@@ -34,6 +34,7 @@ devtools::install_github("RESUME-Epi/MetaRVM")
 ```{r setup, eval=FALSE}
 library(MetaRVM)
 library(ggplot2)
+options(odin.verbose = FALSE)
 ```
 
 ## Basic Example

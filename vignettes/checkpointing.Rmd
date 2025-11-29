@@ -43,6 +43,7 @@ For the purpose of this example, we will set the checkpointed directory to be a 
 
 ```{r setup}
 library(MetaRVM)
+options(odin.verbose = FALSE)
 
 # Get the example configuration file
 example_config <- system.file("extdata", "example_config_checkpoint.yaml", 
@@ -109,7 +110,7 @@ print(head(results$results, 10))
 
 We'll create a new configuration that restores from the checkpoint. We need to provide the checkpoint file name, and a start date which should be the next day of the end date in the previous run.
 
-```{r resume_from_checkpoint, eval = F}
+```{r resume_from_checkpoint, eval = T}
 # Get the first checkpoint file
 checkpoint_files_full <- list.files(checkpoint_dir, 
                                     pattern = "^chk_.*\\.Rda$",
@@ -121,7 +122,7 @@ if (length(checkpoint_files_full) > 0) {
   cat(checkpoint_to_restore, "\n\n")
   
   new_start_date <- "12/30/2024"
-  yml_tmp <- copy(yml)
+  yml_tmp <- data.table::copy(yml)
   yml_tmp$simulation_config$start_date <- new_start_date
   yml_tmp$simulation_config$restore_from <- checkpoint_to_restore
   yml_tmp$population_data$initialization <- NULL # ensure that we don't want to reinitialize the population from the initialization file
@@ -141,6 +142,20 @@ if (length(checkpoint_files_full) > 0) {
 } else {
   cat("No checkpoint files found to resume from.\n")
 }
+```
+
+### Plot
+
+```{r plot, eval = T, fig.height = 6, fig.width = 8, fig.align = "center"}
+run1_hosp_sum <- results$results[disease_state == "H", .(total = sum(value)), by = "date"]
+run2_hosp_sum <- results_resumed$results[disease_state == "H", .(total = sum(value)), by = "date"]
+
+library(ggplot2)
+ggplot(rbind(run1_hosp_sum, run2_hosp_sum), aes(date, total)) +
+  geom_line(, color = "red") +
+  geom_vline(xintercept = as.Date("2024-12-29"), linetype = "dashed") +
+  labs(y = "Hospitalizations", x = "Date") + theme_bw()
+
 ```
 
 ## Understanding Checkpoint Files

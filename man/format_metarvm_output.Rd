@@ -7,7 +7,7 @@
 format_metarvm_output(sim_output, config)
 }
 \arguments{
-\item{sim_output}{data.table containing raw simulation output}
+\item{sim_output}{data.table containing raw simulation output from \code{\link{meta_sim}}}
 
 \item{config}{MetaRVMConfig object or config list containing parameters}
 }

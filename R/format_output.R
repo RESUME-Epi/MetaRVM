@@ -7,7 +7,7 @@
 #'    - Regular states (S, E, I, etc.): Keep values at integer time points
 #'    - New count states (n_ prefix): Sum pairs to get daily counts
 #'
-#' @param sim_output data.table containing raw simulation output
+#' @param sim_output data.table containing raw simulation output from \code{\link{meta_sim}}
 #' @param config MetaRVMConfig object or config list containing parameters
 #' @return data.table with formatted output including calendar dates and demographics
 #' 

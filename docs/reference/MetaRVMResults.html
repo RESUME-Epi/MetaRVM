@@ -258,23 +258,10 @@ geographic zone categories, plus method chaining for streamlined analysis workfl
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">example_config</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, <span class="st">"example_config.yaml"</span>, package <span class="op">=</span> <span class="st">"MetaRVM"</span><span class="op">)</span></span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">options</a></span><span class="op">(</span>odin.verbose <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">example_config</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, <span class="st">"example_config.yaml"</span>, package <span class="op">=</span> <span class="st">"MetaRVM"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="co"># Run simulation</span></span></span>
 <span class="r-in"><span><span class="va">results_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="metaRVM.html">metaRVM</a></span><span class="op">(</span><span class="va">example_config</span><span class="op">)</span></span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Generating model in c</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> Re-compiling <span style="color: #0000BB;">odin838871ae</span> (debug build)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">──</span> <span style="color: #00BBBB;">R CMD INSTALL</span> <span style="color: #00BBBB;">───────────────────────────────────────────────────────────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> * installing *source* package ‘odin838871ae’ ...</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> ** using staged installation</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> ** libs</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> using C compiler: ‘gcc (Ubuntu 13.3.0-6ubuntu2~24.04) 13.3.0’</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> gcc -I"/usr/share/R/include" -DNDEBUG       -fpic  -g -O2 -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -ffile-prefix-map=/build/r-base-FPSnzf/r-base-4.3.3=. -fstack-protector-strong -fstack-clash-protection -Wformat -Werror=format-security -fcf-protection -fdebug-prefix-map=/build/r-base-FPSnzf/r-base-4.3.3=/usr/src/r-base-4.3.3-2build2 -Wdate-time -D_FORTIFY_SOURCE=3  -UNDEBUG -Wall -pedantic -g -O0 -fdiagnostics-color=always -c odin.c -o odin.o</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> gcc -I"/usr/share/R/include" -DNDEBUG       -fpic  -g -O2 -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -ffile-prefix-map=/build/r-base-FPSnzf/r-base-4.3.3=. -fstack-protector-strong -fstack-clash-protection -Wformat -Werror=format-security -fcf-protection -fdebug-prefix-map=/build/r-base-FPSnzf/r-base-4.3.3=/usr/src/r-base-4.3.3-2build2 -Wdate-time -D_FORTIFY_SOURCE=3  -UNDEBUG -Wall -pedantic -g -O0 -fdiagnostics-color=always -c registration.c -o registration.o</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> gcc -shared -L/usr/lib/R/lib -Wl,-Bsymbolic-functions -flto=auto -ffat-lto-objects -Wl,-z,relro -o odin838871ae.so odin.o registration.o -L/usr/lib/R/lib -lR</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> installing to /tmp/Rtmp3S5FFQ/devtools_install_15232f690a72ec/00LOCK-file15232f5a6a9bb8/00new/odin838871ae/libs</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> ** checking absolute paths in shared objects and dynamic libraries</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> * DONE (odin838871ae)</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> Loading <span style="color: #0000BB;">odin838871ae</span></span>
 <span class="r-in"><span><span class="co"># Access formatted results</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">results_obj</span><span class="op">$</span><span class="va">results</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>          date    age   race   zone disease_state        value instance</span>
@@ -289,14 +276,14 @@ geographic zone categories, plus method chaining for streamlined analysis workfl
 <span class="r-in"><span><span class="co"># Subset data with multiple filters</span></span></span>
 <span class="r-in"><span><span class="va">subset_data</span> <span class="op">&lt;-</span> <span class="va">results_obj</span><span class="op">$</span><span class="fu">subset_data</span><span class="op">(</span></span></span>
 <span class="r-in"><span>  age <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"18-49"</span>, <span class="st">"50-64"</span><span class="op">)</span>, </span></span>
-<span class="r-in"><span>  disease_states <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"H"</span>, <span class="st">"D"</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  disease_state <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"H"</span>, <span class="st">"D"</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>  date_range <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/as.Date.html" class="external-link">as.Date</a></span><span class="op">(</span><span class="st">"2024-01-01"</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/as.Date.html" class="external-link">as.Date</a></span><span class="op">(</span><span class="st">"2024-02-01"</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 19723 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 19754 </span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Method chaining for analysis and visualization</span></span></span>
-<span class="r-in"><span><span class="va">results_obj</span><span class="op">$</span><span class="fu">summarize</span><span class="op">(</span></span></span>
+<span class="r-in"><span><span class="va">results_obj</span><span class="op">$</span><span class="fu">subset_data</span><span class="op">(</span>disease_state <span class="op">=</span> <span class="st">"H"</span><span class="op">)</span><span class="op">$</span><span class="fu">summarize</span><span class="op">(</span></span></span>
 <span class="r-in"><span>  group_by <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"age"</span>, <span class="st">"race"</span><span class="op">)</span>, </span></span>
 <span class="r-in"><span>  stats <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"median"</span>, <span class="st">"quantile"</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>  quantiles <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.25</span>, <span class="fl">0.75</span><span class="op">)</span></span></span>
@@ -315,7 +302,7 @@ geographic zone categories, plus method chaining for streamlined analysis workfl
 
 
     <footer><div class="pkgdown-footer-left">
-  <p>Developed by Arindam Fadikar, Charles Macal.</p>
+  <p>Developed by Arindam Fadikar.</p>
 </div>
 
 <div class="pkgdown-footer-right">

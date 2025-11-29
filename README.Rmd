@@ -29,7 +29,7 @@ This is a compartmental model simulation code for generic respiratory virus dise
 
 The `MetaRVM` model builds upon the SEIR framework by introducing additional compartments to capture more detailed dynamics of disease progression, while allowing for heterogeneous mixing among different demographic stratum. These generalizations allow the model to account for factors such as vaccinations, hospitalizations, and fatalities.
 
-![Model schematics](man/figures/GIRD-Vensim.svg)
+![Model schematics](man/figures/model.png)
 
 For more details, please refer to the paper: [Developing and deploying a use-inspired metapopulation modeling framework for detailed tracking of stratified health outcomes](https://www.medrxiv.org/content/10.1101/2025.05.05.25327021v1.full-text)
 

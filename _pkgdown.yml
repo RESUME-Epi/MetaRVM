@@ -6,7 +6,21 @@ template:
     border-radius: 0.25rem
     btn-border-radius: 0.25rem
   light-switch: false
-  logo: man/figures/logo.png
+  logo: man/figures/metaRVM_logo.png
+
+# template:
+#   bootstrap: 5
+#   math-rendering: mathjax
+#   light-switch: true
+#   bslib:
+#     primary: "#0054AD"
+#     border-radius: 0.5rem
+#     btn-border-radius: 0.25rem
+#     danger: "#A6081A"
+#   logo: man/figures/logo.png
+
+# development:
+#   mode: auto
   
 home:
   title: MetaRVM - Meta-population Respiratory Virus Model

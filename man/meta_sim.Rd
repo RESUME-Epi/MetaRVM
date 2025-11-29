@@ -255,7 +255,7 @@ When do_chk = TRUE, the function saves a checkpoint file containing:
 }
 
 \examples{
-
+options(odin.verbose = FALSE)
 # Basic deterministic simulation
 N_pop <- 2
 nsteps <- 400

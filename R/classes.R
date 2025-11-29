@@ -211,6 +211,7 @@ MetaRVMConfig <- R6::R6Class(
 #' geographic zone categories, plus method chaining for streamlined analysis workflows.
 #' 
 #' @examples
+#' options(odin.verbose = FALSE)
 #' example_config <- system.file("extdata", "example_config.yaml", package = "MetaRVM")
 #' # Run simulation
 #' results_obj <- metaRVM(example_config)
@@ -220,12 +221,12 @@ MetaRVMConfig <- R6::R6Class(
 #' # Subset data with multiple filters
 #' subset_data <- results_obj$subset_data(
 #'   age = c("18-49", "50-64"), 
-#'   disease_states = c("H", "D"),
+#'   disease_state = c("H", "D"),
 #'   date_range = c(as.Date("2024-01-01"), as.Date("2024-02-01"))
 #' )
 #' 
 #' # Method chaining for analysis and visualization
-#' results_obj$summarize(
+#' results_obj$subset_data(disease_state = "H")$summarize(
 #'   group_by = c("age", "race"), 
 #'   stats = c("median", "quantile"),
 #'   quantiles = c(0.25, 0.75)
@@ -577,11 +578,12 @@ MetaRVMResults <- R6::R6Class(
 #' }
 #' 
 #' @examples
+#' options(odin.verbose = FALSE)
 #' example_config <- system.file("extdata", "example_config_dist.yaml", package = "MetaRVM")
 #' # Run simulation
 #' results <- metaRVM(example_config)
 #' # Typically created through method chaining
-#' summary_obj <- results$summarize(
+#' summary_obj <- results$subset_data(disease_state = "H")$summarize(
 #'   group_by = c("age", "race"), 
 #'   stats = c("median", "quantile"),
 #'   quantiles = c(0.25, 0.75)
@@ -590,11 +592,9 @@ MetaRVMResults <- R6::R6Class(
 #' # Direct plotting
 #' summary_obj$plot()
 #' 
-#' # Plot with custom theme and confidence level
-#' summary_obj$plot(ci_level = 0.5, theme = ggplot2::theme_bw())
+#' # Plot with custom ggplot theme and confidence level
+#' summary_obj$plot(theme = ggplot2::theme_bw())
 #' 
-#' # Complete method chaining workflow
-#' results$summarize(group_by = "age", stats = c("median", "quantile"))$plot()
 #' 
 #' @import R6
 #' @import data.table

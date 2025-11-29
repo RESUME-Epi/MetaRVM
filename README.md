@@ -29,7 +29,7 @@ demographic stratum. These generalizations allow the model to account
 for factors such as vaccinations, hospitalizations, and fatalities.
 
 <figure>
-<img src="man/figures/GIRD-Vensim.svg" alt="Model schematics" />
+<img src="man/figures/model.png" alt="Model schematics" />
 <figcaption aria-hidden="true">Model schematics</figcaption>
 </figure>
 

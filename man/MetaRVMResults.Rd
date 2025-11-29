@@ -15,6 +15,7 @@ methods for flexible data summarization across any combination of age, race, and
 geographic zone categories, plus method chaining for streamlined analysis workflows.
 }
 \examples{
+options(odin.verbose = FALSE)
 example_config <- system.file("extdata", "example_config.yaml", package = "MetaRVM")
 # Run simulation
 results_obj <- metaRVM(example_config)
@@ -24,12 +25,12 @@ head(results_obj$results)
 # Subset data with multiple filters
 subset_data <- results_obj$subset_data(
   age = c("18-49", "50-64"), 
-  disease_states = c("H", "D"),
+  disease_state = c("H", "D"),
   date_range = c(as.Date("2024-01-01"), as.Date("2024-02-01"))
 )
 
 # Method chaining for analysis and visualization
-results_obj$summarize(
+results_obj$subset_data(disease_state = "H")$summarize(
   group_by = c("age", "race"), 
   stats = c("median", "quantile"),
   quantiles = c(0.25, 0.75)

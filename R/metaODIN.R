@@ -173,7 +173,7 @@
 #' }
 #'
 #' @examples
-#'
+#' options(odin.verbose = FALSE)
 #' # Basic deterministic simulation
 #' N_pop <- 2
 #' nsteps <- 400

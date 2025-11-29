@@ -68,6 +68,7 @@ Once we have the path to the configuration file, the simulation can be run using
 ```{r, results='hide'}
 # Load the metaRVM library
 library(MetaRVM)
+options(odin.verbose = FALSE)
 
 # Run the simulation
 sim_out <- metaRVM(yaml_file)
