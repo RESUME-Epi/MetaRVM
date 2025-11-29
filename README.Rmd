@@ -42,6 +42,9 @@ Full documentation is available at: https://RESUME-Epi.github.io/MetaRVM/
 ## Quickstart guide
 
 ### Installation
+```r
+install.packages("MetaRVM")
+```
 
 The development version of `MetaRVM` can be installed from [GitHub](https://github.com/) with:
 
