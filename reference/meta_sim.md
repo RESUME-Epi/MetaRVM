@@ -28,6 +28,7 @@ meta_sim(
   m_weekday_night,
   m_weekend_day,
   m_weekend_night,
+  start_day = 0,
   delta_t,
   vac_mat,
   dv,
@@ -137,6 +138,11 @@ meta_sim(
 
   Numeric matrix (N_pop × N_pop). Contact mixing matrix for weekend
   nighttime (6 PM - 6 AM) interactions
+
+- start_day:
+
+  Start day of the week expressed as an integer value between 0 and 6, 0
+  being Monday. Default simulation start day is Monday.
 
 - delta_t:
 

@@ -53,7 +53,7 @@ example_config <- system.file("extdata", "example_config_checkpoint.yaml",
 # Create a temporary directory for checkpoints
 checkpoint_dir <- tempdir()
 cat("Checkpoint directory:", checkpoint_dir, "\n")
-#> Checkpoint directory: /tmp/RtmplHGwBy
+#> Checkpoint directory: /tmp/RtmpdUBuPC
 ```
 
 ### Create a Configuration with Checkpointing
@@ -111,12 +111,12 @@ print(head(results$results, 10))
 #>           date    age   race   zone disease_state        value instance
 #>         <Date> <char> <char> <char>        <char>        <num>    <int>
 #>  1: 2024-10-01   0-17      A     11             D 2.252583e-04        1
-#>  2: 2024-10-01   0-17      A     11             E 1.305178e+01        1
+#>  2: 2024-10-01   0-17      A     11             E 1.346375e+01        1
 #>  3: 2024-10-01   0-17      A     11             H 2.304447e-01        1
-#>  4: 2024-10-01   0-17      A     11         I_all 2.731688e+01        1
-#>  5: 2024-10-01   0-17      A     11       I_asymp 3.227854e-01        1
-#>  6: 2024-10-01   0-17      A     11         I_eff 2.647304e+01        1
-#>  7: 2024-10-01   0-17      A     11     I_presymp 7.531660e-01        1
+#>  4: 2024-10-01   0-17      A     11         I_all 2.739162e+01        1
+#>  5: 2024-10-01   0-17      A     11       I_asymp 3.452058e-01        1
+#>  6: 2024-10-01   0-17      A     11         I_eff 2.653406e+01        1
+#>  7: 2024-10-01   0-17      A     11     I_presymp 8.054801e-01        1
 #>  8: 2024-10-01   0-17      A     11        I_symp 2.624093e+01        1
 #>  9: 2024-10-01   0-17      A     11             P 3.074200e+04        1
 #> 10: 2024-10-01   0-17      A     11             R 1.148308e+01        1
@@ -160,7 +160,7 @@ if (length(checkpoint_files_full) > 0) {
 } else {
   cat("No checkpoint files found to resume from.\n")
 }
-#> /tmp/RtmplHGwBy/chk_2024-12-29_1.Rda 
+#> /tmp/RtmpdUBuPC/chk_2024-12-29_1.Rda 
 #> 
 #> Number of instances: 1 
 #> Date range: 2024-12-30 to 2025-03-29

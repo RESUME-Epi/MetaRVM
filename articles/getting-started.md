@@ -96,8 +96,8 @@ library(MetaRVM)
 sim_out <- metaRVM(yaml_file)
 #> Loading required namespace: pkgbuild
 #> Generating model in c
-#> ℹ Re-compiling odin3a2926f6 (debug build)
-#> ℹ Loading odin3a2926f6
+#> ℹ Re-compiling odinc0fb853b (debug build)
+#> ℹ Loading odinc0fb853b
 ```
 
 ``` r
@@ -117,7 +117,7 @@ head(sim_out$results)
 #> 3: 2023-10-01   0-17      A     11             H 2.304447e-01        1
 #> 4: 2023-10-01   0-17      A     11         I_all 2.731688e+01        1
 #> 5: 2023-10-01   0-17      A     11       I_asymp 3.227854e-01        1
-#> 6: 2023-10-01   0-17      A     11         I_eff 2.647304e+01        1
+#> 6: 2023-10-01   0-17      A     11         I_eff 2.476245e+01        1
 ```
 
 For more details on running `metaRVM`, refer to the [Running

@@ -147,7 +147,7 @@ head(results$results)
 #> 3: 2023-10-01   0-17      A     11             H 2.304447e-01        1
 #> 4: 2023-10-01   0-17      A     11         I_all 2.731688e+01        1
 #> 5: 2023-10-01   0-17      A     11       I_asymp 3.227854e-01        1
-#> 6: 2023-10-01   0-17      A     11         I_eff 2.647304e+01        1
+#> 6: 2023-10-01   0-17      A     11         I_eff 2.476245e+01        1
 
 # Summarize and plot hospitalizations and deaths by age and race
 results$summarize(
