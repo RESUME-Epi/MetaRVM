@@ -22,6 +22,7 @@ meta_sim(
   m_weekday_night,
   m_weekend_day,
   m_weekend_night,
+  start_day = 0,
   delta_t,
   vac_mat,
   dv,
@@ -92,6 +93,9 @@ weekend daytime (6 AM - 6 PM) interactions}
 
 \item{m_weekend_night}{Numeric matrix (N_pop × N_pop). Contact mixing matrix for
 weekend nighttime (6 PM - 6 AM) interactions}
+
+\item{start_day}{Start day of the week expressed as an integer value between 0 and 6, 0 being
+Monday. Default simulation start day is Monday.}
 
 \item{delta_t}{Positive numeric. Discrete time increment in days (typically 0.5)}
 

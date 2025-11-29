@@ -93,7 +93,7 @@ package is installed.</p>
 <code class="sourceCode R"><span><span class="co"># Locate the example YAML configuration file</span></span>
 <span><span class="va">yaml_file</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, <span class="st">"example_config.yaml"</span>, package <span class="op">=</span> <span class="st">"MetaRVM"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">yaml_file</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] "/tmp/RtmpctkTqu/temp_libpathf0c6a6db26be/MetaRVM/extdata/example_config.yaml"</span></span></code></pre></div>
+<span><span class="co">#&gt; [1] "/tmp/RtmpctkTqu/temp_libpathf0c6a731fe623/MetaRVM/extdata/example_config.yaml"</span></span></code></pre></div>
 <p>The <code>yaml_file</code> variable now holds the full path to the
 example configuration file. This file is set up to use the other example
 data files (also in the <code>extdata</code> directory) with relative
@@ -160,7 +160,7 @@ file path, or by creating a <code>MetaRVMConfig</code> object.</p>
 <span><span class="va">config_obj</span></span>
 <span><span class="co">#&gt; MetaRVM Configuration Object</span></span>
 <span><span class="co">#&gt; ============================</span></span>
-<span><span class="co">#&gt; Config file: /tmp/RtmpctkTqu/temp_libpathf0c6a6db26be/MetaRVM/extdata/example_config.yaml </span></span>
+<span><span class="co">#&gt; Config file: /tmp/RtmpctkTqu/temp_libpathf0c6a731fe623/MetaRVM/extdata/example_config.yaml </span></span>
 <span><span class="co">#&gt; Parameters: 40 </span></span>
 <span><span class="co">#&gt; Parameter names (first 10): N_pop, pop_map, S_ini, E_ini, I_asymp_ini, I_presymp_ini, I_symp_ini, H_ini, D_ini, P_ini ...</span></span>
 <span><span class="co">#&gt; Population groups: 24 </span></span>
@@ -245,7 +245,7 @@ attributes, and stored in a data frame called results:</p>
 <span><span class="co">#&gt; 3: 2023-10-01   0-17      A     11             H 2.304447e-01        1</span></span>
 <span><span class="co">#&gt; 4: 2023-10-01   0-17      A     11         I_all 2.731688e+01        1</span></span>
 <span><span class="co">#&gt; 5: 2023-10-01   0-17      A     11       I_asymp 3.227854e-01        1</span></span>
-<span><span class="co">#&gt; 6: 2023-10-01   0-17      A     11         I_eff 2.647304e+01        1</span></span>
+<span><span class="co">#&gt; 6: 2023-10-01   0-17      A     11         I_eff 2.476245e+01        1</span></span>
 <span></span>
 <span><span class="co"># Check unique values for key variables</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"Disease states:"</span>, <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="va">sim_out</span><span class="op">$</span><span class="va">results</span><span class="op">$</span><span class="va">disease_state</span><span class="op">)</span>, collapse <span class="op">=</span> <span class="st">", "</span><span class="op">)</span>, <span class="st">"\n"</span><span class="op">)</span></span>
@@ -270,11 +270,11 @@ class <code>MetaRVMResults</code>.</p>
 <span><span class="co">#&gt;    4: 2023-10-01   0-17      D     11             H  1.4867401        1</span></span>
 <span><span class="co">#&gt;    5: 2023-10-01  18-64      A     11             H  0.3047817        1</span></span>
 <span><span class="co">#&gt;   ---                                                                  </span></span>
-<span><span class="co">#&gt; 3596: 2024-02-27  18-64      D     22             H  3.0395514        1</span></span>
-<span><span class="co">#&gt; 3597: 2024-02-27    65+      A     22             H  1.1267728        1</span></span>
-<span><span class="co">#&gt; 3598: 2024-02-27    65+      B     22             H  1.8170253        1</span></span>
-<span><span class="co">#&gt; 3599: 2024-02-27    65+      C     22             H 10.5249478        1</span></span>
-<span><span class="co">#&gt; 3600: 2024-02-27    65+      D     22             H 11.8155938        1</span></span>
+<span><span class="co">#&gt; 3596: 2024-02-27  18-64      D     22             H  3.0363099        1</span></span>
+<span><span class="co">#&gt; 3597: 2024-02-27    65+      A     22             H  1.1367252        1</span></span>
+<span><span class="co">#&gt; 3598: 2024-02-27    65+      B     22             H  1.8119748        1</span></span>
+<span><span class="co">#&gt; 3599: 2024-02-27    65+      C     22             H 10.5239938        1</span></span>
+<span><span class="co">#&gt; 3600: 2024-02-27    65+      D     22             H 11.8169822        1</span></span>
 <span></span>
 <span><span class="co"># Subset by multiple demographic categories</span></span>
 <span><span class="va">elderly_data</span> <span class="op">&lt;-</span> <span class="va">sim_out</span><span class="op">$</span><span class="fu">subset_data</span><span class="op">(</span></span>
@@ -290,11 +290,11 @@ class <code>MetaRVMResults</code>.</p>
 <span><span class="co">#&gt;    4: 2023-10-01    65+      B     11             H 8.920441e-02        1</span></span>
 <span><span class="co">#&gt;    5: 2023-10-01    65+      C     11             D 8.719675e-05        1</span></span>
 <span><span class="co">#&gt;   ---                                                                    </span></span>
-<span><span class="co">#&gt; 2396: 2024-02-27    65+      B     22             H 1.817025e+00        1</span></span>
-<span><span class="co">#&gt; 2397: 2024-02-27    65+      C     22             D 7.200535e+01        1</span></span>
-<span><span class="co">#&gt; 2398: 2024-02-27    65+      C     22             H 1.052495e+01        1</span></span>
-<span><span class="co">#&gt; 2399: 2024-02-27    65+      D     22             D 8.575556e+01        1</span></span>
-<span><span class="co">#&gt; 2400: 2024-02-27    65+      D     22             H 1.181559e+01        1</span></span>
+<span><span class="co">#&gt; 2396: 2024-02-27    65+      B     22             H 1.811975e+00        1</span></span>
+<span><span class="co">#&gt; 2397: 2024-02-27    65+      C     22             D 7.200555e+01        1</span></span>
+<span><span class="co">#&gt; 2398: 2024-02-27    65+      C     22             H 1.052399e+01        1</span></span>
+<span><span class="co">#&gt; 2399: 2024-02-27    65+      D     22             D 8.575588e+01        1</span></span>
+<span><span class="co">#&gt; 2400: 2024-02-27    65+      D     22             H 1.181698e+01        1</span></span>
 <span></span>
 <span><span class="co"># Specific date range</span></span>
 <span><span class="va">peak_period</span> <span class="op">&lt;-</span> <span class="va">sim_out</span><span class="op">$</span><span class="fu">subset_data</span><span class="op">(</span></span>
@@ -312,11 +312,11 @@ class <code>MetaRVMResults</code>.</p>
 <span><span class="co">#&gt;    4: 2023-10-01   0-17      D     11             H  1.4867401        1</span></span>
 <span><span class="co">#&gt;    5: 2023-10-01  18-64      A     11             H  0.3047817        1</span></span>
 <span><span class="co">#&gt;   ---                                                                  </span></span>
-<span><span class="co">#&gt; 2204: 2023-12-31  18-64      D     22             H 10.4962344        1</span></span>
-<span><span class="co">#&gt; 2205: 2023-12-31    65+      A     22             H  1.4359176        1</span></span>
-<span><span class="co">#&gt; 2206: 2023-12-31    65+      B     22             H  4.5128832        1</span></span>
-<span><span class="co">#&gt; 2207: 2023-12-31    65+      C     22             H 55.2581815        1</span></span>
-<span><span class="co">#&gt; 2208: 2023-12-31    65+      D     22             H 74.6513628        1</span></span></code></pre></div>
+<span><span class="co">#&gt; 2204: 2023-12-31  18-64      D     22             H 10.4461399        1</span></span>
+<span><span class="co">#&gt; 2205: 2023-12-31    65+      A     22             H  1.4218017        1</span></span>
+<span><span class="co">#&gt; 2206: 2023-12-31    65+      B     22             H  4.4579963        1</span></span>
+<span><span class="co">#&gt; 2207: 2023-12-31    65+      C     22             H 55.2328788        1</span></span>
+<span><span class="co">#&gt; 2208: 2023-12-31    65+      D     22             H 74.7225667        1</span></span></code></pre></div>
 </div>
 </div>
 <div class="section level2">

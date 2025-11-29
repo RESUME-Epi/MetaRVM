@@ -114,6 +114,17 @@ metaRVM <- function(config_input) {
   # pass inputs to meta_sim
   nsim <- config_obj$config_data$nsim
   nsteps <- floor(config_obj$config_data$sim_length / config_obj$config_data$delta_t)
+  day_name <- weekdays(config_obj$config_data$start_date)
+  start_day <- dplyr::case_when(
+    day_name == "Monday"    ~ 0,
+    day_name == "Tuesday"   ~ 1,
+    day_name == "Wednesday" ~ 2,
+    day_name == "Thursday"  ~ 3,
+    day_name == "Friday"    ~ 4,
+    day_name == "Saturday"  ~ 5,
+    day_name == "Sunday"    ~ 6,
+    TRUE ~ NA_integer_
+  )
 
   out <- data.table::data.table()
   for (ii in 1:nsim){
@@ -135,8 +146,8 @@ metaRVM <- function(config_input) {
                   m_weekday_night = config_obj$config_data$m_wd_n,
                   m_weekend_day = config_obj$config_data$m_we_d,
                   m_weekend_night = config_obj$config_data$m_we_n,
+                  start_day = start_day,
                   delta_t = config_obj$config_data$delta_t,
-                  # tvac = config_obj$config_data$vac_time_id,
                   vac_mat = config_obj$config_data$vac_mat,
                   ts = config_obj$config_data$ts[ii, ],
                   tv = config_obj$config_data$tv[ii, ],

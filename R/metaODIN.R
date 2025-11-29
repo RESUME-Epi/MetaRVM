@@ -40,6 +40,8 @@
 #'   weekend daytime (6 AM - 6 PM) interactions
 #' @param m_weekend_night Numeric matrix (N_pop × N_pop). Contact mixing matrix for
 #'   weekend nighttime (6 PM - 6 AM) interactions
+#' @param start_day Start day of the week expressed as an integer value between 0 and 6, 0 being
+#'   Monday. Default simulation start day is Monday.
 #' @param delta_t Positive numeric. Discrete time increment in days (typically 0.5)
 #' @param vac_mat Numeric matrix. Vaccination schedule with dimensions (nsteps × (1 + N_pop)).
 #'   First column contains time indices, remaining columns contain vaccination counts
@@ -247,6 +249,7 @@ meta_sim <- function(N_pop, ts, tv,
                      E0 = rep(0, N_pop),
                      V0 = rep(0, N_pop),
                      m_weekday_day, m_weekday_night, m_weekend_day, m_weekend_night,
+                     start_day = 0,
                      delta_t,
                      vac_mat,
                      dv, de, pea, dp,
@@ -273,7 +276,6 @@ meta_sim <- function(N_pop, ts, tv,
     update(I_presymp[])  <- I_presymp[i] + n_EIpresymp[i] - n_preIsymp[i]
     update(I_asymp[])    <- I_asymp[i] + n_EIasymp[i] - n_IasympR[i]
     update(I_symp[])     <- I_symp[i] + n_preIsymp[i] - n_IsympRH[i]
-    # update(I_all[])      <- I_presymp[i] + I_asymp[i] + I_symp[i]
     update(I_all[])      <- I_presymp[i] + n_EIpresymp[i] - n_preIsymp[i] + I_asymp[i] + n_EIasymp[i] - n_IasympR[i] + I_symp[i] + n_preIsymp[i] - n_IsympRH[i]
     update(R[])          <- R[i] + n_IasympR[i] + n_IsympR[i] +n_HR[i] - n_RS[i]
     update(H[])          <- H[i] + n_IsympH[i] - n_HR[i] - n_HD[i]
@@ -286,7 +288,6 @@ meta_sim <- function(N_pop, ts, tv,
                             I_presymp[i] + n_EIpresymp[i] - n_preIsymp[i] + I_asymp[i] + n_EIasymp[i] - n_IasympR[i] + I_symp[i] + n_preIsymp[i] - n_IsympRH[i] +
                             R[i] + n_IasympR[i] + n_IsympR[i] +n_HR[i] - n_RS[i] +
                             V[i] - n_VS[i] - n_VE[i] + n_SV_eff[i]
-      # S[i] + E[i] + I_all[i] + R[i] + V[i]
 
     ## =================================================
     ## sub population-based probabilities of transition:
@@ -317,8 +318,12 @@ meta_sim <- function(N_pop, ts, tv,
     m_weekday_night[, ]  <- user()
     m_weekend_day[, ]    <- user()
     m_weekend_night[, ]  <- user()
+    start_day            <- user()
 
-    m[, ] <- if((time %% 7 == 0) || (time %% 6 == 0)) (
+    saturday_id <- 5 - start_day
+    sunday_id <- 6 - start_day
+
+    m[, ] <- if((time %% 7 == saturday_id) || (time %% 7 == sunday_id)) (
       if(step %% 2 == 0) m_weekend_day[i,j] else m_weekend_night[i,j]
     ) else (
       if(step %% 2 == 0) m_weekday_day[i,j] else m_weekday_night[i,j]
@@ -331,19 +336,11 @@ meta_sim <- function(N_pop, ts, tv,
 
     # first remove vaccinated people from S
     S_eff_prod[, ]  <- m[i, j] * (S[i] - n_SV_eff[i])
-    # S_eff[]         <- sum(S_eff_prod[, i]) # colSums
 
     V_eff_prod[, ]  <- m[i, j] * V[i]
-    # V_eff[]         <- sum(V_eff_prod[, i]) # colSums
-
-    # E_eff_prod[, ]  <- m[i, j] * E[i]
-    # E_eff[]         <- sum(E_eff_prod[, i]) # colSums
 
     I_eff_prod[, ]  <- m[i, j] * I_all[i]
     I_eff[]         <- sum(I_eff_prod[, i]) # colSums
-
-    # R_eff_prod[, ]  <- m[i, j] * R[i]
-    # R_eff[]         <- sum(R_eff_prod[, i]) # colSums
 
     ## =================================================
     ## Force of infection
@@ -356,28 +353,20 @@ meta_sim <- function(N_pop, ts, tv,
     n_SE_eff[, ]      <- if(S[i] <= 0) 0 else (if(stoch == 1) rbinom(S_eff_prod[j, i], p_SE[i]) else S_eff_prod[j, i] * p_SE[i])
     n_SE[]            <- sum(n_SE_eff[i, ]) # rowSums
     n_EI[]            <- if(E[i] == 0) 0 else (if(stoch == 1) rbinom(E[i], p_EIpresymp[i]) else E[i] * p_EIpresymp[i])
-    # n_EI[]            <- n_EI[i]
     n_EIpresymp[]     <- n_EI[i] * (1 - pea[i])
     n_EIasymp[]       <- n_EI[i] - n_EIpresymp[i]
     n_preIsymp[]      <- if(I_presymp[i] == 0) 0 else (if(stoch == 1) rbinom(I_presymp[i], p_preIsymp[i]) else I_presymp[i] * p_preIsymp[i])
-    # n_preIsymp[]      <- ceiling(n_preIsymp[i])
     n_IasympR[]       <- if(I_asymp[i] == 0) 0 else (if(stoch == 1) rbinom(I_asymp[i], p_IasympR[i]) else I_asymp[i] * p_IasympR[i])
-    # n_IasympR[]       <- ceiling(n_IasympR[i])
     n_IsympRH[]       <- if(I_symp[i] == 0) 0 else (if(stoch == 1) rbinom(I_symp[i], p_IsympRH[i]) else I_symp[i] * p_IsympRH[i])
-    # n_IsympRH[]       <- ceiling(n_IsympRH[i])
     n_IsympH[]        <- n_IsympRH[i] * (1 - psr[i])
     n_IsympR[]        <- n_IsympRH[i] - n_IsympH[i]
     n_HRD[]           <- if(H[i] == 0) 0 else (if(stoch == 1) rbinom(H[i], p_HRD[i]) else H[i] * p_HRD[i])
-    # n_HRD[]           <- ceiling(n_HRD[i])
     n_HR[]            <- n_HRD[i] * phr[i]
     n_HD[]            <- n_HRD[i] - n_HR[i]
     n_RS[]            <- if(R[i] == 0) 0 else (if(stoch == 1) rbinom(R[i], p_RS[i]) else R[i] * p_RS[i])
-    # n_RS[]            <- ceiling(n_RS[i])
     n_VE_eff[, ]      <- if(stoch == 1) rbinom(V_eff_prod[j, i], p_VE[i]) else V_eff_prod[j, i] * p_VE[i]
     n_VE[]            <- sum(n_VE_eff[i, ]) # rowSums
-    # n_VE[]            <- ceiling(n_VE[i])
     n_VS[]            <- if(stoch == 1) rbinom(V[i] - n_VE[i], p_VS[i]) else (V[i] - n_VE[i]) * p_VS[i]
-    # n_VS[]            <- ceiling(n_VS[i])
 
     ## =================================================
     ## Initial states:
@@ -415,8 +404,7 @@ meta_sim <- function(N_pop, ts, tv,
     output(n_HR)          <- TRUE
     output(n_HD)          <- TRUE
     output(n_IasympR)     <- TRUE
-    # output(S_eff_prod)    <- TRUE
-    # output(n_SE_eff)      <- TRUE
+
 
     ## =================================================
     ## User defined parameters - default in parentheses:
@@ -431,7 +419,6 @@ meta_sim <- function(N_pop, ts, tv,
     H_ini[]         <- user()
     D_ini[]         <- user()
 
-    # beta_e         <- user(0.0165)
     beta_i[]         <- user()
     beta_v[]         <- user()
     pretoIsymp[]     <- user()
@@ -474,7 +461,6 @@ meta_sim <- function(N_pop, ts, tv,
     dim(cum_V)       <- N_pop
     dim(mob_pop)    <- N_pop
 
-    # dim(beta_e)         <- N_pop
     dim(beta_i)         <- N_pop
     dim(beta_v)         <- N_pop
     dim(EtoIpresymp)    <- N_pop
@@ -552,12 +538,7 @@ meta_sim <- function(N_pop, ts, tv,
   if(length(psr) == 1) psr <- rep(psr, N_pop)
   if(length(phr) == 1) phr <- rep(phr, N_pop)
 
-
-  # nsteps <- nsteps - 1
-
   ## prepare vaccination input
-  # tvac <- vac_mat[-nsteps, 1]
-  # vac_mat <- vac_mat[-1, -1]
 
   tvac <- vac_mat[, 1]
   vac_mat <- vac_mat[, -1]
@@ -585,6 +566,7 @@ meta_sim <- function(N_pop, ts, tv,
                         m_weekday_night = m_weekday_night,
                         m_weekend_day = m_weekend_day,
                         m_weekend_night = m_weekend_night,
+                        start_day = start_day,
                         dt = delta_t,
                         tt = tvac,
                         vac = vac_mat,

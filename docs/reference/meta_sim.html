@@ -75,6 +75,7 @@ contact patterns, vaccination dynamics, and complex disease progression pathways
 <span>  <span class="va">m_weekday_night</span>,</span>
 <span>  <span class="va">m_weekend_day</span>,</span>
 <span>  <span class="va">m_weekend_night</span>,</span>
+<span>  start_day <span class="op">=</span> <span class="fl">0</span>,</span>
 <span>  <span class="va">delta_t</span>,</span>
 <span>  <span class="va">vac_mat</span>,</span>
 <span>  <span class="va">dv</span>,</span>
@@ -182,6 +183,11 @@ weekend daytime (6 AM - 6 PM) interactions</p></dd>
 <dt id="arg-m-weekend-night">m_weekend_night<a class="anchor" aria-label="anchor" href="#arg-m-weekend-night"></a></dt>
 <dd><p>Numeric matrix (N_pop × N_pop). Contact mixing matrix for
 weekend nighttime (6 PM - 6 AM) interactions</p></dd>
+
+
+<dt id="arg-start-day">start_day<a class="anchor" aria-label="anchor" href="#arg-start-day"></a></dt>
+<dd><p>Start day of the week expressed as an integer value between 0 and 6, 0 being
+Monday. Default simulation start day is Monday.</p></dd>
 
 
 <dt id="arg-delta-t">delta_t<a class="anchor" aria-label="anchor" href="#arg-delta-t"></a></dt>
