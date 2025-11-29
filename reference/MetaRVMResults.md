@@ -220,74 +220,11 @@ The objects of this class are cloneable with this method.
 ## Examples
 
 ``` r
+options(odin.verbose = FALSE)
 example_config <- system.file("extdata", "example_config.yaml", package = "MetaRVM")
 # Run simulation
 results_obj <- metaRVM(example_config)
 #> Loading required namespace: pkgbuild
-#> Generating model in c
-#> ℹ Re-compiling odin838871ae (debug build)
-#> ── R CMD INSTALL ───────────────────────────────────────────────────────────────
-#> * installing *source* package ‘odin838871ae’ ...
-#> ** this is package ‘odin838871ae’ version ‘0.0.1’
-#> ** using staged installation
-#> ** libs
-#> using C compiler: ‘gcc (Ubuntu 13.3.0-6ubuntu2~24.04) 13.3.0’
-#> gcc -std=gnu2x -I"/opt/R/4.5.2/lib/R/include" -DNDEBUG   -I/usr/local/include    -fpic  -g -O2  -UNDEBUG -Wall -pedantic -g -O0 -fdiagnostics-color=always -c odin.c -o odin.o
-#> odin.c: In function ‘user_get_scalar_int’:
-#> odin.c:1770:47: warning: format ‘%d’ expects argument of type ‘int’, but argument 2 has type ‘const char *’ [-Wformat=]
-#>  1770 |       Rf_error("Expected scalar integer for '%d'", name);
-#>       |                                              ~^    ~~~~
-#>       |                                               |    |
-#>       |                                               int  const char *
-#>       |                                              %s
-#> odin.c: In function ‘user_get_array’:
-#> odin.c:1928:48: warning: format ‘%d’ expects argument of type ‘int’, but argument 2 has type ‘size_t’ {aka ‘long unsigned int’} [-Wformat=]
-#>  1928 |         Rf_error("Incorrect size of dimension %d of %s (expected %d)",
-#>       |                                               ~^
-#>       |                                                |
-#>       |                                                int
-#>       |                                               %ld
-#>  1929 |                  i + 1, name, dim_expected);
-#>       |                  ~~~~~                          
-#>       |                    |
-#>       |                    size_t {aka long unsigned int}
-#> odin.c: In function ‘interpolate_check_y’:
-#> odin.c:2007:45: warning: format ‘%d’ expects argument of type ‘int’, but argument 3 has type ‘size_t’ {aka ‘long unsigned int’} [-Wformat=]
-#>  2007 |       Rf_error("Expected %s to have length %d (for '%s')",
-#>       |                                            ~^
-#>       |                                             |
-#>       |                                             int
-#>       |                                            %ld
-#>  2008 |                name_arg, nx, name_target);
-#>       |                          ~~                  
-#>       |                          |
-#>       |                          size_t {aka long unsigned int}
-#> odin.c:2011:37: warning: format ‘%d’ expects argument of type ‘int’, but argument 2 has type ‘size_t’ {aka ‘long unsigned int’} [-Wformat=]
-#>  2011 |       Rf_error("Expected dimension %d of %s to have size %d (for '%s')",
-#>       |                                    ~^
-#>       |                                     |
-#>       |                                     int
-#>       |                                    %ld
-#>  2012 |                i, name_arg, nx, name_target);
-#>       |                ~                     
-#>       |                |
-#>       |                size_t {aka long unsigned int}
-#> odin.c:2011:59: warning: format ‘%d’ expects argument of type ‘int’, but argument 4 has type ‘size_t’ {aka ‘long unsigned int’} [-Wformat=]
-#>  2011 |       Rf_error("Expected dimension %d of %s to have size %d (for '%s')",
-#>       |                                                          ~^
-#>       |                                                           |
-#>       |                                                           int
-#>       |                                                          %ld
-#>  2012 |                i, name_arg, nx, name_target);
-#>       |                             ~~                             
-#>       |                             |
-#>       |                             size_t {aka long unsigned int}
-#> gcc -std=gnu2x -I"/opt/R/4.5.2/lib/R/include" -DNDEBUG   -I/usr/local/include    -fpic  -g -O2  -UNDEBUG -Wall -pedantic -g -O0 -fdiagnostics-color=always -c registration.c -o registration.o
-#> gcc -std=gnu2x -shared -L/opt/R/4.5.2/lib/R/lib -L/usr/local/lib -o odin838871ae.so odin.o registration.o -L/opt/R/4.5.2/lib/R/lib -lR
-#> installing to /tmp/RtmprIaSBH/devtools_install_182fdb3dba3/00LOCK-file182f6e0ebc8c/00new/odin838871ae/libs
-#> ** checking absolute paths in shared objects and dynamic libraries
-#> * DONE (odin838871ae)
-#> ℹ Loading odin838871ae
 # Access formatted results
 head(results_obj$results)
 #>          date    age   race   zone disease_state        value instance
@@ -302,14 +239,14 @@ head(results_obj$results)
 # Subset data with multiple filters
 subset_data <- results_obj$subset_data(
   age = c("18-49", "50-64"), 
-  disease_states = c("H", "D"),
+  disease_state = c("H", "D"),
   date_range = c(as.Date("2024-01-01"), as.Date("2024-02-01"))
 )
 #> 19723 
 #> 19754 
 
 # Method chaining for analysis and visualization
-results_obj$summarize(
+results_obj$subset_data(disease_state = "H")$summarize(
   group_by = c("age", "race"), 
   stats = c("median", "quantile"),
   quantiles = c(0.25, 0.75)

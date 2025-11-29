@@ -199,6 +199,7 @@ Arindam Fadikar
 ## Examples
 
 ``` r
+options(odin.verbose = FALSE)
 example_config <- system.file("extdata", "example_config.yaml", package = "MetaRVM")
 # Parse configuration file and return list (backward compatible)
 config <- parse_config(example_config)
@@ -223,7 +224,5 @@ config_obj$list_parameters()
 
 # Use with MetaRVM simulation
 results <- metaRVM(config_obj)
-#> Generating model in c
-#> Using cached model
 
 ```

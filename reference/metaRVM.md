@@ -121,13 +121,12 @@ Arindam Fadikar, Charles Macal, Ignacio Martinez-Moyano, Jonathan Ozik
 ## Examples
 
 ``` r
+options(odin.verbose = FALSE)
 example_config <- system.file("extdata", "example_config.yaml",
                               package = "MetaRVM")
 
 # Run a single-instance simulation from a YAML file
 results <- metaRVM(example_config)
-#> Generating model in c
-#> Using cached model
 
 # Print a high-level summary
 results
@@ -162,6 +161,4 @@ results$summarize(
 # Using a pre-parsed configuration object
 cfg <- parse_config(example_config, return_object = TRUE)
 results2 <- metaRVM(cfg)
-#> Generating model in c
-#> Using cached model
 ```

@@ -20,7 +20,7 @@ progression, while allowing for heterogeneous mixing among different
 demographic stratum. These generalizations allow the model to account
 for factors such as vaccinations, hospitalizations, and fatalities.
 
-![Model schematics](reference/figures/GIRD-Vensim.svg)
+![Model schematics](reference/figures/model.png)
 
 Model schematics
 

@@ -2,9 +2,10 @@
 
 ## Authors
 
-- **Arindam Fadikar**. Author, maintainer.
+- **Arindam Fadikar**. Author, maintainer, copyright holder.
+  [](https://orcid.org/0000-0001-7396-0350)
 
-- **Charles Macal**. Author.
+- **Charles Macal**. Contributor.
 
 - **Martinez Moyano Ignacio Javier**. Contributor.
 
@@ -13,16 +14,21 @@
 ## Citation
 
 Source:
-[`DESCRIPTION`](https://github.com/RESUME-Epi/MetaRVM/blob/main/DESCRIPTION)
+[`inst/CITATION`](https://github.com/RESUME-Epi/MetaRVM/blob/main/inst/CITATION)
 
-Fadikar A, Macal C (2025). *MetaRVM: Meta-population compartmental model
-for respiratory virus diseases*. R package version 1.0.0,
-<https://RESUME-Epi.github.io/MetaRVM/>.
+Fadikar A, Stevens A, Rimer S, Martinez-Moyano I, Collier N, Ozik J,
+Macal C (2025). “Developing and deploying a use-inspired metapopulation
+modeling framework for detailed tracking of stratified health outcomes.”
+*medarxiv*, **xx**(xx), xx.
+[doi:10.1101/2025.05.05.25327021](https://doi.org/10.1101/2025.05.05.25327021).
 
-    @Manual{,
-      title = {MetaRVM: Meta-population compartmental model for respiratory virus diseases},
-      author = {Arindam Fadikar and Charles Macal},
+    @Article{,
+      title = {Developing and deploying a use-inspired metapopulation modeling framework for detailed tracking of stratified health outcomes},
+      author = {Arindam Fadikar and Abby Stevens and Sara Rimer and Ignacio Martinez-Moyano and Nicholson Collier and Jonathan Ozik and Charles Macal},
+      journal = {medarxiv},
       year = {2025},
-      note = {R package version 1.0.0},
-      url = {https://RESUME-Epi.github.io/MetaRVM/},
+      volume = {xx},
+      number = {xx},
+      pages = {xx},
+      doi = {10.1101/2025.05.05.25327021},
     }

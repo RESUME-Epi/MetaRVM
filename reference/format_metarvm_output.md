@@ -22,7 +22,8 @@ format_metarvm_output(sim_output, config)
 
 - sim_output:
 
-  data.table containing raw simulation output
+  data.table containing raw simulation output from
+  [`meta_sim`](https://RESUME-Epi.github.io/MetaRVM/reference/meta_sim.md)
 
 - config:
 

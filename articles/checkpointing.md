@@ -44,6 +44,7 @@ configuration file based on a template.
 
 ``` r
 library(MetaRVM)
+options(odin.verbose = FALSE)
 
 # Get the example configuration file
 example_config <- system.file("extdata", "example_config_checkpoint.yaml", 
@@ -52,7 +53,7 @@ example_config <- system.file("extdata", "example_config_checkpoint.yaml",
 # Create a temporary directory for checkpoints
 checkpoint_dir <- tempdir()
 cat("Checkpoint directory:", checkpoint_dir, "\n")
-#> Checkpoint directory: /tmp/RtmprlPA4V
+#> Checkpoint directory: /tmp/RtmplHGwBy
 ```
 
 ### Create a Configuration with Checkpointing
@@ -80,70 +81,6 @@ temp_config <- normalizePath(temp_config)
 # Run the simulation
 results <- metaRVM(temp_config)
 #> Loading required namespace: pkgbuild
-#> Generating model in c
-#> ℹ Re-compiling odin3a2926f6 (debug build)
-#> ── R CMD INSTALL ───────────────────────────────────────────────────────────────
-#> * installing *source* package ‘odin3a2926f6’ ...
-#> ** this is package ‘odin3a2926f6’ version ‘0.0.1’
-#> ** using staged installation
-#> ** libs
-#> using C compiler: ‘gcc (Ubuntu 13.3.0-6ubuntu2~24.04) 13.3.0’
-#> gcc -std=gnu2x -I"/opt/R/4.5.2/lib/R/include" -DNDEBUG   -I/usr/local/include    -fpic  -g -O2  -UNDEBUG -Wall -pedantic -g -O0 -fdiagnostics-color=always -c odin.c -o odin.o
-#> odin.c: In function ‘user_get_scalar_int’:
-#> odin.c:1770:47: warning: format ‘%d’ expects argument of type ‘int’, but argument 2 has type ‘const char *’ [-Wformat=]
-#>  1770 |       Rf_error("Expected scalar integer for '%d'", name);
-#>       |                                              ~^    ~~~~
-#>       |                                               |    |
-#>       |                                               int  const char *
-#>       |                                              %s
-#> odin.c: In function ‘user_get_array’:
-#> odin.c:1928:48: warning: format ‘%d’ expects argument of type ‘int’, but argument 2 has type ‘size_t’ {aka ‘long unsigned int’} [-Wformat=]
-#>  1928 |         Rf_error("Incorrect size of dimension %d of %s (expected %d)",
-#>       |                                               ~^
-#>       |                                                |
-#>       |                                                int
-#>       |                                               %ld
-#>  1929 |                  i + 1, name, dim_expected);
-#>       |                  ~~~~~                          
-#>       |                    |
-#>       |                    size_t {aka long unsigned int}
-#> odin.c: In function ‘interpolate_check_y’:
-#> odin.c:2007:45: warning: format ‘%d’ expects argument of type ‘int’, but argument 3 has type ‘size_t’ {aka ‘long unsigned int’} [-Wformat=]
-#>  2007 |       Rf_error("Expected %s to have length %d (for '%s')",
-#>       |                                            ~^
-#>       |                                             |
-#>       |                                             int
-#>       |                                            %ld
-#>  2008 |                name_arg, nx, name_target);
-#>       |                          ~~                  
-#>       |                          |
-#>       |                          size_t {aka long unsigned int}
-#> odin.c:2011:37: warning: format ‘%d’ expects argument of type ‘int’, but argument 2 has type ‘size_t’ {aka ‘long unsigned int’} [-Wformat=]
-#>  2011 |       Rf_error("Expected dimension %d of %s to have size %d (for '%s')",
-#>       |                                    ~^
-#>       |                                     |
-#>       |                                     int
-#>       |                                    %ld
-#>  2012 |                i, name_arg, nx, name_target);
-#>       |                ~                     
-#>       |                |
-#>       |                size_t {aka long unsigned int}
-#> odin.c:2011:59: warning: format ‘%d’ expects argument of type ‘int’, but argument 4 has type ‘size_t’ {aka ‘long unsigned int’} [-Wformat=]
-#>  2011 |       Rf_error("Expected dimension %d of %s to have size %d (for '%s')",
-#>       |                                                          ~^
-#>       |                                                           |
-#>       |                                                           int
-#>       |                                                          %ld
-#>  2012 |                i, name_arg, nx, name_target);
-#>       |                             ~~                             
-#>       |                             |
-#>       |                             size_t {aka long unsigned int}
-#> gcc -std=gnu2x -I"/opt/R/4.5.2/lib/R/include" -DNDEBUG   -I/usr/local/include    -fpic  -g -O2  -UNDEBUG -Wall -pedantic -g -O0 -fdiagnostics-color=always -c registration.c -o registration.o
-#> gcc -std=gnu2x -shared -L/opt/R/4.5.2/lib/R/lib -L/usr/local/lib -o odin3a2926f6.so odin.o registration.o -L/opt/R/4.5.2/lib/R/lib -lR
-#> installing to /tmp/RtmprlPA4V/devtools_install_1a2b627f93f2/00LOCK-file1a2bff97b96/00new/odin3a2926f6/libs
-#> ** checking absolute paths in shared objects and dynamic libraries
-#> * DONE (odin3a2926f6)
-#> ℹ Loading odin3a2926f6
 
 # Check what checkpoint files were created
 checkpoint_files <- list.files(checkpoint_dir, 
@@ -203,7 +140,7 @@ if (length(checkpoint_files_full) > 0) {
   cat(checkpoint_to_restore, "\n\n")
   
   new_start_date <- "12/30/2024"
-  yml_tmp <- copy(yml)
+  yml_tmp <- data.table::copy(yml)
   yml_tmp$simulation_config$start_date <- new_start_date
   yml_tmp$simulation_config$restore_from <- checkpoint_to_restore
   yml_tmp$population_data$initialization <- NULL # ensure that we don't want to reinitialize the population from the initialization file
@@ -223,7 +160,26 @@ if (length(checkpoint_files_full) > 0) {
 } else {
   cat("No checkpoint files found to resume from.\n")
 }
+#> /tmp/RtmplHGwBy/chk_2024-12-29_1.Rda 
+#> 
+#> Number of instances: 1 
+#> Date range: 2024-12-30 to 2025-03-29
 ```
+
+### Plot
+
+``` r
+run1_hosp_sum <- results$results[disease_state == "H", .(total = sum(value)), by = "date"]
+run2_hosp_sum <- results_resumed$results[disease_state == "H", .(total = sum(value)), by = "date"]
+
+library(ggplot2)
+ggplot(rbind(run1_hosp_sum, run2_hosp_sum), aes(date, total)) +
+  geom_line(, color = "red") +
+  geom_vline(xintercept = as.Date("2024-12-29"), linetype = "dashed") +
+  labs(y = "Hospitalizations", x = "Date") + theme_bw()
+```
+
+![](checkpointing_files/figure-html/plot-1.png)
 
 ## Understanding Checkpoint Files
 

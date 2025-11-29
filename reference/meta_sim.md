@@ -397,6 +397,7 @@ Arindam Fadikar, Charles Macal, Ignacio Martinez-Moyano, Jonathan Ozik
 ## Examples
 
 ``` r
+options(odin.verbose = FALSE)
 # Basic deterministic simulation
 N_pop <- 2
 nsteps <- 400
@@ -444,8 +445,6 @@ results <- meta_sim(
   nsteps = nsteps,
   is.stoch = FALSE
 )
-#> Generating model in c
-#> Using cached model
 
 
 ```

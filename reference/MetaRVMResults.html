@@ -258,74 +258,11 @@ geographic zone categories, plus method chaining for streamlined analysis workfl
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">example_config</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, <span class="st">"example_config.yaml"</span>, package <span class="op">=</span> <span class="st">"MetaRVM"</span><span class="op">)</span></span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">options</a></span><span class="op">(</span>odin.verbose <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">example_config</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, <span class="st">"example_config.yaml"</span>, package <span class="op">=</span> <span class="st">"MetaRVM"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="co"># Run simulation</span></span></span>
 <span class="r-in"><span><span class="va">results_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="metaRVM.html">metaRVM</a></span><span class="op">(</span><span class="va">example_config</span><span class="op">)</span></span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Loading required namespace: pkgbuild</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Generating model in c</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> Re-compiling <span style="color: #0000BB;">odin838871ae</span> (debug build)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">──</span> <span style="color: #00BBBB;">R CMD INSTALL</span> <span style="color: #00BBBB;">───────────────────────────────────────────────────────────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> * installing *source* package ‘odin838871ae’ ...</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> ** this is package ‘odin838871ae’ version ‘0.0.1’</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> ** using staged installation</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> ** libs</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> using C compiler: ‘gcc (Ubuntu 13.3.0-6ubuntu2~24.04) 13.3.0’</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> gcc -std=gnu2x -I"/opt/R/4.5.2/lib/R/include" -DNDEBUG   -I/usr/local/include    -fpic  -g -O2  -UNDEBUG -Wall -pedantic -g -O0 -fdiagnostics-color=always -c odin.c -o odin.o</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="font-weight: bold;">odin.c:</span> In function ‘<span style="font-weight: bold;">user_get_scalar_int</span>’:</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="font-weight: bold;">odin.c:1770:47:</span> <span style="color: #BB00BB; font-weight: bold;">warning: </span>format ‘<span style="font-weight: bold;">%d</span>’ expects argument of type ‘<span style="font-weight: bold;">int</span>’, but argument 2 has type ‘<span style="font-weight: bold;">const char *</span>’ [<span style="color: #BB00BB; font-weight: bold;">-Wformat=</span>]</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  1770 |       Rf_error("Expected scalar integer for '<span style="color: #BB00BB; font-weight: bold;">%d</span>'", <span style="color: #00BB00;">name</span>);</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       |                                              <span style="color: #BB00BB; font-weight: bold;">~^</span>    <span style="color: #00BB00;">~~~~</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       |                                               <span style="color: #BB00BB; font-weight: bold;">|</span>    <span style="color: #00BB00;">|</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       |                                               <span style="color: #BB00BB; font-weight: bold;">int</span>  <span style="color: #00BB00;">const char *</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       |                                              <span style="color: #00BB00;">%s</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="font-weight: bold;">odin.c:</span> In function ‘<span style="font-weight: bold;">user_get_array</span>’:</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="font-weight: bold;">odin.c:1928:48:</span> <span style="color: #BB00BB; font-weight: bold;">warning: </span>format ‘<span style="font-weight: bold;">%d</span>’ expects argument of type ‘<span style="font-weight: bold;">int</span>’, but argument 2 has type ‘<span style="font-weight: bold;">size_t</span>’ {aka ‘<span style="font-weight: bold;">long unsigned int</span>’} [<span style="color: #BB00BB; font-weight: bold;">-Wformat=</span>]</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  1928 |         Rf_error("Incorrect size of dimension <span style="color: #BB00BB; font-weight: bold;">%d</span> of %s (expected %d)",</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       |                                               <span style="color: #BB00BB; font-weight: bold;">~^</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       |                                                <span style="color: #BB00BB; font-weight: bold;">|</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       |                                                <span style="color: #BB00BB; font-weight: bold;">int</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       |                                               <span style="color: #00BB00;">%ld</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  1929 |                  <span style="color: #00BB00;">i + 1</span>, name, dim_expected);</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       |                  <span style="color: #00BB00;">~~~~~</span>                          </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       |                    <span style="color: #00BB00;">|</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       |                    <span style="color: #00BB00;">size_t {aka long unsigned int}</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="font-weight: bold;">odin.c:</span> In function ‘<span style="font-weight: bold;">interpolate_check_y</span>’:</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="font-weight: bold;">odin.c:2007:45:</span> <span style="color: #BB00BB; font-weight: bold;">warning: </span>format ‘<span style="font-weight: bold;">%d</span>’ expects argument of type ‘<span style="font-weight: bold;">int</span>’, but argument 3 has type ‘<span style="font-weight: bold;">size_t</span>’ {aka ‘<span style="font-weight: bold;">long unsigned int</span>’} [<span style="color: #BB00BB; font-weight: bold;">-Wformat=</span>]</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  2007 |       Rf_error("Expected %s to have length <span style="color: #BB00BB; font-weight: bold;">%d</span> (for '%s')",</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       |                                            <span style="color: #BB00BB; font-weight: bold;">~^</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       |                                             <span style="color: #BB00BB; font-weight: bold;">|</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       |                                             <span style="color: #BB00BB; font-weight: bold;">int</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       |                                            <span style="color: #00BB00;">%ld</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  2008 |                name_arg, <span style="color: #00BB00;">nx</span>, name_target);</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       |                          <span style="color: #00BB00;">~~</span>                  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       |                          <span style="color: #00BB00;">|</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       |                          <span style="color: #00BB00;">size_t {aka long unsigned int}</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="font-weight: bold;">odin.c:2011:37:</span> <span style="color: #BB00BB; font-weight: bold;">warning: </span>format ‘<span style="font-weight: bold;">%d</span>’ expects argument of type ‘<span style="font-weight: bold;">int</span>’, but argument 2 has type ‘<span style="font-weight: bold;">size_t</span>’ {aka ‘<span style="font-weight: bold;">long unsigned int</span>’} [<span style="color: #BB00BB; font-weight: bold;">-Wformat=</span>]</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  2011 |       Rf_error("Expected dimension <span style="color: #BB00BB; font-weight: bold;">%d</span> of %s to have size %d (for '%s')",</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       |                                    <span style="color: #BB00BB; font-weight: bold;">~^</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       |                                     <span style="color: #BB00BB; font-weight: bold;">|</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       |                                     <span style="color: #BB00BB; font-weight: bold;">int</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       |                                    <span style="color: #00BB00;">%ld</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  2012 |                <span style="color: #00BB00;">i</span>, name_arg, nx, name_target);</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       |                <span style="color: #00BB00;">~</span>                     </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       |                <span style="color: #00BB00;">|</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       |                <span style="color: #00BB00;">size_t {aka long unsigned int}</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="font-weight: bold;">odin.c:2011:59:</span> <span style="color: #BB00BB; font-weight: bold;">warning: </span>format ‘<span style="font-weight: bold;">%d</span>’ expects argument of type ‘<span style="font-weight: bold;">int</span>’, but argument 4 has type ‘<span style="font-weight: bold;">size_t</span>’ {aka ‘<span style="font-weight: bold;">long unsigned int</span>’} [<span style="color: #BB00BB; font-weight: bold;">-Wformat=</span>]</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  2011 |       Rf_error("Expected dimension %d of %s to have size <span style="color: #BB00BB; font-weight: bold;">%d</span> (for '%s')",</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       |                                                          <span style="color: #BB00BB; font-weight: bold;">~^</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       |                                                           <span style="color: #BB00BB; font-weight: bold;">|</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       |                                                           <span style="color: #BB00BB; font-weight: bold;">int</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       |                                                          <span style="color: #00BB00;">%ld</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  2012 |                i, name_arg, <span style="color: #00BB00;">nx</span>, name_target);</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       |                             <span style="color: #00BB00;">~~</span>                             </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       |                             <span style="color: #00BB00;">|</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       |                             <span style="color: #00BB00;">size_t {aka long unsigned int}</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> gcc -std=gnu2x -I"/opt/R/4.5.2/lib/R/include" -DNDEBUG   -I/usr/local/include    -fpic  -g -O2  -UNDEBUG -Wall -pedantic -g -O0 -fdiagnostics-color=always -c registration.c -o registration.o</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> gcc -std=gnu2x -shared -L/opt/R/4.5.2/lib/R/lib -L/usr/local/lib -o odin838871ae.so odin.o registration.o -L/opt/R/4.5.2/lib/R/lib -lR</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> installing to /tmp/RtmprIaSBH/devtools_install_182fdb3dba3/00LOCK-file182f6e0ebc8c/00new/odin838871ae/libs</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> ** checking absolute paths in shared objects and dynamic libraries</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> * DONE (odin838871ae)</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> Loading <span style="color: #0000BB;">odin838871ae</span></span>
 <span class="r-in"><span><span class="co"># Access formatted results</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">results_obj</span><span class="op">$</span><span class="va">results</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>          date    age   race   zone disease_state        value instance</span>
@@ -340,14 +277,14 @@ geographic zone categories, plus method chaining for streamlined analysis workfl
 <span class="r-in"><span><span class="co"># Subset data with multiple filters</span></span></span>
 <span class="r-in"><span><span class="va">subset_data</span> <span class="op">&lt;-</span> <span class="va">results_obj</span><span class="op">$</span><span class="fu">subset_data</span><span class="op">(</span></span></span>
 <span class="r-in"><span>  age <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"18-49"</span>, <span class="st">"50-64"</span><span class="op">)</span>, </span></span>
-<span class="r-in"><span>  disease_states <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"H"</span>, <span class="st">"D"</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  disease_state <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"H"</span>, <span class="st">"D"</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>  date_range <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/as.Date.html" class="external-link">as.Date</a></span><span class="op">(</span><span class="st">"2024-01-01"</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/as.Date.html" class="external-link">as.Date</a></span><span class="op">(</span><span class="st">"2024-02-01"</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 19723 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 19754 </span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Method chaining for analysis and visualization</span></span></span>
-<span class="r-in"><span><span class="va">results_obj</span><span class="op">$</span><span class="fu">summarize</span><span class="op">(</span></span></span>
+<span class="r-in"><span><span class="va">results_obj</span><span class="op">$</span><span class="fu">subset_data</span><span class="op">(</span>disease_state <span class="op">=</span> <span class="st">"H"</span><span class="op">)</span><span class="op">$</span><span class="fu">summarize</span><span class="op">(</span></span></span>
 <span class="r-in"><span>  group_by <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"age"</span>, <span class="st">"race"</span><span class="op">)</span>, </span></span>
 <span class="r-in"><span>  stats <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"median"</span>, <span class="st">"quantile"</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>  quantiles <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.25</span>, <span class="fl">0.75</span><span class="op">)</span></span></span>
@@ -366,7 +303,7 @@ geographic zone categories, plus method chaining for streamlined analysis workfl
 
 
     <footer><div class="pkgdown-footer-left">
-  <p>Developed by Arindam Fadikar, Charles Macal.</p>
+  <p>Developed by Arindam Fadikar.</p>
 </div>
 
 <div class="pkgdown-footer-right">

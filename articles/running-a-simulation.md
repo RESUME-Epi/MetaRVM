@@ -67,13 +67,11 @@ function.
 ``` r
 # Load the metaRVM library
 library(MetaRVM)
+options(odin.verbose = FALSE)
 
 # Run the simulation
 sim_out <- metaRVM(yaml_file)
 #> Loading required namespace: pkgbuild
-#> Generating model in c
-#> ℹ Re-compiling odin3a2926f6 (debug build)
-#> ℹ Loading odin3a2926f6
 ```
 
 The
@@ -160,14 +158,10 @@ cat("Geographic zones:", paste(zones, collapse = ", "), "\n")
 
 # Method 2: From MetaRVMConfig object
 sim_out <- metaRVM(config_obj)
-#> Generating model in c
-#> Using cached model
 
 # Method 3: From parsed configuration list
 config_list <- parse_config(yaml_file)
 sim_out <- metaRVM(config_list)
-#> Generating model in c
-#> Using cached model
 ```
 
 ### Exploring the Results

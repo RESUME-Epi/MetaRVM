@@ -186,51 +186,12 @@ The objects of this class are cloneable with this method.
 ## Examples
 
 ``` r
+options(odin.verbose = FALSE)
 example_config <- system.file("extdata", "example_config_dist.yaml", package = "MetaRVM")
 # Run simulation
 results <- metaRVM(example_config)
-#> Generating model in c
-#> Using cached model
-#> Generating model in c
-#> Using cached model
-#> Generating model in c
-#> Using cached model
-#> Generating model in c
-#> Using cached model
-#> Generating model in c
-#> Using cached model
-#> Generating model in c
-#> Using cached model
-#> Generating model in c
-#> Using cached model
-#> Generating model in c
-#> Using cached model
-#> Generating model in c
-#> Using cached model
-#> Generating model in c
-#> Using cached model
-#> Generating model in c
-#> Using cached model
-#> Generating model in c
-#> Using cached model
-#> Generating model in c
-#> Using cached model
-#> Generating model in c
-#> Using cached model
-#> Generating model in c
-#> Using cached model
-#> Generating model in c
-#> Using cached model
-#> Generating model in c
-#> Using cached model
-#> Generating model in c
-#> Using cached model
-#> Generating model in c
-#> Using cached model
-#> Generating model in c
-#> Using cached model
 # Typically created through method chaining
-summary_obj <- results$summarize(
+summary_obj <- results$subset_data(disease_state = "H")$summarize(
   group_by = c("age", "race"), 
   stats = c("median", "quantile"),
   quantiles = c(0.25, 0.75)
@@ -240,11 +201,8 @@ summary_obj <- results$summarize(
 summary_obj$plot()
 
 
-# Plot with custom theme and confidence level
-summary_obj$plot(ci_level = 0.5, theme = ggplot2::theme_bw())
+# Plot with custom ggplot theme and confidence level
+summary_obj$plot(theme = ggplot2::theme_bw())
 
-
-# Complete method chaining workflow
-results$summarize(group_by = "age", stats = c("median", "quantile"))$plot()
 
 ```

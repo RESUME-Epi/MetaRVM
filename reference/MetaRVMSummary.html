@@ -206,51 +206,12 @@ based on the data structure and demographic groupings.</p>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">example_config</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, <span class="st">"example_config_dist.yaml"</span>, package <span class="op">=</span> <span class="st">"MetaRVM"</span><span class="op">)</span></span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">options</a></span><span class="op">(</span>odin.verbose <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">example_config</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, <span class="st">"example_config_dist.yaml"</span>, package <span class="op">=</span> <span class="st">"MetaRVM"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="co"># Run simulation</span></span></span>
 <span class="r-in"><span><span class="va">results</span> <span class="op">&lt;-</span> <span class="fu"><a href="metaRVM.html">metaRVM</a></span><span class="op">(</span><span class="va">example_config</span><span class="op">)</span></span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Generating model in c</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Using cached model</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Generating model in c</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Using cached model</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Generating model in c</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Using cached model</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Generating model in c</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Using cached model</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Generating model in c</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Using cached model</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Generating model in c</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Using cached model</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Generating model in c</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Using cached model</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Generating model in c</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Using cached model</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Generating model in c</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Using cached model</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Generating model in c</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Using cached model</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Generating model in c</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Using cached model</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Generating model in c</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Using cached model</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Generating model in c</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Using cached model</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Generating model in c</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Using cached model</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Generating model in c</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Using cached model</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Generating model in c</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Using cached model</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Generating model in c</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Using cached model</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Generating model in c</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Using cached model</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Generating model in c</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Using cached model</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Generating model in c</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Using cached model</span>
 <span class="r-in"><span><span class="co"># Typically created through method chaining</span></span></span>
-<span class="r-in"><span><span class="va">summary_obj</span> <span class="op">&lt;-</span> <span class="va">results</span><span class="op">$</span><span class="fu">summarize</span><span class="op">(</span></span></span>
+<span class="r-in"><span><span class="va">summary_obj</span> <span class="op">&lt;-</span> <span class="va">results</span><span class="op">$</span><span class="fu">subset_data</span><span class="op">(</span>disease_state <span class="op">=</span> <span class="st">"H"</span><span class="op">)</span><span class="op">$</span><span class="fu">summarize</span><span class="op">(</span></span></span>
 <span class="r-in"><span>  group_by <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"age"</span>, <span class="st">"race"</span><span class="op">)</span>, </span></span>
 <span class="r-in"><span>  stats <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"median"</span>, <span class="st">"quantile"</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>  quantiles <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.25</span>, <span class="fl">0.75</span><span class="op">)</span></span></span>
@@ -260,13 +221,10 @@ based on the data structure and demographic groupings.</p>
 <span class="r-in"><span><span class="va">summary_obj</span><span class="op">$</span><span class="fu">plot</span><span class="op">(</span><span class="op">)</span></span></span>
 <span class="r-plt img"><img src="MetaRVMSummary-1.png" alt="" width="700" height="1133"></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># Plot with custom theme and confidence level</span></span></span>
-<span class="r-in"><span><span class="va">summary_obj</span><span class="op">$</span><span class="fu">plot</span><span class="op">(</span>ci_level <span class="op">=</span> <span class="fl">0.5</span>, theme <span class="op">=</span> <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html" class="external-link">theme_bw</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="co"># Plot with custom ggplot theme and confidence level</span></span></span>
+<span class="r-in"><span><span class="va">summary_obj</span><span class="op">$</span><span class="fu">plot</span><span class="op">(</span>theme <span class="op">=</span> <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html" class="external-link">theme_bw</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-plt img"><img src="MetaRVMSummary-2.png" alt="" width="700" height="1133"></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># Complete method chaining workflow</span></span></span>
-<span class="r-in"><span><span class="va">results</span><span class="op">$</span><span class="fu">summarize</span><span class="op">(</span>group_by <span class="op">=</span> <span class="st">"age"</span>, stats <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"median"</span>, <span class="st">"quantile"</span><span class="op">)</span><span class="op">)</span><span class="op">$</span><span class="fu">plot</span><span class="op">(</span><span class="op">)</span></span></span>
-<span class="r-plt img"><img src="MetaRVMSummary-3.png" alt="" width="700" height="1133"></span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>
@@ -275,7 +233,7 @@ based on the data structure and demographic groupings.</p>
 
 
     <footer><div class="pkgdown-footer-left">
-  <p>Developed by Arindam Fadikar, Charles Macal.</p>
+  <p>Developed by Arindam Fadikar.</p>
 </div>
 
 <div class="pkgdown-footer-right">
