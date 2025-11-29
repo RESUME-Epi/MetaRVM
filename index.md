@@ -38,6 +38,10 @@ Full documentation is available at:
 
 ### Installation
 
+``` r
+install.packages("MetaRVM")
+```
+
 The development version of `MetaRVM` can be installed from
 [GitHub](https://github.com/) with:
 

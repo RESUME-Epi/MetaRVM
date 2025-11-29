@@ -91,50 +91,52 @@ Model schematics
 <div class="section level3">
 <h3 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h3>
-<p>The development version of <code>MetaRVM</code> can be installed from <a href="https://github.com/" class="external-link">GitHub</a> with:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"MetaRVM"</span><span class="op">)</span></span></code></pre></div>
+<p>The development version of <code>MetaRVM</code> can be installed from <a href="https://github.com/" class="external-link">GitHub</a> with:</p>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># install.packages("devtools")</span></span>
 <span><span class="fu">devtools</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"NSF-RESUME/MetaRVM"</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="running-a-simulation">Running a simulation<a class="anchor" aria-label="anchor" href="#running-a-simulation"></a>
 </h3>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://RESUME-Epi.github.io/MetaRVM/">MetaRVM</a></span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">options</a></span><span class="op">(</span>odin.verbose <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co">## prepare the configuration file</span></span>
 <span><span class="va">cfg</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, <span class="st">"example_config.yaml"</span>, package <span class="op">=</span> <span class="st">"MetaRVM"</span><span class="op">)</span></span></code></pre></div>
 <p>The content of the yaml configuration file:</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="fu">run_id</span><span class="kw">:</span><span class="at"> ExampleRun</span></span>
-<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a><span class="fu">population_data</span><span class="kw">:</span></span>
-<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a><span class="at">  </span><span class="fu">mapping</span><span class="kw">:</span><span class="at"> demographic_mapping_n24.csv</span></span>
-<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a><span class="at">  </span><span class="fu">initialization</span><span class="kw">:</span><span class="at"> population_init_n24.csv</span></span>
-<span id="cb3-5"><a href="#cb3-5" tabindex="-1"></a><span class="at">  </span><span class="fu">vaccination</span><span class="kw">:</span><span class="at"> vaccination_n24.csv</span></span>
-<span id="cb3-6"><a href="#cb3-6" tabindex="-1"></a><span class="fu">mixing_matrix</span><span class="kw">:</span></span>
-<span id="cb3-7"><a href="#cb3-7" tabindex="-1"></a><span class="at">  </span><span class="fu">weekday_day</span><span class="kw">:</span><span class="at"> m_weekday_day.csv</span></span>
-<span id="cb3-8"><a href="#cb3-8" tabindex="-1"></a><span class="at">  </span><span class="fu">weekday_night</span><span class="kw">:</span><span class="at"> m_weekday_night.csv</span></span>
-<span id="cb3-9"><a href="#cb3-9" tabindex="-1"></a><span class="at">  </span><span class="fu">weekend_day</span><span class="kw">:</span><span class="at"> m_weekend_day.csv</span></span>
-<span id="cb3-10"><a href="#cb3-10" tabindex="-1"></a><span class="at">  </span><span class="fu">weekend_night</span><span class="kw">:</span><span class="at"> m_weekend_night.csv</span></span>
-<span id="cb3-11"><a href="#cb3-11" tabindex="-1"></a><span class="fu">disease_params</span><span class="kw">:</span></span>
-<span id="cb3-12"><a href="#cb3-12" tabindex="-1"></a><span class="at">  </span><span class="fu">ts</span><span class="kw">:</span><span class="at"> </span><span class="fl">0.5</span></span>
-<span id="cb3-13"><a href="#cb3-13" tabindex="-1"></a><span class="at">  </span><span class="fu">tv</span><span class="kw">:</span><span class="at"> </span><span class="fl">0.25</span></span>
-<span id="cb3-14"><a href="#cb3-14" tabindex="-1"></a><span class="at">  </span><span class="fu">ve</span><span class="kw">:</span><span class="at"> </span><span class="fl">0.4</span></span>
-<span id="cb3-15"><a href="#cb3-15" tabindex="-1"></a><span class="at">  </span><span class="fu">dv</span><span class="kw">:</span><span class="at"> </span><span class="dv">180</span></span>
-<span id="cb3-16"><a href="#cb3-16" tabindex="-1"></a><span class="at">  </span><span class="fu">dp</span><span class="kw">:</span><span class="at"> </span><span class="dv">1</span></span>
-<span id="cb3-17"><a href="#cb3-17" tabindex="-1"></a><span class="at">  </span><span class="fu">de</span><span class="kw">:</span><span class="at"> </span><span class="dv">3</span></span>
-<span id="cb3-18"><a href="#cb3-18" tabindex="-1"></a><span class="at">  </span><span class="fu">da</span><span class="kw">:</span><span class="at"> </span><span class="dv">5</span></span>
-<span id="cb3-19"><a href="#cb3-19" tabindex="-1"></a><span class="at">  </span><span class="fu">ds</span><span class="kw">:</span><span class="at"> </span><span class="dv">6</span></span>
-<span id="cb3-20"><a href="#cb3-20" tabindex="-1"></a><span class="at">  </span><span class="fu">dh</span><span class="kw">:</span><span class="at"> </span><span class="dv">8</span></span>
-<span id="cb3-21"><a href="#cb3-21" tabindex="-1"></a><span class="at">  </span><span class="fu">dr</span><span class="kw">:</span><span class="at"> </span><span class="dv">180</span></span>
-<span id="cb3-22"><a href="#cb3-22" tabindex="-1"></a><span class="at">  </span><span class="fu">pea</span><span class="kw">:</span><span class="at"> </span><span class="fl">0.3</span></span>
-<span id="cb3-23"><a href="#cb3-23" tabindex="-1"></a><span class="at">  </span><span class="fu">psr</span><span class="kw">:</span><span class="at"> </span><span class="fl">0.95</span></span>
-<span id="cb3-24"><a href="#cb3-24" tabindex="-1"></a><span class="at">  </span><span class="fu">phr</span><span class="kw">:</span><span class="at"> </span><span class="fl">0.97</span></span>
-<span id="cb3-25"><a href="#cb3-25" tabindex="-1"></a><span class="fu">simulation_config</span><span class="kw">:</span></span>
-<span id="cb3-26"><a href="#cb3-26" tabindex="-1"></a><span class="at">  </span><span class="fu">start_date</span><span class="kw">:</span><span class="at"> 10/01/2023</span><span class="co"> # m/d/Y</span></span>
-<span id="cb3-27"><a href="#cb3-27" tabindex="-1"></a><span class="at">  </span><span class="fu">length</span><span class="kw">:</span><span class="at"> </span><span class="dv">150</span></span>
-<span id="cb3-28"><a href="#cb3-28" tabindex="-1"></a><span class="at">  </span><span class="fu">nsim</span><span class="kw">:</span><span class="at"> </span><span class="dv">1</span></span></code></pre></div>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb4"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a><span class="fu">run_id</span><span class="kw">:</span><span class="at"> ExampleRun</span></span>
+<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a><span class="fu">population_data</span><span class="kw">:</span></span>
+<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a><span class="at">  </span><span class="fu">mapping</span><span class="kw">:</span><span class="at"> demographic_mapping_n24.csv</span></span>
+<span id="cb4-4"><a href="#cb4-4" tabindex="-1"></a><span class="at">  </span><span class="fu">initialization</span><span class="kw">:</span><span class="at"> population_init_n24.csv</span></span>
+<span id="cb4-5"><a href="#cb4-5" tabindex="-1"></a><span class="at">  </span><span class="fu">vaccination</span><span class="kw">:</span><span class="at"> vaccination_n24.csv</span></span>
+<span id="cb4-6"><a href="#cb4-6" tabindex="-1"></a><span class="fu">mixing_matrix</span><span class="kw">:</span></span>
+<span id="cb4-7"><a href="#cb4-7" tabindex="-1"></a><span class="at">  </span><span class="fu">weekday_day</span><span class="kw">:</span><span class="at"> m_weekday_day.csv</span></span>
+<span id="cb4-8"><a href="#cb4-8" tabindex="-1"></a><span class="at">  </span><span class="fu">weekday_night</span><span class="kw">:</span><span class="at"> m_weekday_night.csv</span></span>
+<span id="cb4-9"><a href="#cb4-9" tabindex="-1"></a><span class="at">  </span><span class="fu">weekend_day</span><span class="kw">:</span><span class="at"> m_weekend_day.csv</span></span>
+<span id="cb4-10"><a href="#cb4-10" tabindex="-1"></a><span class="at">  </span><span class="fu">weekend_night</span><span class="kw">:</span><span class="at"> m_weekend_night.csv</span></span>
+<span id="cb4-11"><a href="#cb4-11" tabindex="-1"></a><span class="fu">disease_params</span><span class="kw">:</span></span>
+<span id="cb4-12"><a href="#cb4-12" tabindex="-1"></a><span class="at">  </span><span class="fu">ts</span><span class="kw">:</span><span class="at"> </span><span class="fl">0.5</span></span>
+<span id="cb4-13"><a href="#cb4-13" tabindex="-1"></a><span class="at">  </span><span class="fu">tv</span><span class="kw">:</span><span class="at"> </span><span class="fl">0.25</span></span>
+<span id="cb4-14"><a href="#cb4-14" tabindex="-1"></a><span class="at">  </span><span class="fu">ve</span><span class="kw">:</span><span class="at"> </span><span class="fl">0.4</span></span>
+<span id="cb4-15"><a href="#cb4-15" tabindex="-1"></a><span class="at">  </span><span class="fu">dv</span><span class="kw">:</span><span class="at"> </span><span class="dv">180</span></span>
+<span id="cb4-16"><a href="#cb4-16" tabindex="-1"></a><span class="at">  </span><span class="fu">dp</span><span class="kw">:</span><span class="at"> </span><span class="dv">1</span></span>
+<span id="cb4-17"><a href="#cb4-17" tabindex="-1"></a><span class="at">  </span><span class="fu">de</span><span class="kw">:</span><span class="at"> </span><span class="dv">3</span></span>
+<span id="cb4-18"><a href="#cb4-18" tabindex="-1"></a><span class="at">  </span><span class="fu">da</span><span class="kw">:</span><span class="at"> </span><span class="dv">5</span></span>
+<span id="cb4-19"><a href="#cb4-19" tabindex="-1"></a><span class="at">  </span><span class="fu">ds</span><span class="kw">:</span><span class="at"> </span><span class="dv">6</span></span>
+<span id="cb4-20"><a href="#cb4-20" tabindex="-1"></a><span class="at">  </span><span class="fu">dh</span><span class="kw">:</span><span class="at"> </span><span class="dv">8</span></span>
+<span id="cb4-21"><a href="#cb4-21" tabindex="-1"></a><span class="at">  </span><span class="fu">dr</span><span class="kw">:</span><span class="at"> </span><span class="dv">180</span></span>
+<span id="cb4-22"><a href="#cb4-22" tabindex="-1"></a><span class="at">  </span><span class="fu">pea</span><span class="kw">:</span><span class="at"> </span><span class="fl">0.3</span></span>
+<span id="cb4-23"><a href="#cb4-23" tabindex="-1"></a><span class="at">  </span><span class="fu">psr</span><span class="kw">:</span><span class="at"> </span><span class="fl">0.95</span></span>
+<span id="cb4-24"><a href="#cb4-24" tabindex="-1"></a><span class="at">  </span><span class="fu">phr</span><span class="kw">:</span><span class="at"> </span><span class="fl">0.97</span></span>
+<span id="cb4-25"><a href="#cb4-25" tabindex="-1"></a><span class="fu">simulation_config</span><span class="kw">:</span></span>
+<span id="cb4-26"><a href="#cb4-26" tabindex="-1"></a><span class="at">  </span><span class="fu">start_date</span><span class="kw">:</span><span class="at"> 10/01/2023</span><span class="co"> # m/d/Y</span></span>
+<span id="cb4-27"><a href="#cb4-27" tabindex="-1"></a><span class="at">  </span><span class="fu">length</span><span class="kw">:</span><span class="at"> </span><span class="dv">150</span></span>
+<span id="cb4-28"><a href="#cb4-28" tabindex="-1"></a><span class="at">  </span><span class="fu">nsim</span><span class="kw">:</span><span class="at"> </span><span class="dv">1</span></span></code></pre></div>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># run simulation</span></span>
 <span><span class="va">sim_out</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/metaRVM.html">metaRVM</a></span><span class="op">(</span><span class="va">cfg</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Loading required namespace: pkgbuild</span></span>
