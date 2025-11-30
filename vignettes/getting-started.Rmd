@@ -82,7 +82,7 @@ simulation_config:
   nsim: 1
 ```
 
-For a detailed explanation of all the configuration options, please see the [Model Configurations](articles/yaml-configuration.html) vignette.
+For a detailed explanation of all the configuration options, please see the `yaml-configuration.html` vignette.
 
 ## Running the Simulation
 
@@ -101,4 +101,4 @@ print(sim_out)
 head(sim_out$results)
 ```
 
-For more details on running `metaRVM`, refer to the [Running Simulation](articles/running-a-simulation.html) vignette.
+For more details on running `metaRVM`, refer to the `running-a-simulation.html` vignette.
