@@ -77,9 +77,7 @@ simulation_config:
 ```
 
 For a detailed explanation of all the configuration options, please see
-the [Model
-Configurations](https://RESUME-Epi.github.io/MetaRVM/articles/articles/yaml-configuration.md)
-vignette.
+the `yaml-configuration.html` vignette.
 
 ## Running the Simulation
 
@@ -120,6 +118,5 @@ head(sim_out$results)
 #> 6: 2023-10-01   0-17      A     11         I_eff 2.476245e+01        1
 ```
 
-For more details on running `metaRVM`, refer to the [Running
-Simulation](https://RESUME-Epi.github.io/MetaRVM/articles/articles/running-a-simulation.md)
-vignette.
+For more details on running `metaRVM`, refer to the
+`running-a-simulation.html` vignette.

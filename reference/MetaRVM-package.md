@@ -1,12 +1,14 @@
-# MetaRVM: Meta-population Compartmental Model for Respiratory Virus Diseases
+# MetaRVM: Meta-Population Compartmental Model for Respiratory Virus Diseases
 
-A comprehensive R package for simulating respiratory virus epidemics
-using meta-population compartmental models. MetaRVM implements a
-stochastic SEIRD (Susceptible-Exposed-Infected-Recovered-Dead) framework
-with demographic stratification by age, race, and geographic zones. The
-package supports complex epidemiological scenarios including
-asymptomatic and presymptomatic transmission, hospitalization dynamics,
-vaccination campaigns, and time-varying contact patterns.
+Simulates respiratory virus epidemics using meta-population
+compartmental models following Fadikar et. al. (2025)
+[doi:10.1101/2025.05.05.25327021](https://doi.org/10.1101/2025.05.05.25327021)
+. 'MetaRVM' implements a stochastic SEIRD
+(Susceptible-Exposed-Infected-Recovered-Dead) framework with demographic
+stratification by age, race, and geographic zones. It supports complex
+epidemiological scenarios including asymptomatic and presymptomatic
+transmission, hospitalization dynamics, vaccination schedules, and
+time-varying contact patterns via mixing matrices.
 
 ## See also
 
