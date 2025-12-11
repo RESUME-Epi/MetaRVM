@@ -142,6 +142,7 @@ parse_config <- function(config_file, return_object = FALSE){
   # temporarily set the working directory to the yaml file location
   old_wd <- getwd()
   setwd(yaml_file_path)
+  on.exit(setwd(old_wd))
 
   # check random seed
   if(!is.null(yaml_data$simulation_config$random_seed)){
@@ -563,3 +564,4 @@ draw_sample <- function(config_list, N_pop, seed = NULL){
     return(rep(x, N_pop))
   } else return(config_list)
 }
+

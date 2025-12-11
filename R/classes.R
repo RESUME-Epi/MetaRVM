@@ -211,6 +211,7 @@ MetaRVMConfig <- R6::R6Class(
 #' geographic zone categories, plus method chaining for streamlined analysis workflows.
 #' 
 #' @examples
+#' \donttest{
 #' options(odin.verbose = FALSE)
 #' example_config <- system.file("extdata", "example_config.yaml", package = "MetaRVM")
 #' # Run simulation
@@ -231,7 +232,7 @@ MetaRVMConfig <- R6::R6Class(
 #'   stats = c("median", "quantile"),
 #'   quantiles = c(0.25, 0.75)
 #' )$plot()
-#' 
+#' }
 #' 
 #' @import R6
 #' @import data.table
@@ -578,7 +579,7 @@ MetaRVMResults <- R6::R6Class(
 #' }
 #' 
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' options(odin.verbose = FALSE)
 #' example_config <- system.file("extdata", "example_config_dist.yaml", package = "MetaRVM")
 #' # Run simulation
@@ -780,6 +781,7 @@ MetaRVMSummary <- R6::R6Class(
 #' @return x if x is not NULL, otherwise y
 #' @examples
 #' \dontrun{
+#' user_title <- "User Title"
 #' # Internal usage in classes
 #' title <- user_title %||% "Default Title"
 #' }
