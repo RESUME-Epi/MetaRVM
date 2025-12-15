@@ -21,6 +21,7 @@ This is a utility function used internally by MetaRVM classes.
 }
 \examples{
 \dontrun{
+user_title <- "User Title"
 # Internal usage in classes
 title <- user_title \%||\% "Default Title"
 }

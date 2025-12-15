@@ -109,7 +109,7 @@ package is installed.</p>
 <code class="sourceCode R"><span><span class="co"># Locate the example YAML configuration file</span></span>
 <span><span class="va">yaml_file</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, <span class="st">"example_config.yaml"</span>, package <span class="op">=</span> <span class="st">"MetaRVM"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">yaml_file</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] "/tmp/RtmpctkTqu/temp_libpathf0c6a932b09b/MetaRVM/extdata/example_config.yaml"</span></span></code></pre></div>
+<span><span class="co">#&gt; [1] "/tmp/Rtmpj9CZ7i/temp_libpathfe55dc3a2b6/MetaRVM/extdata/example_config.yaml"</span></span></code></pre></div>
 <p>The <code>yaml_file</code> variable now holds the full path to the
 example configuration file. This file is set up to use the other example
 data files (also in the <code>extdata</code> directory) with relative
@@ -143,8 +143,7 @@ paths. Below is the content of the yaml file.</p>
 <span id="cb4-27"><a href="#cb4-27" tabindex="-1"></a><span class="at">  </span><span class="fu">length</span><span class="kw">:</span><span class="at"> </span><span class="dv">150</span></span>
 <span id="cb4-28"><a href="#cb4-28" tabindex="-1"></a><span class="at">  </span><span class="fu">nsim</span><span class="kw">:</span><span class="at"> </span><span class="dv">1</span></span></code></pre></div>
 <p>For a detailed explanation of all the configuration options, please
-see the <a href="articles/yaml-configuration.html">Model
-Configurations</a> vignette.</p>
+see the <code>yaml-configuration.html</code> vignette.</p>
 </div>
 <div class="section level2">
 <h2 id="running-the-simulation">Running the Simulation<a class="anchor" aria-label="anchor" href="#running-the-simulation"></a>
@@ -179,8 +178,8 @@ be run using the <code><a href="../reference/metaRVM.html">metaRVM()</a></code> 
 <span><span class="co">#&gt; 4: 2023-10-01   0-17      A     11         I_all 2.731688e+01        1</span></span>
 <span><span class="co">#&gt; 5: 2023-10-01   0-17      A     11       I_asymp 3.227854e-01        1</span></span>
 <span><span class="co">#&gt; 6: 2023-10-01   0-17      A     11         I_eff 2.476245e+01        1</span></span></code></pre></div>
-<p>For more details on running <code>metaRVM</code>, refer to the <a href="articles/running-a-simulation.html">Running Simulation</a>
-vignette.</p>
+<p>For more details on running <code>metaRVM</code>, refer to the
+<code>running-a-simulation.html</code> vignette.</p>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>

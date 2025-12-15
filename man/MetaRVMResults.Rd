@@ -15,6 +15,7 @@ methods for flexible data summarization across any combination of age, race, and
 geographic zone categories, plus method chaining for streamlined analysis workflows.
 }
 \examples{
+\donttest{
 options(odin.verbose = FALSE)
 example_config <- system.file("extdata", "example_config.yaml", package = "MetaRVM")
 # Run simulation
@@ -35,7 +36,7 @@ results_obj$subset_data(disease_state = "H")$summarize(
   stats = c("median", "quantile"),
   quantiles = c(0.25, 0.75)
 )$plot()
-
+}
 
 }
 \author{

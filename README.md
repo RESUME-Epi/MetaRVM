@@ -57,7 +57,7 @@ The development version of `MetaRVM` can be installed from
 
 ``` r
 # install.packages("devtools")
-devtools::install_github("NSF-RESUME/MetaRVM")
+devtools::install_github("RESUME-Epi/MetaRVM")
 ```
 
 ### Running a simulation

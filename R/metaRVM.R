@@ -65,6 +65,7 @@
 #' [meta_sim()] for the low-level simulation engine.
 #'
 #' @examples
+#' \donttest{
 #' options(odin.verbose = FALSE)
 #' example_config <- system.file("extdata", "example_config.yaml",
 #'                               package = "MetaRVM")
@@ -89,7 +90,7 @@
 #' # Using a pre-parsed configuration object
 #' cfg <- parse_config(example_config, return_object = TRUE)
 #' results2 <- metaRVM(cfg)
-#' 
+#' }
 #' @references
 #' Fadikar, A., et al. "Developing and deploying a use-inspired metapopulation modeling framework for detailed tracking of stratified health outcomes"
 #'

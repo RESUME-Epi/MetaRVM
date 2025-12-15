@@ -175,6 +175,7 @@
 #' }
 #'
 #' @examples
+#' \donttest{
 #' options(odin.verbose = FALSE)
 #' # Basic deterministic simulation
 #' N_pop <- 2
@@ -223,7 +224,7 @@
 #'   nsteps = nsteps,
 #'   is.stoch = FALSE
 #' )
-#' 
+#' }
 #'
 #'
 #' @seealso

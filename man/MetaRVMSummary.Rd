@@ -37,7 +37,7 @@ Plotting behavior adapts automatically:
 }
 
 \examples{
-\dontrun{
+\donttest{
 options(odin.verbose = FALSE)
 example_config <- system.file("extdata", "example_config_dist.yaml", package = "MetaRVM")
 # Run simulation

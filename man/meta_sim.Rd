@@ -259,6 +259,7 @@ When do_chk = TRUE, the function saves a checkpoint file containing:
 }
 
 \examples{
+\donttest{
 options(odin.verbose = FALSE)
 # Basic deterministic simulation
 N_pop <- 2
@@ -307,7 +308,7 @@ results <- meta_sim(
   nsteps = nsteps,
   is.stoch = FALSE
 )
-
+}
 
 
 }
