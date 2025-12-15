@@ -107,6 +107,7 @@
 #' \code{date} (MM/DD/YYYY format) and vaccination counts for each population group
 #'
 #' @examples
+#' \donttest{
 #' options(odin.verbose = FALSE)
 #' example_config <- system.file("extdata", "example_config.yaml", package = "MetaRVM")
 #' # Parse configuration file and return list (backward compatible)
@@ -121,7 +122,7 @@
 #' 
 #' # Use with MetaRVM simulation
 #' results <- metaRVM(config_obj)
-#' 
+#' }
 #'
 #' @seealso
 #' \code{\link{metaRVM}} for running simulations with parsed configuration
