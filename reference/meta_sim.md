@@ -403,6 +403,7 @@ Arindam Fadikar, Charles Macal, Ignacio Martinez-Moyano, Jonathan Ozik
 ## Examples
 
 ``` r
+# \donttest{
 options(odin.verbose = FALSE)
 # Basic deterministic simulation
 N_pop <- 2
@@ -451,6 +452,6 @@ results <- meta_sim(
   nsteps = nsteps,
   is.stoch = FALSE
 )
-
+# }
 
 ```

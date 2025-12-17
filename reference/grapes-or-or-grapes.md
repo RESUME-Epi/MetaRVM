@@ -28,6 +28,7 @@ x if x is not NULL, otherwise y
 
 ``` r
 if (FALSE) { # \dontrun{
+user_title <- "User Title"
 # Internal usage in classes
 title <- user_title %||% "Default Title"
 } # }

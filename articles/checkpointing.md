@@ -53,7 +53,7 @@ example_config <- system.file("extdata", "example_config_checkpoint.yaml",
 # Create a temporary directory for checkpoints
 checkpoint_dir <- tempdir()
 cat("Checkpoint directory:", checkpoint_dir, "\n")
-#> Checkpoint directory: /tmp/RtmpBrj2rg
+#> Checkpoint directory: /tmp/RtmpcxA3aM
 ```
 
 ### Create a Configuration with Checkpointing
@@ -160,7 +160,7 @@ if (length(checkpoint_files_full) > 0) {
 } else {
   cat("No checkpoint files found to resume from.\n")
 }
-#> /tmp/RtmpBrj2rg/chk_2024-12-29_1.Rda 
+#> /tmp/RtmpcxA3aM/chk_2024-12-29_1.Rda 
 #> 
 #> Number of instances: 1 
 #> Date range: 2024-12-30 to 2025-03-29

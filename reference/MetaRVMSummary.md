@@ -186,7 +186,7 @@ The objects of this class are cloneable with this method.
 ## Examples
 
 ``` r
-if (FALSE) { # \dontrun{
+# \donttest{
 options(odin.verbose = FALSE)
 example_config <- system.file("extdata", "example_config_dist.yaml", package = "MetaRVM")
 # Run simulation
@@ -201,7 +201,9 @@ summary_obj <- results$subset_data(disease_state = "H")$summarize(
 # Direct plotting
 summary_obj$plot()
 
+
 # Plot with custom ggplot theme and confidence level
 summary_obj$plot(theme = ggplot2::theme_bw())
-} # }
+
+# }
 ```

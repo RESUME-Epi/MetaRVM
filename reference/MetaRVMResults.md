@@ -220,6 +220,7 @@ The objects of this class are cloneable with this method.
 ## Examples
 
 ``` r
+# \donttest{
 options(odin.verbose = FALSE)
 example_config <- system.file("extdata", "example_config.yaml", package = "MetaRVM")
 # Run simulation
@@ -256,5 +257,5 @@ results_obj$subset_data(disease_state = "H")$summarize(
 #> ℹ The deprecated feature was likely used in the MetaRVM package.
 #>   Please report the issue at <https://github.com/RESUME-Epi/MetaRVM/issues>.
 
-
+# }
 ```

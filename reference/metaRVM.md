@@ -121,6 +121,7 @@ Arindam Fadikar, Charles Macal, Ignacio Martinez-Moyano, Jonathan Ozik
 ## Examples
 
 ``` r
+# \donttest{
 options(odin.verbose = FALSE)
 example_config <- system.file("extdata", "example_config.yaml",
                               package = "MetaRVM")
@@ -161,4 +162,5 @@ results$summarize(
 # Using a pre-parsed configuration object
 cfg <- parse_config(example_config, return_object = TRUE)
 results2 <- metaRVM(cfg)
+# }
 ```
