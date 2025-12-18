@@ -310,8 +310,8 @@ meta_sim <- function(N_pop, ts, tv,
     dim(tt)     <- user()
     dim(vac)    <- user()
 
-    n_SV_eff[] <- n_SV[i] * vac_eff[i]
-
+    # n_SV_eff[] <- n_SV[i] * vac_eff[i]
+    n_SV_eff[] <- n_SV[i] * 1   # all vaccinated people are moved to V
 
     ## =================================================
     # time/day specific mobility matrix
@@ -346,7 +346,7 @@ meta_sim <- function(N_pop, ts, tv,
     ## =================================================
     ## Force of infection
     lambda_i[] <- beta_i[i] * I_eff[i] / P_eff[i]
-    lambda_v[] <- beta_v[i] * I_eff[i] / P_eff[i]
+    lambda_v[] <- beta_i[i] * (1 - vac_eff[i]) * I_eff[i] / P_eff[i]
 
     ## =================================================
     ## Draws from binomial distributions for numbers changing between
