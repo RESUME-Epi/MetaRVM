@@ -7,7 +7,12 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
-
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
 
 ## Introduction
 
@@ -36,8 +41,7 @@ For the purpose of this example, we will set the checkpointed directory to be a 
 
 ### Set Up
 
-
-``` r
+```{r setup}
 library(MetaRVM)
 options(odin.verbose = FALSE)
 
@@ -48,15 +52,13 @@ example_config <- system.file("extdata", "example_config_checkpoint.yaml",
 # Create a temporary directory for checkpoints
 checkpoint_dir <- tempdir()
 cat("Checkpoint directory:", checkpoint_dir, "\n")
-#> Checkpoint directory: /tmp/RtmpGtasTI
 ```
 
 ### Create a Configuration with Checkpointing
 
 Now copy the example configuration and modify it to add checkpointing:
 
-
-``` r
+```{r create_config}
 # Read the example configuration
 yml <- yaml::read_yaml(example_config)
 yml_tmp <- data.table::copy(yml)
@@ -73,8 +75,7 @@ temp_config <- normalizePath(temp_config)
 
 ### Run Simulation with Checkpoints
 
-
-``` r
+```{r run_simulation}
 
 # Run the simulation
 results <- metaRVM(temp_config)
@@ -91,41 +92,25 @@ if (length(checkpoint_files) > 0) {
 } else {
   cat("  (No checkpoint files found)\n")
 }
-#>   - chk_2024-12-29_1.Rda
+
 ```
 
 ### Examine the Results
 
-
-``` r
+```{r examine_results}
 cat("Number of instances:", results$run_info$n_instances, "\n")
-#> Number of instances: 1
 cat("Date range:", format(results$run_info$date_range[1]), "to", 
     format(results$run_info$date_range[2]), "\n")
-#> Date range: 2024-10-01 to 2024-12-29
 
 # Display first few rows
 print(head(results$results, 10))
-#>           date    age   race   zone disease_state        value instance
-#>         <Date> <char> <char> <char>        <char>        <num>    <int>
-#>  1: 2024-10-01   0-17      A     11             D 2.252583e-04        1
-#>  2: 2024-10-01   0-17      A     11             E 1.305178e+01        1
-#>  3: 2024-10-01   0-17      A     11             H 2.304447e-01        1
-#>  4: 2024-10-01   0-17      A     11         I_all 2.731688e+01        1
-#>  5: 2024-10-01   0-17      A     11       I_asymp 3.227854e-01        1
-#>  6: 2024-10-01   0-17      A     11         I_eff 2.647304e+01        1
-#>  7: 2024-10-01   0-17      A     11     I_presymp 7.531660e-01        1
-#>  8: 2024-10-01   0-17      A     11        I_symp 2.624093e+01        1
-#>  9: 2024-10-01   0-17      A     11             P 3.074200e+04        1
-#> 10: 2024-10-01   0-17      A     11             R 1.148308e+01        1
 ```
 
 ### Resume from a Checkpoint
 
 We'll create a new configuration that restores from the checkpoint. We need to provide the checkpoint file name, and a start date which should be the next day of the end date in the previous run.
 
-
-``` r
+```{r resume_from_checkpoint, eval = T}
 # Get the first checkpoint file
 checkpoint_files_full <- list.files(checkpoint_dir, 
                                     pattern = "^chk_.*\\.Rda$",
@@ -157,16 +142,11 @@ if (length(checkpoint_files_full) > 0) {
 } else {
   cat("No checkpoint files found to resume from.\n")
 }
-#> /tmp/RtmpGtasTI/chk_2024-12-29_1.Rda 
-#> 
-#> Number of instances: 1 
-#> Date range: 2024-12-30 to 2025-03-29
 ```
 
 ### Plot
 
-
-``` r
+```{r plot, eval = T, fig.height = 6, fig.width = 8, fig.align = "center"}
 run1_hosp_sum <- results$results[disease_state == "H", .(total = sum(value)), by = "date"]
 run2_hosp_sum <- results_resumed$results[disease_state == "H", .(total = sum(value)), by = "date"]
 
@@ -175,12 +155,8 @@ ggplot(rbind(run1_hosp_sum, run2_hosp_sum), aes(date, total)) +
   geom_line(, color = "red") +
   geom_vline(xintercept = as.Date("2024-12-29"), linetype = "dashed") +
   labs(y = "Hospitalizations", x = "Date") + theme_bw()
-```
 
-<div class="figure" style="text-align: center">
-<img src="figure/plot-1.png" alt="plot of chunk plot"  />
-<p class="caption">plot of chunk plot</p>
-</div>
+```
 
 ## Understanding Checkpoint Files
 
