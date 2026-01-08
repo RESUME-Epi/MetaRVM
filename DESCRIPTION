@@ -1,6 +1,6 @@
 Package: MetaRVM
 Title: Meta-Population Compartmental Model for Respiratory Virus Diseases
-Version: 1.0.0
+Version: 1.0.1
 Authors@R: c(
     person("Arindam", "Fadikar", , "afadikar@anl.gov", role = c("aut", "cre", "cph"), comment = c(ORCID = "0000-0001-7396-0350")),
     person("Charles", "Macal", role = "ctb"),
