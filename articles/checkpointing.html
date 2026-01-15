@@ -25,7 +25,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">MetaRVM</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -137,7 +137,7 @@ configuration file based on a template.</p>
 <span><span class="co"># Create a temporary directory for checkpoints</span></span>
 <span><span class="va">checkpoint_dir</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"Checkpoint directory:"</span>, <span class="va">checkpoint_dir</span>, <span class="st">"\n"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Checkpoint directory: /tmp/RtmpDQTP4q</span></span></code></pre></div>
+<span><span class="co">#&gt; Checkpoint directory: /tmp/RtmpGtasTI</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="create-a-configuration-with-checkpointing">Create a Configuration with Checkpointing<a class="anchor" aria-label="anchor" href="#create-a-configuration-with-checkpointing"></a>
@@ -164,10 +164,6 @@ checkpointing:</p>
 <code class="sourceCode R"><span></span>
 <span><span class="co"># Run the simulation</span></span>
 <span><span class="va">results</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/metaRVM.html">metaRVM</a></span><span class="op">(</span><span class="va">temp_config</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Loading required namespace: pkgbuild</span></span>
-<span><span class="co">#&gt; Unused equations: beta_v, dim_beta_v</span></span>
-<span><span class="co">#&gt;  beta_v[] &lt;- user() # (line 108)</span></span>
-<span><span class="co">#&gt;  dim(beta_v) &lt;- N_pop # (line 145)</span></span>
 <span></span>
 <span><span class="co"># Check what checkpoint files were created</span></span>
 <span><span class="va">checkpoint_files</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.files.html" class="external-link">list.files</a></span><span class="op">(</span><span class="va">checkpoint_dir</span>, </span>
@@ -198,12 +194,12 @@ checkpointing:</p>
 <span><span class="co">#&gt;           date    age   race   zone disease_state        value instance</span></span>
 <span><span class="co">#&gt;         &lt;Date&gt; &lt;char&gt; &lt;char&gt; &lt;char&gt;        &lt;char&gt;        &lt;num&gt;    &lt;int&gt;</span></span>
 <span><span class="co">#&gt;  1: 2024-10-01   0-17      A     11             D 2.252583e-04        1</span></span>
-<span><span class="co">#&gt;  2: 2024-10-01   0-17      A     11             E 1.346375e+01        1</span></span>
+<span><span class="co">#&gt;  2: 2024-10-01   0-17      A     11             E 1.305178e+01        1</span></span>
 <span><span class="co">#&gt;  3: 2024-10-01   0-17      A     11             H 2.304447e-01        1</span></span>
-<span><span class="co">#&gt;  4: 2024-10-01   0-17      A     11         I_all 2.739162e+01        1</span></span>
-<span><span class="co">#&gt;  5: 2024-10-01   0-17      A     11       I_asymp 3.452058e-01        1</span></span>
-<span><span class="co">#&gt;  6: 2024-10-01   0-17      A     11         I_eff 2.653406e+01        1</span></span>
-<span><span class="co">#&gt;  7: 2024-10-01   0-17      A     11     I_presymp 8.054801e-01        1</span></span>
+<span><span class="co">#&gt;  4: 2024-10-01   0-17      A     11         I_all 2.731688e+01        1</span></span>
+<span><span class="co">#&gt;  5: 2024-10-01   0-17      A     11       I_asymp 3.227854e-01        1</span></span>
+<span><span class="co">#&gt;  6: 2024-10-01   0-17      A     11         I_eff 2.647304e+01        1</span></span>
+<span><span class="co">#&gt;  7: 2024-10-01   0-17      A     11     I_presymp 7.531660e-01        1</span></span>
 <span><span class="co">#&gt;  8: 2024-10-01   0-17      A     11        I_symp 2.624093e+01        1</span></span>
 <span><span class="co">#&gt;  9: 2024-10-01   0-17      A     11             P 3.074200e+04        1</span></span>
 <span><span class="co">#&gt; 10: 2024-10-01   0-17      A     11             R 1.148308e+01        1</span></span></code></pre></div>
@@ -246,10 +242,8 @@ should be the next day of the end date in the previous run.</p>
 <span><span class="op">}</span> <span class="kw">else</span> <span class="op">{</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"No checkpoint files found to resume from.\n"</span><span class="op">)</span></span>
 <span><span class="op">}</span></span>
-<span><span class="co">#&gt; /tmp/RtmpDQTP4q/chk_2024-12-29_1.Rda</span></span>
-<span><span class="co">#&gt; Unused equations: beta_v, dim_beta_v</span></span>
-<span><span class="co">#&gt;  beta_v[] &lt;- user() # (line 108)</span></span>
-<span><span class="co">#&gt;  dim(beta_v) &lt;- N_pop # (line 145)</span></span>
+<span><span class="co">#&gt; /tmp/RtmpGtasTI/chk_2024-12-29_1.Rda </span></span>
+<span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Number of instances: 1 </span></span>
 <span><span class="co">#&gt; Date range: 2024-12-30 to 2025-03-29</span></span></code></pre></div>
 </div>
@@ -265,7 +259,11 @@ should be the next day of the end date in the previous run.</p>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html" class="external-link">geom_line</a></span><span class="op">(</span>, color <span class="op">=</span> <span class="st">"red"</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_abline.html" class="external-link">geom_vline</a></span><span class="op">(</span>xintercept <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/as.Date.html" class="external-link">as.Date</a></span><span class="op">(</span><span class="st">"2024-12-29"</span><span class="op">)</span>, linetype <span class="op">=</span> <span class="st">"dashed"</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>y <span class="op">=</span> <span class="st">"Hospitalizations"</span>, x <span class="op">=</span> <span class="st">"Date"</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html" class="external-link">theme_bw</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
-<p><img src="checkpointing_files/figure-html/plot-1.png" class="r-plt" alt="" width="768" style="display: block; margin: auto;"></p>
+<div class="figure" style="text-align: center">
+<img src="figure/plot-1.png" alt="plot of chunk plot"><p class="caption">
+plot of chunk plot
+</p>
+</div>
 </div>
 </div>
 <div class="section level2">
