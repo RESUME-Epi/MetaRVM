@@ -191,6 +191,66 @@ options(odin.verbose = FALSE)
 example_config <- system.file("extdata", "example_config_dist.yaml", package = "MetaRVM")
 # Run simulation
 results <- metaRVM(example_config)
+#> Unused equations: beta_v, dim_beta_v
+#>  beta_v[] <- user() # (line 108)
+#>  dim(beta_v) <- N_pop # (line 145)
+#> Unused equations: beta_v, dim_beta_v
+#>  beta_v[] <- user() # (line 108)
+#>  dim(beta_v) <- N_pop # (line 145)
+#> Unused equations: beta_v, dim_beta_v
+#>  beta_v[] <- user() # (line 108)
+#>  dim(beta_v) <- N_pop # (line 145)
+#> Unused equations: beta_v, dim_beta_v
+#>  beta_v[] <- user() # (line 108)
+#>  dim(beta_v) <- N_pop # (line 145)
+#> Unused equations: beta_v, dim_beta_v
+#>  beta_v[] <- user() # (line 108)
+#>  dim(beta_v) <- N_pop # (line 145)
+#> Unused equations: beta_v, dim_beta_v
+#>  beta_v[] <- user() # (line 108)
+#>  dim(beta_v) <- N_pop # (line 145)
+#> Unused equations: beta_v, dim_beta_v
+#>  beta_v[] <- user() # (line 108)
+#>  dim(beta_v) <- N_pop # (line 145)
+#> Unused equations: beta_v, dim_beta_v
+#>  beta_v[] <- user() # (line 108)
+#>  dim(beta_v) <- N_pop # (line 145)
+#> Unused equations: beta_v, dim_beta_v
+#>  beta_v[] <- user() # (line 108)
+#>  dim(beta_v) <- N_pop # (line 145)
+#> Unused equations: beta_v, dim_beta_v
+#>  beta_v[] <- user() # (line 108)
+#>  dim(beta_v) <- N_pop # (line 145)
+#> Unused equations: beta_v, dim_beta_v
+#>  beta_v[] <- user() # (line 108)
+#>  dim(beta_v) <- N_pop # (line 145)
+#> Unused equations: beta_v, dim_beta_v
+#>  beta_v[] <- user() # (line 108)
+#>  dim(beta_v) <- N_pop # (line 145)
+#> Unused equations: beta_v, dim_beta_v
+#>  beta_v[] <- user() # (line 108)
+#>  dim(beta_v) <- N_pop # (line 145)
+#> Unused equations: beta_v, dim_beta_v
+#>  beta_v[] <- user() # (line 108)
+#>  dim(beta_v) <- N_pop # (line 145)
+#> Unused equations: beta_v, dim_beta_v
+#>  beta_v[] <- user() # (line 108)
+#>  dim(beta_v) <- N_pop # (line 145)
+#> Unused equations: beta_v, dim_beta_v
+#>  beta_v[] <- user() # (line 108)
+#>  dim(beta_v) <- N_pop # (line 145)
+#> Unused equations: beta_v, dim_beta_v
+#>  beta_v[] <- user() # (line 108)
+#>  dim(beta_v) <- N_pop # (line 145)
+#> Unused equations: beta_v, dim_beta_v
+#>  beta_v[] <- user() # (line 108)
+#>  dim(beta_v) <- N_pop # (line 145)
+#> Unused equations: beta_v, dim_beta_v
+#>  beta_v[] <- user() # (line 108)
+#>  dim(beta_v) <- N_pop # (line 145)
+#> Unused equations: beta_v, dim_beta_v
+#>  beta_v[] <- user() # (line 108)
+#>  dim(beta_v) <- N_pop # (line 145)
 # Typically created through method chaining
 summary_obj <- results$subset_data(disease_state = "H")$summarize(
   group_by = c("age", "race"), 

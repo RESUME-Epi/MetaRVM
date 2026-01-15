@@ -138,7 +138,10 @@ be run using the <code><a href="../reference/metaRVM.html">metaRVM()</a></code> 
 <span></span>
 <span><span class="co"># Run the simulation</span></span>
 <span><span class="va">sim_out</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/metaRVM.html">metaRVM</a></span><span class="op">(</span><span class="va">yaml_file</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Loading required namespace: pkgbuild</span></span></code></pre></div>
+<span><span class="co">#&gt; Loading required namespace: pkgbuild</span></span>
+<span><span class="co">#&gt; Unused equations: beta_v, dim_beta_v</span></span>
+<span><span class="co">#&gt;  beta_v[] &lt;- user() # (line 108)</span></span>
+<span><span class="co">#&gt;  dim(beta_v) &lt;- N_pop # (line 145)</span></span></code></pre></div>
 <p>The <code><a href="../reference/metaRVM.html">metaRVM()</a></code> function will parse the YAML file, read
 the associated data files, run the simulation, and return a
 <code>MetaRVMResults</code> object.</p>
@@ -221,10 +224,16 @@ ability to define parameters for specific demographic strata.</p>
 <span></span>
 <span><span class="co"># Method 2: From MetaRVMConfig object</span></span>
 <span><span class="va">sim_out</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/metaRVM.html">metaRVM</a></span><span class="op">(</span><span class="va">config_obj</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Unused equations: beta_v, dim_beta_v</span></span>
+<span><span class="co">#&gt;  beta_v[] &lt;- user() # (line 108)</span></span>
+<span><span class="co">#&gt;  dim(beta_v) &lt;- N_pop # (line 145)</span></span>
 <span></span>
 <span><span class="co"># Method 3: From parsed configuration list</span></span>
 <span><span class="va">config_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/parse_config.html">parse_config</a></span><span class="op">(</span><span class="va">yaml_file</span><span class="op">)</span></span>
-<span><span class="va">sim_out</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/metaRVM.html">metaRVM</a></span><span class="op">(</span><span class="va">config_list</span><span class="op">)</span></span></code></pre></div>
+<span><span class="va">sim_out</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/metaRVM.html">metaRVM</a></span><span class="op">(</span><span class="va">config_list</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Unused equations: beta_v, dim_beta_v</span></span>
+<span><span class="co">#&gt;  beta_v[] &lt;- user() # (line 108)</span></span>
+<span><span class="co">#&gt;  dim(beta_v) &lt;- N_pop # (line 145)</span></span></code></pre></div>
 </div>
 </div>
 <div class="section level3">
@@ -269,11 +278,11 @@ class <code>MetaRVMResults</code>.</p>
 <span><span class="co">#&gt;    4: 2023-10-01   0-17      D     11             H  1.4867401        1</span></span>
 <span><span class="co">#&gt;    5: 2023-10-01  18-64      A     11             H  0.3047817        1</span></span>
 <span><span class="co">#&gt;   ---                                                                  </span></span>
-<span><span class="co">#&gt; 3596: 2024-02-27  18-64      D     22             H  3.0363099        1</span></span>
-<span><span class="co">#&gt; 3597: 2024-02-27    65+      A     22             H  1.1367252        1</span></span>
-<span><span class="co">#&gt; 3598: 2024-02-27    65+      B     22             H  1.8119748        1</span></span>
-<span><span class="co">#&gt; 3599: 2024-02-27    65+      C     22             H 10.5239938        1</span></span>
-<span><span class="co">#&gt; 3600: 2024-02-27    65+      D     22             H 11.8169822        1</span></span>
+<span><span class="co">#&gt; 3596: 2024-02-27  18-64      D     22             H  2.7365466        1</span></span>
+<span><span class="co">#&gt; 3597: 2024-02-27    65+      A     22             H  1.1107446        1</span></span>
+<span><span class="co">#&gt; 3598: 2024-02-27    65+      B     22             H  1.6779075        1</span></span>
+<span><span class="co">#&gt; 3599: 2024-02-27    65+      C     22             H 10.0053788        1</span></span>
+<span><span class="co">#&gt; 3600: 2024-02-27    65+      D     22             H 11.3371490        1</span></span>
 <span></span>
 <span><span class="co"># Subset by multiple demographic categories</span></span>
 <span><span class="va">elderly_data</span> <span class="op">&lt;-</span> <span class="va">sim_out</span><span class="op">$</span><span class="fu">subset_data</span><span class="op">(</span></span>
@@ -289,11 +298,11 @@ class <code>MetaRVMResults</code>.</p>
 <span><span class="co">#&gt;    4: 2023-10-01    65+      B     11             H 8.920441e-02        1</span></span>
 <span><span class="co">#&gt;    5: 2023-10-01    65+      C     11             D 8.719675e-05        1</span></span>
 <span><span class="co">#&gt;   ---                                                                    </span></span>
-<span><span class="co">#&gt; 2396: 2024-02-27    65+      B     22             H 1.811975e+00        1</span></span>
-<span><span class="co">#&gt; 2397: 2024-02-27    65+      C     22             D 7.200555e+01        1</span></span>
-<span><span class="co">#&gt; 2398: 2024-02-27    65+      C     22             H 1.052399e+01        1</span></span>
-<span><span class="co">#&gt; 2399: 2024-02-27    65+      D     22             D 8.575588e+01        1</span></span>
-<span><span class="co">#&gt; 2400: 2024-02-27    65+      D     22             H 1.181698e+01        1</span></span>
+<span><span class="co">#&gt; 2396: 2024-02-27    65+      B     22             H 1.677908e+00        1</span></span>
+<span><span class="co">#&gt; 2397: 2024-02-27    65+      C     22             D 7.181711e+01        1</span></span>
+<span><span class="co">#&gt; 2398: 2024-02-27    65+      C     22             H 1.000538e+01        1</span></span>
+<span><span class="co">#&gt; 2399: 2024-02-27    65+      D     22             D 8.556737e+01        1</span></span>
+<span><span class="co">#&gt; 2400: 2024-02-27    65+      D     22             H 1.133715e+01        1</span></span>
 <span></span>
 <span><span class="co"># Specific date range</span></span>
 <span><span class="va">peak_period</span> <span class="op">&lt;-</span> <span class="va">sim_out</span><span class="op">$</span><span class="fu">subset_data</span><span class="op">(</span></span>
@@ -311,11 +320,11 @@ class <code>MetaRVMResults</code>.</p>
 <span><span class="co">#&gt;    4: 2023-10-01   0-17      D     11             H  1.4867401        1</span></span>
 <span><span class="co">#&gt;    5: 2023-10-01  18-64      A     11             H  0.3047817        1</span></span>
 <span><span class="co">#&gt;   ---                                                                  </span></span>
-<span><span class="co">#&gt; 2204: 2023-12-31  18-64      D     22             H 10.4461399        1</span></span>
-<span><span class="co">#&gt; 2205: 2023-12-31    65+      A     22             H  1.4218017        1</span></span>
-<span><span class="co">#&gt; 2206: 2023-12-31    65+      B     22             H  4.4579963        1</span></span>
-<span><span class="co">#&gt; 2207: 2023-12-31    65+      C     22             H 55.2328788        1</span></span>
-<span><span class="co">#&gt; 2208: 2023-12-31    65+      D     22             H 74.7225667        1</span></span></code></pre></div>
+<span><span class="co">#&gt; 2204: 2023-12-31  18-64      D     22             H 10.4268911        1</span></span>
+<span><span class="co">#&gt; 2205: 2023-12-31    65+      A     22             H  1.3508017        1</span></span>
+<span><span class="co">#&gt; 2206: 2023-12-31    65+      B     22             H  4.5130497        1</span></span>
+<span><span class="co">#&gt; 2207: 2023-12-31    65+      C     22             H 55.2465688        1</span></span>
+<span><span class="co">#&gt; 2208: 2023-12-31    65+      D     22             H 74.6798530        1</span></span></code></pre></div>
 </div>
 </div>
 <div class="section level2">
@@ -405,10 +414,10 @@ simulation with parameter distributions, we can use the
 <span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Please use `linewidth` instead.</span></span>
 <span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> The deprecated feature was likely used in the <span style="color: #0000BB;">MetaRVM</span> package.</span></span>
 <span><span class="co">#&gt;   Please report the issue at <span style="color: #0000BB; font-style: italic;">&lt;https://github.com/RESUME-Epi/MetaRVM/issues&gt;</span>.</span></span>
-<span><span class="co">#&gt; <span style="color: #555555;">This warning is displayed once every 8 hours.</span></span></span>
+<span><span class="co">#&gt; <span style="color: #555555;">This warning is displayed once per session.</span></span></span>
 <span><span class="co">#&gt; <span style="color: #555555;">Call `lifecycle::last_lifecycle_warnings()` to see where this warning was</span></span></span>
 <span><span class="co">#&gt; <span style="color: #555555;">generated.</span></span></span></code></pre></div>
-<p><img src="running-a-simulation_files/figure-html/unnamed-chunk-12-1.png" class="r-plt" width="768" style="display: block; margin: auto;"></p>
+<p><img src="running-a-simulation_files/figure-html/unnamed-chunk-12-1.png" class="r-plt" alt="" width="768" style="display: block; margin: auto;"></p>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span></span>
 <span><span class="co"># Summary of hospitalizations by age and race group</span></span>
@@ -430,7 +439,7 @@ simulation with parameter distributions, we can use the
 <span></span>
 <span><span class="co"># visualize the summary</span></span>
 <span><span class="va">hospital_summary</span><span class="op">$</span><span class="fu">plot</span><span class="op">(</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ggtitle</a></span><span class="op">(</span><span class="st">"Daily Hospitalizations by Age and Race"</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html" class="external-link">theme_bw</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
-<p><img src="running-a-simulation_files/figure-html/unnamed-chunk-13-1.png" class="r-plt" width="768" style="display: block; margin: auto;"></p>
+<p><img src="running-a-simulation_files/figure-html/unnamed-chunk-13-1.png" class="r-plt" alt="" width="768" style="display: block; margin: auto;"></p>
 </div>
 </div>
 <div class="section level2">
@@ -510,7 +519,7 @@ lognormal distribution.</p>
 <span></span>
 <span><span class="co"># Plot the summary</span></span>
 <span><span class="va">hospital_summary_subgroup</span><span class="op">$</span><span class="fu">plot</span><span class="op">(</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ggtitle</a></span><span class="op">(</span><span class="st">"Daily Hospitalizations by Age Group (Subgroup Parameters)"</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html" class="external-link">theme_bw</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
-<p><img src="running-a-simulation_files/figure-html/unnamed-chunk-16-1.png" class="r-plt" width="768" style="display: block; margin: auto;"></p>
+<p><img src="running-a-simulation_files/figure-html/unnamed-chunk-16-1.png" class="r-plt" alt="" width="768" style="display: block; margin: auto;"></p>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>

@@ -72,6 +72,9 @@ options(odin.verbose = FALSE)
 # Run the simulation
 sim_out <- metaRVM(yaml_file)
 #> Loading required namespace: pkgbuild
+#> Unused equations: beta_v, dim_beta_v
+#>  beta_v[] <- user() # (line 108)
+#>  dim(beta_v) <- N_pop # (line 145)
 ```
 
 The
@@ -158,10 +161,16 @@ cat("Geographic zones:", paste(zones, collapse = ", "), "\n")
 
 # Method 2: From MetaRVMConfig object
 sim_out <- metaRVM(config_obj)
+#> Unused equations: beta_v, dim_beta_v
+#>  beta_v[] <- user() # (line 108)
+#>  dim(beta_v) <- N_pop # (line 145)
 
 # Method 3: From parsed configuration list
 config_list <- parse_config(yaml_file)
 sim_out <- metaRVM(config_list)
+#> Unused equations: beta_v, dim_beta_v
+#>  beta_v[] <- user() # (line 108)
+#>  dim(beta_v) <- N_pop # (line 145)
 ```
 
 ### Exploring the Results
@@ -209,11 +218,11 @@ hospitalized_data$results
 #>    4: 2023-10-01   0-17      D     11             H  1.4867401        1
 #>    5: 2023-10-01  18-64      A     11             H  0.3047817        1
 #>   ---                                                                  
-#> 3596: 2024-02-27  18-64      D     22             H  3.0363099        1
-#> 3597: 2024-02-27    65+      A     22             H  1.1367252        1
-#> 3598: 2024-02-27    65+      B     22             H  1.8119748        1
-#> 3599: 2024-02-27    65+      C     22             H 10.5239938        1
-#> 3600: 2024-02-27    65+      D     22             H 11.8169822        1
+#> 3596: 2024-02-27  18-64      D     22             H  2.7365466        1
+#> 3597: 2024-02-27    65+      A     22             H  1.1107446        1
+#> 3598: 2024-02-27    65+      B     22             H  1.6779075        1
+#> 3599: 2024-02-27    65+      C     22             H 10.0053788        1
+#> 3600: 2024-02-27    65+      D     22             H 11.3371490        1
 
 # Subset by multiple demographic categories
 elderly_data <- sim_out$subset_data(
@@ -229,11 +238,11 @@ elderly_data$results
 #>    4: 2023-10-01    65+      B     11             H 8.920441e-02        1
 #>    5: 2023-10-01    65+      C     11             D 8.719675e-05        1
 #>   ---                                                                    
-#> 2396: 2024-02-27    65+      B     22             H 1.811975e+00        1
-#> 2397: 2024-02-27    65+      C     22             D 7.200555e+01        1
-#> 2398: 2024-02-27    65+      C     22             H 1.052399e+01        1
-#> 2399: 2024-02-27    65+      D     22             D 8.575588e+01        1
-#> 2400: 2024-02-27    65+      D     22             H 1.181698e+01        1
+#> 2396: 2024-02-27    65+      B     22             H 1.677908e+00        1
+#> 2397: 2024-02-27    65+      C     22             D 7.181711e+01        1
+#> 2398: 2024-02-27    65+      C     22             H 1.000538e+01        1
+#> 2399: 2024-02-27    65+      D     22             D 8.556737e+01        1
+#> 2400: 2024-02-27    65+      D     22             H 1.133715e+01        1
 
 # Specific date range
 peak_period <- sim_out$subset_data(
@@ -251,11 +260,11 @@ peak_period$results
 #>    4: 2023-10-01   0-17      D     11             H  1.4867401        1
 #>    5: 2023-10-01  18-64      A     11             H  0.3047817        1
 #>   ---                                                                  
-#> 2204: 2023-12-31  18-64      D     22             H 10.4461399        1
-#> 2205: 2023-12-31    65+      A     22             H  1.4218017        1
-#> 2206: 2023-12-31    65+      B     22             H  4.4579963        1
-#> 2207: 2023-12-31    65+      C     22             H 55.2328788        1
-#> 2208: 2023-12-31    65+      D     22             H 74.7225667        1
+#> 2204: 2023-12-31  18-64      D     22             H 10.4268911        1
+#> 2205: 2023-12-31    65+      A     22             H  1.3508017        1
+#> 2206: 2023-12-31    65+      B     22             H  4.5130497        1
+#> 2207: 2023-12-31    65+      C     22             H 55.2465688        1
+#> 2208: 2023-12-31    65+      D     22             H 74.6798530        1
 ```
 
 ## Specifying Disease Parameter via Distributions
@@ -353,7 +362,7 @@ hospital_summary_dist$plot() + ggtitle("Daily Hospitalizations by Age Group (wit
 #> ℹ Please use `linewidth` instead.
 #> ℹ The deprecated feature was likely used in the MetaRVM package.
 #>   Please report the issue at <https://github.com/RESUME-Epi/MetaRVM/issues>.
-#> This warning is displayed once every 8 hours.
+#> This warning is displayed once per session.
 #> Call `lifecycle::last_lifecycle_warnings()` to see where this warning was
 #> generated.
 ```

@@ -93,9 +93,12 @@ library(MetaRVM)
 # Run the simulation
 sim_out <- metaRVM(yaml_file)
 #> Loading required namespace: pkgbuild
+#> Unused equations: beta_v, dim_beta_v
+#>  beta_v[] <- user() # (line 108)
+#>  dim(beta_v) <- N_pop # (line 145)
 #> Generating model in c
-#> ℹ Re-compiling odinc0fb853b (debug build)
-#> ℹ Loading odinc0fb853b
+#> ℹ Re-compiling odin61873c4e (debug build)
+#> ℹ Loading odin61873c4e
 ```
 
 ``` r

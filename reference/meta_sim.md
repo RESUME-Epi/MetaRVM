@@ -452,6 +452,9 @@ results <- meta_sim(
   nsteps = nsteps,
   is.stoch = FALSE
 )
+#> Unused equations: beta_v, dim_beta_v
+#>  beta_v[] <- user() # (line 108)
+#>  dim(beta_v) <- N_pop # (line 145)
 # }
 
 ```

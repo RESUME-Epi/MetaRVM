@@ -225,5 +225,8 @@ config_obj$list_parameters()
 
 # Use with MetaRVM simulation
 results <- metaRVM(config_obj)
+#> Unused equations: beta_v, dim_beta_v
+#>  beta_v[] <- user() # (line 108)
+#>  dim(beta_v) <- N_pop # (line 145)
 # }
 ```

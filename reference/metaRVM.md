@@ -128,6 +128,9 @@ example_config <- system.file("extdata", "example_config.yaml",
 
 # Run a single-instance simulation from a YAML file
 results <- metaRVM(example_config)
+#> Unused equations: beta_v, dim_beta_v
+#>  beta_v[] <- user() # (line 108)
+#>  dim(beta_v) <- N_pop # (line 145)
 
 # Print a high-level summary
 results
@@ -162,5 +165,8 @@ results$summarize(
 # Using a pre-parsed configuration object
 cfg <- parse_config(example_config, return_object = TRUE)
 results2 <- metaRVM(cfg)
+#> Unused equations: beta_v, dim_beta_v
+#>  beta_v[] <- user() # (line 108)
+#>  dim(beta_v) <- N_pop # (line 145)
 # }
 ```

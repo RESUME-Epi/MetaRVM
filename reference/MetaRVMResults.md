@@ -226,6 +226,9 @@ example_config <- system.file("extdata", "example_config.yaml", package = "MetaR
 # Run simulation
 results_obj <- metaRVM(example_config)
 #> Loading required namespace: pkgbuild
+#> Unused equations: beta_v, dim_beta_v
+#>  beta_v[] <- user() # (line 108)
+#>  dim(beta_v) <- N_pop # (line 145)
 # Access formatted results
 head(results_obj$results)
 #>          date    age   race   zone disease_state        value instance

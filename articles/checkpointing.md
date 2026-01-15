@@ -53,7 +53,7 @@ example_config <- system.file("extdata", "example_config_checkpoint.yaml",
 # Create a temporary directory for checkpoints
 checkpoint_dir <- tempdir()
 cat("Checkpoint directory:", checkpoint_dir, "\n")
-#> Checkpoint directory: /tmp/RtmpcxA3aM
+#> Checkpoint directory: /tmp/RtmpDQTP4q
 ```
 
 ### Create a Configuration with Checkpointing
@@ -81,6 +81,9 @@ temp_config <- normalizePath(temp_config)
 # Run the simulation
 results <- metaRVM(temp_config)
 #> Loading required namespace: pkgbuild
+#> Unused equations: beta_v, dim_beta_v
+#>  beta_v[] <- user() # (line 108)
+#>  dim(beta_v) <- N_pop # (line 145)
 
 # Check what checkpoint files were created
 checkpoint_files <- list.files(checkpoint_dir, 
@@ -160,8 +163,10 @@ if (length(checkpoint_files_full) > 0) {
 } else {
   cat("No checkpoint files found to resume from.\n")
 }
-#> /tmp/RtmpcxA3aM/chk_2024-12-29_1.Rda 
-#> 
+#> /tmp/RtmpDQTP4q/chk_2024-12-29_1.Rda
+#> Unused equations: beta_v, dim_beta_v
+#>  beta_v[] <- user() # (line 108)
+#>  dim(beta_v) <- N_pop # (line 145)
 #> Number of instances: 1 
 #> Date range: 2024-12-30 to 2025-03-29
 ```
