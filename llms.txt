@@ -100,6 +100,9 @@ simulation_config:
 # run simulation
 sim_out <- metaRVM(cfg)
 #> Loading required namespace: pkgbuild
+#> Unused equations: beta_v, dim_beta_v
+#>  beta_v[] <- user() # (line 108)
+#>  dim(beta_v) <- N_pop # (line 145)
 
 # basic plot: daily hospitalizations by date
 library(ggplot2)
@@ -110,10 +113,7 @@ ggplot(hosp_sum, aes(date, total)) +
   labs(y = "Hospitalizations", x = "Date") + theme_bw()
 ```
 
-![plot of chunk
-unnamed-chunk-3](reference/figures/README-unnamed-chunk-3-1.png)
-
-plot of chunk unnamed-chunk-3
+![](reference/figures/README-unnamed-chunk-3-1.png)
 
 ## Model structure
 
