@@ -14,7 +14,7 @@
 ## Citation
 
 Source:
-[`inst/CITATION`](https://github.com/RESUME-Epi/MetaRVM/blob/v1.0.1/inst/CITATION)
+[`inst/CITATION`](https://github.com/RESUME-Epi/MetaRVM/blob/main/inst/CITATION)
 
 Fadikar A, Stevens A, Rimer S, Martinez-Moyano I, Collier N, Ozik J,
 Macal C (2025). “Developing and deploying a use-inspired metapopulation

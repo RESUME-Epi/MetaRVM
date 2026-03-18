@@ -66,7 +66,7 @@
       <img src="../logo.png" class="logo" alt=""><h1>Checkpointing in MetaRVM</h1>
             
       
-      <small class="dont-index">Source: <a href="https://github.com/RESUME-Epi/MetaRVM/blob/v1.0.1/vignettes/checkpointing.Rmd" class="external-link"><code>vignettes/checkpointing.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/RESUME-Epi/MetaRVM/blob/main/vignettes/checkpointing.Rmd" class="external-link"><code>vignettes/checkpointing.Rmd</code></a></small>
       <div class="d-none name"><code>checkpointing.Rmd</code></div>
     </div>
 
@@ -147,7 +147,7 @@ checkpointing:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Read the example configuration</span></span>
 <span><span class="va">yml</span> <span class="op">&lt;-</span> <span class="fu">yaml</span><span class="fu">::</span><span class="fu"><a href="https://yaml.r-lib.org/reference/read_yaml.html" class="external-link">read_yaml</a></span><span class="op">(</span><span class="va">example_config</span><span class="op">)</span></span>
-<span><span class="va">yml_tmp</span> <span class="op">&lt;-</span> <span class="fu">data.table</span><span class="fu">::</span><span class="fu"><a href="https://rdatatable.gitlab.io/data.table/reference/copy.html" class="external-link">copy</a></span><span class="op">(</span><span class="va">yml</span><span class="op">)</span></span>
+<span><span class="va">yml_tmp</span> <span class="op">&lt;-</span> <span class="fu">data.table</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/data.table/man/copy.html" class="external-link">copy</a></span><span class="op">(</span><span class="va">yml</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Assign checkpoint directory</span></span>
 <span><span class="va">yml_tmp</span><span class="op">$</span><span class="va">simulation_config</span><span class="op">$</span><span class="va">checkpoint_dir</span> <span class="op">&lt;-</span> <span class="va">checkpoint_dir</span></span>
@@ -222,7 +222,7 @@ should be the next day of the end date in the previous run.</p>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="va">checkpoint_to_restore</span>, <span class="st">"\n\n"</span><span class="op">)</span></span>
 <span>  </span>
 <span>  <span class="va">new_start_date</span> <span class="op">&lt;-</span> <span class="st">"12/30/2024"</span></span>
-<span>  <span class="va">yml_tmp</span> <span class="op">&lt;-</span> <span class="fu">data.table</span><span class="fu">::</span><span class="fu"><a href="https://rdatatable.gitlab.io/data.table/reference/copy.html" class="external-link">copy</a></span><span class="op">(</span><span class="va">yml</span><span class="op">)</span></span>
+<span>  <span class="va">yml_tmp</span> <span class="op">&lt;-</span> <span class="fu">data.table</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/data.table/man/copy.html" class="external-link">copy</a></span><span class="op">(</span><span class="va">yml</span><span class="op">)</span></span>
 <span>  <span class="va">yml_tmp</span><span class="op">$</span><span class="va">simulation_config</span><span class="op">$</span><span class="va">start_date</span> <span class="op">&lt;-</span> <span class="va">new_start_date</span></span>
 <span>  <span class="va">yml_tmp</span><span class="op">$</span><span class="va">simulation_config</span><span class="op">$</span><span class="va">restore_from</span> <span class="op">&lt;-</span> <span class="va">checkpoint_to_restore</span></span>
 <span>  <span class="va">yml_tmp</span><span class="op">$</span><span class="va">population_data</span><span class="op">$</span><span class="va">initialization</span> <span class="op">&lt;-</span> <span class="cn">NULL</span> <span class="co"># ensure that we don't want to reinitialize the population from the initialization file</span></span>

@@ -38,12 +38,15 @@ Full documentation is available at:
 
 ### Installation
 
+Current CRAN release: **1.0.1**
+
+Install the stable CRAN release:
+
 ``` r
 install.packages("MetaRVM")
 ```
 
-The development version of `MetaRVM` can be installed from
-[GitHub](https://github.com/) with:
+Install the development version from GitHub:
 
 ``` r
 # install.packages("devtools")
@@ -107,7 +110,10 @@ ggplot(hosp_sum, aes(date, total)) +
   labs(y = "Hospitalizations", x = "Date") + theme_bw()
 ```
 
-![](reference/figures/README-unnamed-chunk-3-1.png)
+![plot of chunk
+unnamed-chunk-3](reference/figures/README-unnamed-chunk-3-1.png)
+
+plot of chunk unnamed-chunk-3
 
 ## Model structure
 
