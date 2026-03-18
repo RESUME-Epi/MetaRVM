@@ -54,7 +54,6 @@ The `yaml_file` variable now holds the full path to the example configuration fi
 ```yaml
 run_id: ExampleRun
 population_data:
-  mapping: demographic_mapping_n24.csv
   initialization: population_init_n24.csv
   vaccination: vaccination_n24.csv
 mixing_matrix:

@@ -25,7 +25,6 @@ A minimal configuration file specifies the data sources, simulation settings, an
 ```yaml
 run_id: SimpleRun
 population_data:
-  mapping: data/demographic_mapping.csv
   initialization: data/population_init.csv
   vaccination: data/vaccination.csv
 mixing_matrix:
@@ -68,29 +67,19 @@ The `metaRVM` package requires several CSV files to be structured in a specific 
 
 #### Population Data Files
 
--   **`mapping`**: The population mapping file connects population IDs to demographic information. It must contain the following columns:
-    -   `population_id`: A unique identifier for each subpopulation, set of natural numbers 1, 2, 3, ...
-    -   `age`: The age group of the subpopulation (e.g., "0-4", "65+").
-    -   `race`: The race or ethnicity of the subpopulation.
-    -   `zone`: The healthcare zone or geographic region of the subpopulation.
+-   **`initialization`**: This file specifies both the demographic structure and initial state of the population for the simulation. It must contain the following **required columns**:
+    -   `population_id`: A unique identifier for each subpopulation (sequential natural numbers: 1, 2, 3, ...)
+    -   `N`: The total number of individuals in each subpopulation
+    -   `S0`: The initial number of susceptible individuals
+    -   `I0`: The initial number of symptomatic infected individuals
+    -   `V0`: The initial number of vaccinated individuals
+    -   `R0`: The initial number of recovered individuals
 
-**Example of a population mapping file:**
-
-```{r mapping_example, echo=FALSE}
-mapping_file <- system.file("extdata", "demographic_mapping_n24.csv", package = "MetaRVM")
-mapping_data <- read.csv(mapping_file)
-cat("First 10 rows of demographic_mapping_n24.csv:\n\n")
-print(head(mapping_data, 10))
-cat("\n... (", nrow(mapping_data), " total rows)\n", sep = "")
-```
-
--   **`initialization`**: This file specifies the initial state of the population for the simulation. It must contain the following columns:
-    -   `population_id`: Identifier matching the mapping file.
-    -   `N`: The total number of individuals in each subpopulation.
-    -   `S0`: The initial number of susceptible individuals.
-    -   `I0`: The initial number of symptomatic infected individuals.
-    -   `V0`: The initial number of vaccinated individuals.
-    -   `R0`: The initial number of recovered individuals.
+    **User-defined demographic category columns**: Any additional columns beyond the required ones are automatically detected as demographic categories. These can be used for stratification and in `sub_disease_params` for category-specific parameters. Common examples include:
+    -   `age`: Age groups (e.g., "0-17", "18-64", "65+")
+    -   `race`: Race or ethnicity categories
+    -   `zone`: Healthcare zones or geographic regions
+    -   Or any custom categories like `income_level`, `occupation`, `risk_group`, etc.
 
 **Example of a population initialization file:**
 
@@ -102,7 +91,7 @@ print(head(init_data, 10))
 cat("\n... (", nrow(init_data), " total rows)\n", sep = "")
 ```
 
--   **`vaccination`**: The vaccination schedule file contains the number of vaccinations administered over time. The first column must be `date` in `MM/DD/YYYY` format, followed by columns for each subpopulation in the same order that they are assigned a `population_id` in the mapping file.
+-   **`vaccination`**: The vaccination schedule file contains the number of vaccinations administered over time. The first column must be `date` in `MM/DD/YYYY` format, followed by columns for each subpopulation in the same order as `population_id` in the initialization file.
 
 **Example of a vaccination schedule file:**
 
@@ -117,7 +106,7 @@ cat("\nNote: Columns represent vaccination counts for each population_id (1-24)\
 
 #### Mixing Matrix Files
 
-The mixing matrix files define the contact patterns between different subpopulations. Each file should be a CSV without a header, where the rows and columns correspond to the subpopulations in the same order as the population mapping file. The values in the matrix represent the proportion of time that individuals from one subpopulation spend with individuals from another. The sum of each row must equal 1.
+The mixing matrix files define the contact patterns between different subpopulations. Each file should be a CSV without a header, where the rows and columns correspond to the subpopulations in the same order as `population_id` in the initialization file. The values in the matrix represent the proportion of time that individuals from one subpopulation spend with individuals from another. The sum of each row must equal 1.
 
 **Example of a mixing matrix file (weekday day):**
 
@@ -192,7 +181,7 @@ disease_params:
 
 `metaRVM` allows you to specify different disease parameters for various demographic subgroups using the `sub_disease_params` section. These subgroup-specific parameters will override the global parameters defined in `disease_params`.
 
-It is crucial that the demographic categories (e.g., `age`) and the specific values (e.g., `0-4`, `5-11`) used in this section exactly match the corresponding columns and values in the population mapping CSV file specified under `population_data`.
+The demographic categories used in this section must match the user-defined category column names in the initialization CSV file specified under `population_data`. For example, if your initialization file has columns named `age`, `income_level`, and `occupation`, you can use any of these categories in `sub_disease_params`. The specific values (e.g., `"0-4"`, `"low"`, `"healthcare"`) must exactly match the values in those columns.
 
 The following example defines different parameters for different age groups:
 

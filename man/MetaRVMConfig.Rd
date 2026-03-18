@@ -12,7 +12,7 @@ providing methods for parameter access, validation, and introspection.
 The MetaRVMConfig class stores parsed configuration data from YAML files and provides
 structured access to simulation parameters. It automatically validates configuration
 completeness and provides convenient methods for accessing demographic categories,
-population mappings, and other simulation settings.
+initialization-derived population metadata, and other simulation settings.
 }
 \examples{
 # Initialize from YAML file
@@ -23,11 +23,44 @@ config <- MetaRVMConfig$new(example_config)
 config$get("N_pop")
 config$get("start_date")
 
-# Get demographic categories
-ages <- config$get_age_categories()
-races <- config$get_race_categories()
-zones <- config$get_zones()
+# Get demographic category names (user-defined)
+category_names <- config$get_category_names()  # e.g., c("age", "zone", "risk_group")
 
+# Get values for specific categories
+ages <- config$get_category_values("age")
+
+# Get all categories as a named list
+all_categories <- config$get_all_categories()
+
+
+## ------------------------------------------------
+## Method `MetaRVMConfig$get_category_names`
+## ------------------------------------------------
+
+\dontrun{
+config <- MetaRVMConfig$new("config.yaml")
+category_names <- config$get_category_names()  # e.g., c("age", "zone", "risk_group")
+}
+
+## ------------------------------------------------
+## Method `MetaRVMConfig$get_category_values`
+## ------------------------------------------------
+
+\dontrun{
+config <- MetaRVMConfig$new("config.yaml")
+ages <- config$get_category_values("age")  # if age is defined
+income_levels <- config$get_category_values("income_level")  # if defined
+}
+
+## ------------------------------------------------
+## Method `MetaRVMConfig$get_all_categories`
+## ------------------------------------------------
+
+\dontrun{
+config <- MetaRVMConfig$new("config.yaml")
+all_cats <- config$get_all_categories()
+# Returns: list(age = c("0-17", "18-64", "65+"), risk_group = c("low", "high"), ...)
+}
 }
 \author{
 Arindam Fadikar
@@ -52,9 +85,9 @@ Arindam Fadikar
 \item \href{#method-MetaRVMConfig-set}{\code{MetaRVMConfig$set()}}
 \item \href{#method-MetaRVMConfig-print}{\code{MetaRVMConfig$print()}}
 \item \href{#method-MetaRVMConfig-get_pop_map}{\code{MetaRVMConfig$get_pop_map()}}
-\item \href{#method-MetaRVMConfig-get_age_categories}{\code{MetaRVMConfig$get_age_categories()}}
-\item \href{#method-MetaRVMConfig-get_race_categories}{\code{MetaRVMConfig$get_race_categories()}}
-\item \href{#method-MetaRVMConfig-get_zones}{\code{MetaRVMConfig$get_zones()}}
+\item \href{#method-MetaRVMConfig-get_category_names}{\code{MetaRVMConfig$get_category_names()}}
+\item \href{#method-MetaRVMConfig-get_category_values}{\code{MetaRVMConfig$get_category_values()}}
+\item \href{#method-MetaRVMConfig-get_all_categories}{\code{MetaRVMConfig$get_all_categories()}}
 \item \href{#method-MetaRVMConfig-clone}{\code{MetaRVMConfig$clone()}}
 }
 }
@@ -182,47 +215,96 @@ Get population mapping data
 }
 
 \subsection{Returns}{
-data.table containing population mapping with demographic categories
+data.table containing population_id and user-defined demographic category columns
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-MetaRVMConfig-get_age_categories"></a>}}
-\if{latex}{\out{\hypertarget{method-MetaRVMConfig-get_age_categories}{}}}
-\subsection{Method \code{get_age_categories()}}{
-Get available age categories
+\if{html}{\out{<a id="method-MetaRVMConfig-get_category_names"></a>}}
+\if{latex}{\out{\hypertarget{method-MetaRVMConfig-get_category_names}{}}}
+\subsection{Method \code{get_category_names()}}{
+Get names of all category columns
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MetaRVMConfig$get_age_categories()}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{MetaRVMConfig$get_category_names()}\if{html}{\out{</div>}}
+}
+
+\subsection{Details}{
+Category columns are automatically detected from the initialization CSV file.
+Any column that is not a reserved column (population_id, N, S0, I0, R0, V0, etc.)
+is treated as a demographic category (e.g., age, zone, income_level, occupation).
 }
 
 \subsection{Returns}{
-Character vector of unique age categories, or NULL if no population mapping available
+Character vector of category column names, or empty vector if no categories
 }
+\subsection{Examples}{
+\if{html}{\out{<div class="r example copy">}}
+\preformatted{\dontrun{
+config <- MetaRVMConfig$new("config.yaml")
+category_names <- config$get_category_names()  # e.g., c("age", "zone", "risk_group")
+}
+}
+\if{html}{\out{</div>}}
+
+}
+
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-MetaRVMConfig-get_race_categories"></a>}}
-\if{latex}{\out{\hypertarget{method-MetaRVMConfig-get_race_categories}{}}}
-\subsection{Method \code{get_race_categories()}}{
-Get available race categories
+\if{html}{\out{<a id="method-MetaRVMConfig-get_category_values"></a>}}
+\if{latex}{\out{\hypertarget{method-MetaRVMConfig-get_category_values}{}}}
+\subsection{Method \code{get_category_values()}}{
+Get unique values for a specific category
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MetaRVMConfig$get_race_categories()}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{MetaRVMConfig$get_category_values(category_name)}\if{html}{\out{</div>}}
 }
 
-\subsection{Returns}{
-Character vector of unique race categories, or NULL if no population mapping available
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{category_name}}{Character string specifying the category name}
 }
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+Character/numeric vector of unique values for the specified category
+}
+\subsection{Examples}{
+\if{html}{\out{<div class="r example copy">}}
+\preformatted{\dontrun{
+config <- MetaRVMConfig$new("config.yaml")
+ages <- config$get_category_values("age")  # if age is defined
+income_levels <- config$get_category_values("income_level")  # if defined
+}
+}
+\if{html}{\out{</div>}}
+
+}
+
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-MetaRVMConfig-get_zones"></a>}}
-\if{latex}{\out{\hypertarget{method-MetaRVMConfig-get_zones}{}}}
-\subsection{Method \code{get_zones()}}{
-Get available zones
+\if{html}{\out{<a id="method-MetaRVMConfig-get_all_categories"></a>}}
+\if{latex}{\out{\hypertarget{method-MetaRVMConfig-get_all_categories}{}}}
+\subsection{Method \code{get_all_categories()}}{
+Get all categories as a named list
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MetaRVMConfig$get_zones()}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{MetaRVMConfig$get_all_categories()}\if{html}{\out{</div>}}
 }
 
 \subsection{Returns}{
-Character vector of unique zone identifiers, or NULL if no population mapping available
+Named list where names are category column names and values are vectors
+of unique values for each category. Returns empty list if no categories.
 }
+\subsection{Examples}{
+\if{html}{\out{<div class="r example copy">}}
+\preformatted{\dontrun{
+config <- MetaRVMConfig$new("config.yaml")
+all_cats <- config$get_all_categories()
+# Returns: list(age = c("0-17", "18-64", "65+"), risk_group = c("low", "high"), ...)
+}
+}
+\if{html}{\out{</div>}}
+
+}
+
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-MetaRVMConfig-clone"></a>}}

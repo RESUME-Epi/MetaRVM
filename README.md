@@ -75,7 +75,6 @@ The content of the yaml configuration file:
 ``` yaml
 run_id: ExampleRun
 population_data:
-  mapping: demographic_mapping_n24.csv
   initialization: population_init_n24.csv
   vaccination: vaccination_n24.csv
 mixing_matrix:
@@ -242,7 +241,7 @@ List of vignettes:
 
 - **Running Simulation**  
   Full example using a complete set of input files, showing how MetaRVM
-  reads population mappings, mixing matrices, and vaccination schedules.
+  reads population initialization data, mixing matrices, and vaccination schedules.
 
 <!-- - **Understanding Outputs**  
   Explains the structure of `sim$results`, the meaning of disease states and flow variables, and how to compute aggregated quantities. -->

@@ -44,7 +44,7 @@ example_config <- system.file("extdata", "example_config_dist.yaml", package = "
 results <- metaRVM(example_config)
 # Typically created through method chaining
 summary_obj <- results$subset_data(disease_state = "H")$summarize(
-  group_by = c("age", "race"), 
+  group_by = c("age", "zone"), 
   stats = c("median", "quantile"),
   quantiles = c(0.25, 0.75)
 )

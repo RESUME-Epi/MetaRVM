@@ -23,8 +23,8 @@ date–subpopulation–disease state–instance combination. Typical
 columns include:
 \itemize{
 \item \code{date}: calendar date (\code{Date})
-\item \code{age}, \code{race}, \code{zone}: demographic categories (if present
-in the population mapping)
+\item user-defined demographic category columns (if present
+in the initialization file)
 \item \code{disease_state}: compartment or flow label (e.g., \code{S}, \code{E},
 \code{I_symp}, \code{H}, \code{R}, \code{D}, \code{n_SE}, \code{n_IsympH}, etc.)
 \item \code{value}: population count or daily flow
@@ -47,7 +47,7 @@ object for downstream analysis and plotting.
 \details{
 The configuration input controls:
 \itemize{
-\item \strong{Population structure} (e.g., age, race, zone)
+\item \strong{Population structure} (user-defined categories from the initialization file)
 \item \strong{Disease parameters} (\code{ts}, \code{tv}, \code{ve}, \code{de}, \code{dp}, \code{da}, \code{ds},
 \code{dh}, \code{dr}, \code{pea}, \code{psr}, \code{phr}, \code{dv}, etc.)
 \item \strong{Mixing matrices} (weekday/weekend, day/night contact patterns)
@@ -82,9 +82,9 @@ results
 # Access the tidy results table
 head(results$results)
 
-# Summarize and plot hospitalizations and deaths by age and race
+# Summarize and plot hospitalizations and deaths by user-defined categories
 results$summarize(
-  group_by       = c("age", "race"),
+  group_by       = c("age", "zone"),
   disease_states = c("H", "D"),
   stats          = c("median", "quantile"),
   quantiles      = c(0.25, 0.75)

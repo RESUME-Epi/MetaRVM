@@ -18,7 +18,7 @@ data.table with formatted output including calendar dates and demographics
 This function formats raw MetaRVM simulation output by:
 \enumerate{
 \item Converting time steps to calendar dates
-\item Adding demographic attributes from population mapping
+\item Adding user-defined demographic attributes from the initialization-derived population metadata
 \item Handling different disease states appropriately:
 \itemize{
 \item Regular states (S, E, I, etc.): Keep values at integer time points

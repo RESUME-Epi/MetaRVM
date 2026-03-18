@@ -1,6 +1,5 @@
 run_id: ExampleRun
 population_data:
-  mapping: demographic_mapping_n24.csv
   initialization: population_init_n24.csv
   vaccination: vaccination_n24.csv
 mixing_matrix:

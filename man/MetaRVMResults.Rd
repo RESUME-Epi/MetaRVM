@@ -11,8 +11,8 @@ subsetting, and visualization with flexible demographic groupings.
 \details{
 The MetaRVMResults class automatically formats raw simulation output upon initialization,
 converting time steps to calendar dates and adding demographic attributes. It provides
-methods for flexible data summarization across any combination of age, race, and
-geographic zone categories, plus method chaining for streamlined analysis workflows.
+methods for flexible data summarization across any user-defined demographic categories,
+plus method chaining for streamlined analysis workflows.
 }
 \examples{
 \donttest{
@@ -32,7 +32,7 @@ subset_data <- results_obj$subset_data(
 
 # Method chaining for analysis and visualization
 results_obj$subset_data(disease_state = "H")$summarize(
-  group_by = c("age", "race"), 
+  group_by = c("age", "zone"), 
   stats = c("median", "quantile"),
   quantiles = c(0.25, 0.75)
 )$plot()
@@ -114,9 +114,7 @@ Self (invisible)
 Subset the data based on any combination of parameters
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MetaRVMResults$subset_data(
-  ages = NULL,
-  races = NULL,
-  zones = NULL,
+  ...,
   disease_states = NULL,
   date_range = NULL,
   instances = NULL,
@@ -127,11 +125,7 @@ Subset the data based on any combination of parameters
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{ages}}{Vector of age categories to include (default: all)}
-
-\item{\code{races}}{Vector of race categories to include (default: all)}
-
-\item{\code{zones}}{Vector of zones to include (default: all)}
+\item{\code{...}}{Named arguments for category filters (e.g., age = c("0-17"), income = c("low", "high"))}
 
 \item{\code{disease_states}}{Vector of disease states to include (default: all, excludes p_ columns)}
 
@@ -166,7 +160,9 @@ Summarize results across specified demographic characteristics
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{group_by}}{Vector of demographic variables to group by: c("age", "race", "zone")}
+\item{\code{group_by}}{Vector of demographic category names to group by. Must be valid category
+names from the configuration (e.g., c("age", "zone"), c("income_level", "occupation")).
+Use config$get_category_names() to see available categories.}
 
 \item{\code{disease_states}}{Vector of disease states to include (default: all, excludes p_ columns)}
 

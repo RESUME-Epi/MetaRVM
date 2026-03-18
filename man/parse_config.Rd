@@ -18,7 +18,7 @@ object for method chaining and enhanced functionality. If \code{FALSE}
 If \code{return_object = FALSE} (default), returns a named list containing:
 \describe{
 \item{N_pop}{Number of population groups}
-\item{pop_map}{Data.table with population mapping and demographics}
+\item{pop_map}{Data.table with \code{population_id} and user-defined demographic categories}
 \item{S_ini, E_ini, I_asymp_ini, I_presymp_ini, I_symp_ini, H_ini, D_ini, P_ini, V_ini, R_ini}{Initial compartment populations}
 \item{vac_time_id, vac_counts, vac_mat}{Vaccination schedule data}
 \item{m_wd_d, m_wd_n, m_we_d, m_we_n}{Contact mixing matrices}
@@ -56,10 +56,10 @@ main sections:
 
 \strong{Population Data:}
 \itemize{
-\item \code{mapping}: CSV file path containing population mapping with demographic categories age, race, zone.
-The file must contains columns \code{population_id}, \code{age}, \code{race}, \code{zone},
-where the \code{population_id} is defined using natural numbers.
-\item \code{initialization}: CSV file with initial population states. The file must contains columns \code{population_id}, \code{N}, \code{S0}, \code{I0}, \code{V0}, \code{R0}.
+\item \code{initialization}: CSV file with initial population states and optional
+user-defined category columns. The file must contain columns
+\code{population_id}, \code{N}, \code{S0}, \code{I0}, \code{V0}, \code{R0}.
+Any additional columns are treated as demographic categories.
 \item \code{vaccination}: CSV file with vaccination schedule over time. The first column must be dates
 in MM/DD/YYYY format. The rest of the columns must corresponds to respective
 subpopulations in the numeric order of population_id.
@@ -104,16 +104,14 @@ Disease parameters can be specified as distributions for stochastic modeling:
 
 \section{File Requirements}{
 
-\strong{Population mapping file} must contain columns:
+\strong{Population initialization file} must contain columns:
 \itemize{
 \item \code{population_id}: Unique identifier for each population group, natural numbers
-\item \code{age}: Age category (e.g., "0-4", "5-11", "12-17", "18-49", "50-64", "65+")
-\item \code{race}: Race/ethnicity category
-\item \code{zone}: Geographic zone identifier
+\item \code{N}: Total population size of the subpopulation
+\item \code{S0}, \code{I0}, \code{V0}, \code{R0}: Initial compartment counts
+\item Optional user-defined category columns (e.g., \code{age}, \code{race},
+\code{zone}, \code{income_level}, \code{occupation})
 }
-
-\strong{Population initialization file} must contain:
-\code{N} (total population), \code{S0}, \code{I0}, \code{V0}, \code{R0} (initial compartment counts)
 
 \strong{Vaccination file} must contain:
 \code{date} (MM/DD/YYYY format) and vaccination counts for each population group

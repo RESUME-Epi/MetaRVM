@@ -8,21 +8,25 @@
 #' The MetaRVMConfig class stores parsed configuration data from YAML files and provides
 #' structured access to simulation parameters. It automatically validates configuration
 #' completeness and provides convenient methods for accessing demographic categories,
-#' population mappings, and other simulation settings.
+#' initialization-derived population metadata, and other simulation settings.
 #' 
 #' @examples
 #' # Initialize from YAML file
 #' example_config <- system.file("extdata", "example_config.yaml", package = "MetaRVM")
 #' config <- MetaRVMConfig$new(example_config)
-#' 
+#'
 #' # Access parameters
 #' config$get("N_pop")
 #' config$get("start_date")
-#' 
-#' # Get demographic categories
-#' ages <- config$get_age_categories()
-#' races <- config$get_race_categories()
-#' zones <- config$get_zones()
+#'
+#' # Get demographic category names (user-defined)
+#' category_names <- config$get_category_names()  # e.g., c("age", "zone", "risk_group")
+#'
+#' # Get values for specific categories
+#' ages <- config$get_category_values("age")
+#'
+#' # Get all categories as a named list
+#' all_categories <- config$get_all_categories()
 #' 
 #' @import R6
 #' @import data.table
@@ -144,39 +148,70 @@ MetaRVMConfig <- R6::R6Class(
     },
     
     #' @description Get population mapping data
-    #' @return data.table containing population mapping with demographic categories
+    #' @return data.table containing population_id and user-defined demographic category columns
     get_pop_map = function() {
       self$config_data$pop_map
     },
-    
-    #' @description Get available age categories
-    #' @return Character vector of unique age categories, or NULL if no population mapping available
-    get_age_categories = function() {
-      if ("pop_map" %in% names(self$config_data) && "age" %in% names(self$config_data$pop_map)) {
-        unique(self$config_data$pop_map$age)
-      } else {
-        NULL
+
+    #' @description Get names of all category columns
+    #' @details Category columns are automatically detected from the initialization CSV file.
+    #'   Any column that is not a reserved column (population_id, N, S0, I0, R0, V0, etc.)
+#'   is treated as a demographic category (e.g., age, zone, income_level, occupation).
+    #' @return Character vector of category column names, or empty vector if no categories
+    #' @examples
+    #' \dontrun{
+    #' config <- MetaRVMConfig$new("config.yaml")
+    #' category_names <- config$get_category_names()  # e.g., c("age", "zone", "risk_group")
+    #' }
+    get_category_names = function() {
+      if ("category_names" %in% names(self$config_data)) {
+        return(self$config_data$category_names)
       }
+      return(character(0))
     },
-    
-    #' @description Get available race categories
-    #' @return Character vector of unique race categories, or NULL if no population mapping available
-    get_race_categories = function() {
-      if ("pop_map" %in% names(self$config_data) && "race" %in% names(self$config_data$pop_map)) {
-        unique(self$config_data$pop_map$race)
-      } else {
-        NULL
+
+    #' @description Get unique values for a specific category
+    #' @param category_name Character string specifying the category name
+    #' @return Character/numeric vector of unique values for the specified category
+    #' @examples
+    #' \dontrun{
+    #' config <- MetaRVMConfig$new("config.yaml")
+    #' ages <- config$get_category_values("age")  # if age is defined
+    #' income_levels <- config$get_category_values("income_level")  # if defined
+    #' }
+    get_category_values = function(category_name) {
+      if (!"pop_map" %in% names(self$config_data)) {
+        return(NULL)
       }
+      if (!category_name %in% names(self$config_data$pop_map)) {
+        available_cats <- self$get_category_names()
+        stop(sprintf("Category '%s' not found. Available categories: %s",
+                     category_name,
+                     if (length(available_cats) > 0) paste(available_cats, collapse = ", ") else "none"))
+      }
+      return(unique(self$config_data$pop_map[[category_name]]))
     },
-    
-    #' @description Get available zones
-    #' @return Character vector of unique zone identifiers, or NULL if no population mapping available
-    get_zones = function() {
-      if ("pop_map" %in% names(self$config_data) && "zone" %in% names(self$config_data$pop_map)) {
-        unique(self$config_data$pop_map$zone)
-      } else {
-        NULL
+
+    #' @description Get all categories as a named list
+    #' @return Named list where names are category column names and values are vectors
+    #'   of unique values for each category. Returns empty list if no categories.
+    #' @examples
+    #' \dontrun{
+    #' config <- MetaRVMConfig$new("config.yaml")
+    #' all_cats <- config$get_all_categories()
+    #' # Returns: list(age = c("0-17", "18-64", "65+"), risk_group = c("low", "high"), ...)
+    #' }
+    get_all_categories = function() {
+      category_names <- self$get_category_names()
+      if (length(category_names) == 0) {
+        return(list())
       }
+
+      result <- lapply(category_names, function(cat) {
+        unique(self$config_data$pop_map[[cat]])
+      })
+      names(result) <- category_names
+      return(result)
     }
   ),
   
@@ -207,8 +242,8 @@ MetaRVMConfig <- R6::R6Class(
 #' @details
 #' The MetaRVMResults class automatically formats raw simulation output upon initialization,
 #' converting time steps to calendar dates and adding demographic attributes. It provides
-#' methods for flexible data summarization across any combination of age, race, and
-#' geographic zone categories, plus method chaining for streamlined analysis workflows.
+#' methods for flexible data summarization across any user-defined demographic categories,
+#' plus method chaining for streamlined analysis workflows.
 #' 
 #' @examples
 #' \donttest{
@@ -228,7 +263,7 @@ MetaRVMConfig <- R6::R6Class(
 #' 
 #' # Method chaining for analysis and visualization
 #' results_obj$subset_data(disease_state = "H")$summarize(
-#'   group_by = c("age", "race"), 
+#'   group_by = c("age", "zone"), 
 #'   stats = c("median", "quantile"),
 #'   quantiles = c(0.25, 0.75)
 #' )$plot()
@@ -313,42 +348,50 @@ MetaRVMResults <- R6::R6Class(
     },
 
     #' @description Subset the data based on any combination of parameters
-    #' @param ages Vector of age categories to include (default: all)
-    #' @param races Vector of race categories to include (default: all) 
-    #' @param zones Vector of zones to include (default: all)
+    #' @param ... Named arguments for category filters (e.g., age = c("0-17"), income = c("low", "high"))
     #' @param disease_states Vector of disease states to include (default: all, excludes p_ columns)
     #' @param date_range Vector of two dates start_date, and end_date for filtering (default: all)
     #' @param instances Vector of instance numbers to include (default: all)
     #' @param exclude_p_columns Logical, whether to exclude p_ columns (default: TRUE)
     #' @return MetaRVMResults object with subset of results
-    subset_data = function(ages = NULL, races = NULL, zones = NULL, disease_states = NULL, 
-                      date_range = NULL, instances = NULL, exclude_p_columns = TRUE) {
-  
+    subset_data = function(..., disease_states = NULL, date_range = NULL,
+                          instances = NULL, exclude_p_columns = TRUE) {
+
       # Start with copy of all results
       subset_results <- copy(self$results)
-      
-      # Filter by age categories
-      if (!is.null(ages)) {
-        subset_results <- subset_results[age %in% ages]
+
+      # Parse dynamic category filters from ...
+      category_filters <- list(...)
+      available_categories <- self$config$get_category_names()
+
+      # Apply category filters
+      if (length(category_filters) > 0) {
+        filter_names <- names(category_filters)
+
+        # Validate filter names are actual categories
+        invalid_filters <- setdiff(filter_names, available_categories)
+        if (length(invalid_filters) > 0) {
+          stop(sprintf("Invalid category filters: %s. Available categories: %s",
+                       paste(invalid_filters, collapse = ", "),
+                       if (length(available_categories) > 0) paste(available_categories, collapse = ", ") else "none"))
+        }
+
+        # Apply each category filter
+        for (cat_name in filter_names) {
+          filter_values <- category_filters[[cat_name]]
+          if (!is.null(filter_values)) {
+            subset_results <- subset_results[get(cat_name) %in% filter_values]
+          }
+        }
       }
-      
-      # Filter by race categories  
-      if (!is.null(races)) {
-        subset_results <- subset_results[race %in% races]
-      }
-      
-      # Filter by zones
-      if (!is.null(zones)) {
-        subset_results <- subset_results[zone %in% zones]
-      }
-      
+
       # Filter by disease states
       if (!is.null(disease_states)) {
         subset_results <- subset_results[disease_state %in% disease_states]
       } else if (exclude_p_columns) {
         subset_results <- subset_results[!grepl("^p_", disease_state)]
       }
-      
+
       # Filter by date range
       if (!is.null(date_range)) {
         if (length(date_range) != 2) {
@@ -356,55 +399,39 @@ MetaRVMResults <- R6::R6Class(
         }
         start_date <- as.Date(date_range[1], tryFormats = c("%m/%d/%Y"))
         end_date <- as.Date(date_range[2], tryFormats = c("%m/%d/%Y"))
-        cat(start_date, "\n")
-        cat(end_date, "\n")
         subset_results <- subset_results[date >= start_date & date <= end_date]
       }
-      
+
       # Filter by instance
       if (!is.null(instances)) {
         subset_results <- subset_results[instance %in% instances]
       }
-      
-      # Sort results for better readability
-      setorder(subset_results, date, instance, zone, age, race, disease_state)
-      
-      # Create new MetaRVMResults object with subset data
-      # Update run_info to reflect the subset
-      # new_run_info <- list(
-      #   created_at = Sys.time(),
-      #   original_created_at = self$run_info$created_at,
-      #   n_instances = length(unique(subset_results$instance)),
-      #   n_populations = length(unique(paste(subset_results$age, subset_results$race, subset_results$zone))),
-      #   date_range = if(nrow(subset_results) > 0) range(subset_results$date, na.rm = TRUE) else c(NA, NA),
-      #   subset_filters = list(
-      #     age = age,
-      #     race = race, 
-      #     zone = zone,
-      #     disease_states = disease_states,
-      #     date_range = date_range,
-      #     instance = instance,
-      #     exclude_p_columns = exclude_p_columns
-      #   )
-      # )
 
+      # Dynamic sorting based on available categories
+      sort_cols <- c("date", "instance")
+      if (length(available_categories) > 0) {
+        # Only include category columns that actually exist in the data
+        existing_cats <- intersect(available_categories, names(subset_results))
+        sort_cols <- c(sort_cols, existing_cats)
+      }
+      sort_cols <- c(sort_cols, "disease_state")
+      data.table::setorderv(subset_results, sort_cols)
+
+      # Create new run_info to reflect the subset
       new_run_info <- list(
         created_at = Sys.time(),
         original_created_at = self$run_info$created_at,
         n_instances = length(unique(subset_results$instance)),
         n_populations = private$calculate_n_populations(subset_results),
         date_range = if(nrow(subset_results) > 0) range(subset_results$date, na.rm = TRUE) else c(NA, NA),
-        subset_filters = list(
-          ages = ages,
-          races = races, 
-          zones = zones,
+        subset_filters = c(category_filters, list(
           disease_states = disease_states,
           date_range = date_range,
           instances = instances,
           exclude_p_columns = exclude_p_columns
-        )
+        ))
       )
-      
+
       # Return new MetaRVMResults object
       return(MetaRVMResults$new(
         raw_results = NULL,  # We're using already formatted data
@@ -415,7 +442,9 @@ MetaRVMResults <- R6::R6Class(
     },
 
     #' @description Summarize results across specified demographic characteristics
-    #' @param group_by Vector of demographic variables to group by: c("age", "race", "zone")
+    #' @param group_by Vector of demographic category names to group by. Must be valid category
+    #'   names from the configuration (e.g., c("age", "zone"), c("income_level", "occupation")).
+    #'   Use config$get_category_names() to see available categories.
     #' @param disease_states Vector of disease states to include (default: all, excludes p_ columns)
     #' @param date_range Optional date range for filtering
     #' @param stats Vector of statistics to calculate: c("mean", "median", "sd", "min", "max", "sum", "quantile"). If NULL, returns all instances
@@ -426,10 +455,16 @@ MetaRVMResults <- R6::R6Class(
                         stats = c("mean", "median", "sd"), quantiles = c(0.25, 0.75),
                         exclude_p_columns = TRUE) {
       
-      # Validate group_by parameters
-      valid_groups <- c("age", "race", "zone")
-      if (!all(group_by %in% valid_groups)) {
-        stop("group_by must contain only: ", paste(valid_groups, collapse = ", "))
+      # Validate group_by parameters against available categories
+      valid_groups <- self$config$get_category_names()
+
+      if (length(group_by) > 0) {
+        invalid_groups <- setdiff(group_by, valid_groups)
+        if (length(invalid_groups) > 0) {
+          stop(sprintf("Invalid group_by parameters: %s. Available categories: %s",
+                       paste(invalid_groups, collapse = ", "),
+                       if (length(valid_groups) > 0) paste(valid_groups, collapse = ", ") else "none"))
+        }
       }
       
       # Validate stats parameters if provided
@@ -525,10 +560,15 @@ MetaRVMResults <- R6::R6Class(
   private = list(
     calculate_n_populations = function(data) {
       if (nrow(data) == 0) return(0)
-      
-      # Get available demographic columns
-      demographic_cols <- intersect(names(data), c("age", "race", "zone"))
-      
+
+      # Get available demographic columns dynamically from config
+      category_cols <- self$config$get_category_names()
+      demographic_cols <- if (length(category_cols) > 0) {
+        intersect(names(data), category_cols)
+      } else {
+        character(0)
+      }
+
       if (length(demographic_cols) == 0) {
         # No demographic columns - assume single population
         return(1)
@@ -586,7 +626,7 @@ MetaRVMResults <- R6::R6Class(
 #' results <- metaRVM(example_config)
 #' # Typically created through method chaining
 #' summary_obj <- results$subset_data(disease_state = "H")$summarize(
-#'   group_by = c("age", "race"), 
+#'   group_by = c("age", "zone"), 
 #'   stats = c("median", "quantile"),
 #'   quantiles = c(0.25, 0.75)
 #' )
@@ -647,7 +687,12 @@ MetaRVMSummary <- R6::R6Class(
       
       # Show grouping variables
       columns <- names(self$data)
-      group_vars <- intersect(columns, c("age", "race", "zone"))
+      available_categories <- self$config$get_category_names()
+      group_vars <- if (length(available_categories) > 0) {
+        intersect(columns, available_categories)
+      } else {
+        character(0)
+      }
       if (length(group_vars) > 0) {
         cat("Grouped by:", paste(group_vars, collapse = ", "), "\n")
       }
@@ -719,9 +764,14 @@ MetaRVMSummary <- R6::R6Class(
         stop("Plot method requires quantile columns for confidence bands. Please call summarize() with stats = c('median', 'quantile')")
       }
       
-      # Detect grouping variables
-      group_vars <- intersect(columns, c("age", "race", "zone"))
-      
+      # Detect grouping variables dynamically
+      available_categories <- self$config$get_category_names()
+      group_vars <- if (length(available_categories) > 0) {
+        intersect(columns, available_categories)
+      } else {
+        character(0)
+      }
+
       if (length(group_vars) == 0) {
         stop("Data must be grouped by at least one demographic variable")
       }

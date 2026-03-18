@@ -33,7 +33,6 @@ The `yaml_file` variable now holds the full path to the example configuration fi
 ```yaml
 run_id: ExampleRun
 population_data:
-  mapping: demographic_mapping_n24.csv
   initialization: population_init_n24.csv
   vaccination: vaccination_n24.csv
 mixing_matrix:
@@ -109,14 +108,15 @@ head(param_summary, 10)
 One of MetaRVM's key features is demographic stratification, and it's ability to define parameters for specific demographic strata. 
 
 ```{r}
-# Get demographic categories
-age_categories <- config_obj$get_age_categories()
-race_categories <- config_obj$get_race_categories()
-zones <- config_obj$get_zones()
+# Get user-defined demographic category names and values
+category_names <- config_obj$get_category_names()
+cat("Available categories:", paste(category_names, collapse = ", "), "\n")
 
-cat("Age categories:", paste(age_categories, collapse = ", "), "\n")
-cat("Race categories:", paste(race_categories, collapse = ", "), "\n")
-cat("Geographic zones:", paste(zones, collapse = ", "), "\n")
+# Example: inspect values for one category (if present)
+if ("age" %in% category_names) {
+  age_categories <- config_obj$get_category_values("age")
+  cat("Age categories:", paste(age_categories, collapse = ", "), "\n")
+}
 ```
 
 ### Alternative Ways to Run the Simulation
@@ -186,7 +186,6 @@ yaml_file_dist <- system.file("extdata", "example_config_dist.yaml", package = "
 ```yaml
 run_id: ExampleRun_Dist
 population_data:
-  mapping: demographic_mapping_n24.csv
   initialization: population_init_n24.csv
   vaccination: vaccination_n24.csv
 mixing_matrix:
@@ -255,9 +254,9 @@ hospital_summary_dist$plot() + ggtitle("Daily Hospitalizations by Age Group (wit
 
 ```{r, fig.height = 6, fig.width = 8, fig.align = "center"}
 
-# Summary of hospitalizations by age and race group
+# Summary of hospitalizations by two user-defined categories
 hospital_summary <- sim_out_dist$summarize(
-  group_by = c("age", "race"),
+  group_by = c("age", "zone"),
   disease_states = "n_IsympH",
   stats = c("median", "quantile"),
   quantiles = c(0.05, 0.95)
@@ -265,7 +264,7 @@ hospital_summary <- sim_out_dist$summarize(
 hospital_summary
 
 # visualize the summary
-hospital_summary$plot() + ggtitle("Daily Hospitalizations by Age and Race") + theme_bw()
+hospital_summary$plot() + ggtitle("Daily Hospitalizations by Age and Zone") + theme_bw()
 ```
 
 # Specifying Disease Parameters by Demographics
@@ -280,7 +279,6 @@ yaml_file_subgroup <- system.file("extdata", "example_config_subgroup_dist.yaml"
 ```yaml
 run_id: ExampleRun_Subgroup_Dist
 population_data:
-  mapping: demographic_mapping_n24.csv
   initialization: population_init_n24.csv
   vaccination: vaccination_n24.csv
 mixing_matrix:
@@ -345,4 +343,3 @@ hospital_summary_subgroup <- sim_out_subgroup$summarize(
 # Plot the summary
 hospital_summary_subgroup$plot() + ggtitle("Daily Hospitalizations by Age Group (Subgroup Parameters)") + theme_bw()
 ```
-
