@@ -32,18 +32,16 @@ outcomes](https://www.medrxiv.org/content/10.1101/2025.05.05.25327021v1.full-tex
 ## Documentation
 
 Full documentation is available at:
-<https://RESUME-Epi.github.io/MetaRVM/dev/>
+<https://RESUME-Epi.github.io/MetaRVM/>
 
 ## Quickstart guide
 
 ### Installation
 
-The development version of `MetaRVM` can be installed from
-[GitHub](https://github.com/) with:
+The current CRAN release is **2.0.0**. Install it with:
 
 ``` r
-# install.packages("devtools")
-devtools::install_github("RESUME-Epi/MetaRVM@user-defined-subpopulation")
+install.packages("MetaRVM")
 ```
 
 ### Running a simulation
