@@ -50,8 +50,13 @@
     </div>
 
     <div class="section level2">
-<h2 class="pkg-version" data-toc-text="2.0.0" id="metarvm-200">MetaRVM 2.0.0<a class="anchor" aria-label="anchor" href="#metarvm-200"></a></h2>
-</div>
+<h2 class="pkg-version" data-toc-text="2.0.0" id="metarvm-200">MetaRVM 2.0.0<a class="anchor" aria-label="anchor" href="#metarvm-200"></a></h2><p class="text-muted">CRAN release: 2026-03-19</p>
+<ul><li><p>Subpopulation categories are now user-defined from <code>population_data$initialization</code>; non-reserved columns are detected automatically.</p></li>
+<li><p>Improved checkpoint restore behavior in <code><a href="../reference/parse_config.html">parse_config()</a></code>: when <code>restore_from</code> is provided, <code>population_data$initialization</code> can be used as mapping-only metadata (without <code>N</code>, <code>S0</code>, <code>I0</code>, etc.).</p></li>
+<li><p>Improved validation messages for category filters: invalid category names now list available categories, and invalid category values now list valid values for the selected category.</p></li>
+<li><p>Improved <code><a href="../reference/format_metarvm_output.html">format_metarvm_output()</a></code> handling of <code>population_id</code> and dynamic column selection for user-defined categories.</p></li>
+<li><p>Updated documentation and vignettes to reflect user-defined subpopulation categories and checkpoint restore behavior.</p></li>
+</ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="1.0.1" id="metarvm-101">MetaRVM 1.0.1<a class="anchor" aria-label="anchor" href="#metarvm-101"></a></h2><p class="text-muted">CRAN release: 2026-01-09</p>
 </div>

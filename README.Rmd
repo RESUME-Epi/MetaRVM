@@ -18,7 +18,8 @@ knitr::opts_chunk$set(
 ```
 
 <!-- badges: start -->
-<!-- [![R-CMD-check](https://github.com/NSF-RESUME/MetaRVM/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/NSF-RESUME/MetaRVM/actions/workflows/R-CMD-check.yaml) -->
+[![CRAN status](https://www.r-pkg.org/badges/version/MetaRVM)](https://CRAN.R-project.org/package=MetaRVM)
+[![CRAN downloads](https://cranlogs.r-pkg.org/badges/MetaRVM)](https://cran.r-project.org/package=MetaRVM)
 <!-- badges: end -->
 
 This is a compartmental model simulation code for generic respiratory virus diseases.
@@ -36,19 +37,17 @@ For more details, please refer to the paper: [Developing and deploying a use-ins
 
 ## Documentation
 
-Full documentation is available at: https://RESUME-Epi.github.io/MetaRVM/dev/
+Full documentation is available at: https://RESUME-Epi.github.io/MetaRVM/
 
 
 ## Quickstart guide
 
 ### Installation
 
-
-The development version of `MetaRVM` can be installed from [GitHub](https://github.com/) with:
+The current CRAN release is **2.0.0**. Install it with:
 
 ``` r
-# install.packages("devtools")
-devtools::install_github("RESUME-Epi/MetaRVM@user-defined-subpopulation")
+install.packages("MetaRVM")
 ```
 
 ### Running a simulation
@@ -210,5 +209,4 @@ List of vignettes:
 For the complete function reference, visit:
 
 **https://resume-epi.github.io/MetaRVM/reference/**
-
 
