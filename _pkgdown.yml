@@ -6,7 +6,7 @@ template:
     border-radius: 0.25rem
     btn-border-radius: 0.25rem
   light-switch: true
-  logo: man/figures/metaRVM_logo.png
+  logo: man/figures/logo.png
 
 # template:
 #   bootstrap: 5
