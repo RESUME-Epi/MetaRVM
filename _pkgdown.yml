@@ -5,7 +5,7 @@ template:
     primary: "#0051BA"
     border-radius: 0.25rem
     btn-border-radius: 0.25rem
-  light-switch: false
+  light-switch: true
   logo: man/figures/metaRVM_logo.png
 
 # template:
@@ -32,7 +32,7 @@ navbar:
   structure:
     # left:  [home, reference, articles, news]
     left:  [reference, articles, news]
-    right: [search, github]
+    right: [versions, lightswitch, search, github]
   components:
     # home:
     #   icon: fa-home
@@ -55,6 +55,13 @@ navbar:
     news:
       text: News
       href: news/index.html
+    versions:
+      text: Versions
+      menu:
+      - text: Stable (CRAN)
+        href: https://RESUME-Epi.github.io/MetaRVM/
+      - text: Development
+        href: https://RESUME-Epi.github.io/MetaRVM/dev/
     github:
       icon: fab fa-github fa-lg
       href: https://github.com/RESUME-Epi/MetaRVM

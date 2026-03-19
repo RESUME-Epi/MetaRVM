@@ -11,8 +11,8 @@
 #' @details
 #' The configuration input controls:
 #'
-#' - **Population structure** (user-defined categories from the initialization file)
-#' - **Disease parameters** (`ts`, `tv`, `ve`, `de`, `dp`, `da`, `ds`,
+#' - **Population structure** (user-defined categories and the initial compartment counts from the initialization file)
+#' - **Disease parameters** (`ts`, `ve`, `de`, `dp`, `da`, `ds`,
 #'   `dh`, `dr`, `pea`, `psr`, `phr`, `dv`, etc.)
 #' - **Mixing matrices** (weekday/weekend, day/night contact patterns)
 #' - **Vaccination schedule** and immunity waning
@@ -151,7 +151,6 @@ metaRVM <- function(config_input) {
                   delta_t = config_obj$config_data$delta_t,
                   vac_mat = config_obj$config_data$vac_mat,
                   ts = config_obj$config_data$ts[ii, ],
-                  tv = config_obj$config_data$tv[ii, ],
                   dv = config_obj$config_data$dv[ii, ],
                   de = config_obj$config_data$de[ii, ],
                   pea = config_obj$config_data$pea[ii, ],

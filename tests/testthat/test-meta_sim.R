@@ -30,7 +30,6 @@ test_that("meta_sim conserves population (no death) and produces no negative val
     N_pop = N_pop,
 
     ts = 0.5,
-    tv = 0.0,
 
     S0 = S0,
     I0 = I0,
@@ -135,7 +134,6 @@ test_that("meta_sim handles multi-pop mixing and conserves P per population (no 
     N_pop = N_pop,
 
     ts = rep(0.5, N_pop),
-    tv = rep(0.0, N_pop),
 
     S0 = S0,
     I0 = I0,
@@ -221,7 +219,6 @@ test_that("meta_sim compartment sums equal total living population P (no death)"
     N_pop = N_pop,
 
     ts = rep(0.5, N_pop),
-    tv = rep(0.0, N_pop),
 
     S0 = S0,
     I0 = I0,

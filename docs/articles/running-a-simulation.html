@@ -12,7 +12,7 @@
 <link rel="apple-touch-icon" type="image/png" sizes="120x120" href="../apple-touch-icon-120x120.png">
 <link rel="apple-touch-icon" type="image/png" sizes="76x76" href="../apple-touch-icon-76x76.png">
 <link rel="apple-touch-icon" type="image/png" sizes="60x60" href="../apple-touch-icon-60x60.png">
-<script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<script src="../lightswitch.js"></script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
 <script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
@@ -22,11 +22,11 @@
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
-    <nav class="navbar navbar-expand-lg fixed-top bg-light" data-bs-theme="light" aria-label="Site navigation"><div class="container">
+    <nav class="navbar navbar-expand-lg fixed-top " aria-label="Site navigation"><div class="container">
 
     <a class="navbar-brand me-2" href="../index.html">MetaRVM</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.0.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -48,6 +48,21 @@
 <li class="nav-item"><a class="nav-link" href="../news/index.html">News</a></li>
       </ul>
 <ul class="navbar-nav">
+<li class="nav-item dropdown">
+  <button class="nav-link dropdown-toggle" type="button" id="dropdown-versions" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Versions</button>
+  <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdown-versions">
+<li><a class="dropdown-item" href="https://RESUME-Epi.github.io/MetaRVM/">Stable (CRAN)</a></li>
+    <li><a class="dropdown-item" href="https://RESUME-Epi.github.io/MetaRVM/dev/">Development</a></li>
+  </ul>
+</li>
+<li class="nav-item dropdown">
+  <button class="nav-link dropdown-toggle" type="button" id="dropdown-lightswitch" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true" aria-label="Light switch"><span class="fa fa-sun"></span></button>
+  <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdown-lightswitch">
+<li><button class="dropdown-item" data-bs-theme-value="light"><span class="fa fa-sun"></span> Light</button></li>
+    <li><button class="dropdown-item" data-bs-theme-value="dark"><span class="fa fa-moon"></span> Dark</button></li>
+    <li><button class="dropdown-item" data-bs-theme-value="auto"><span class="fa fa-adjust"></span> Auto</button></li>
+  </ul>
+</li>
 <li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json">
 </form></li>
@@ -93,39 +108,37 @@ package is installed.</p>
 <code class="sourceCode R"><span><span class="co"># Locate the example YAML configuration file</span></span>
 <span><span class="va">yaml_file</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, <span class="st">"example_config.yaml"</span>, package <span class="op">=</span> <span class="st">"MetaRVM"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">yaml_file</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] "/tmp/Rtmpj9CZ7i/temp_libpathfe55dc3a2b6/MetaRVM/extdata/example_config.yaml"</span></span></code></pre></div>
+<span><span class="co">#&gt; [1] "/tmp/RtmpwQdGR9/temp_libpath28fcb321a1e9d/MetaRVM/extdata/example_config.yaml"</span></span></code></pre></div>
 <p>The <code>yaml_file</code> variable now holds the full path to the
 example configuration file. This file is set up to use the other example
 data files (also in the <code>extdata</code> directory) with relative
 paths. Below is the content of the yaml file.</p>
 <div class="sourceCode" id="cb2"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="fu">run_id</span><span class="kw">:</span><span class="at"> ExampleRun</span></span>
 <span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a><span class="fu">population_data</span><span class="kw">:</span></span>
-<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a><span class="at">  </span><span class="fu">mapping</span><span class="kw">:</span><span class="at"> demographic_mapping_n24.csv</span></span>
-<span id="cb2-4"><a href="#cb2-4" tabindex="-1"></a><span class="at">  </span><span class="fu">initialization</span><span class="kw">:</span><span class="at"> population_init_n24.csv</span></span>
-<span id="cb2-5"><a href="#cb2-5" tabindex="-1"></a><span class="at">  </span><span class="fu">vaccination</span><span class="kw">:</span><span class="at"> vaccination_n24.csv</span></span>
-<span id="cb2-6"><a href="#cb2-6" tabindex="-1"></a><span class="fu">mixing_matrix</span><span class="kw">:</span></span>
-<span id="cb2-7"><a href="#cb2-7" tabindex="-1"></a><span class="at">  </span><span class="fu">weekday_day</span><span class="kw">:</span><span class="at"> m_weekday_day.csv</span></span>
-<span id="cb2-8"><a href="#cb2-8" tabindex="-1"></a><span class="at">  </span><span class="fu">weekday_night</span><span class="kw">:</span><span class="at"> m_weekday_night.csv</span></span>
-<span id="cb2-9"><a href="#cb2-9" tabindex="-1"></a><span class="at">  </span><span class="fu">weekend_day</span><span class="kw">:</span><span class="at"> m_weekend_day.csv</span></span>
-<span id="cb2-10"><a href="#cb2-10" tabindex="-1"></a><span class="at">  </span><span class="fu">weekend_night</span><span class="kw">:</span><span class="at"> m_weekend_night.csv</span></span>
-<span id="cb2-11"><a href="#cb2-11" tabindex="-1"></a><span class="fu">disease_params</span><span class="kw">:</span></span>
-<span id="cb2-12"><a href="#cb2-12" tabindex="-1"></a><span class="at">  </span><span class="fu">ts</span><span class="kw">:</span><span class="at"> </span><span class="fl">0.5</span></span>
-<span id="cb2-13"><a href="#cb2-13" tabindex="-1"></a><span class="at">  </span><span class="fu">tv</span><span class="kw">:</span><span class="at"> </span><span class="fl">0.25</span></span>
-<span id="cb2-14"><a href="#cb2-14" tabindex="-1"></a><span class="at">  </span><span class="fu">ve</span><span class="kw">:</span><span class="at"> </span><span class="fl">0.4</span></span>
-<span id="cb2-15"><a href="#cb2-15" tabindex="-1"></a><span class="at">  </span><span class="fu">dv</span><span class="kw">:</span><span class="at"> </span><span class="dv">180</span></span>
-<span id="cb2-16"><a href="#cb2-16" tabindex="-1"></a><span class="at">  </span><span class="fu">dp</span><span class="kw">:</span><span class="at"> </span><span class="dv">1</span></span>
-<span id="cb2-17"><a href="#cb2-17" tabindex="-1"></a><span class="at">  </span><span class="fu">de</span><span class="kw">:</span><span class="at"> </span><span class="dv">3</span></span>
-<span id="cb2-18"><a href="#cb2-18" tabindex="-1"></a><span class="at">  </span><span class="fu">da</span><span class="kw">:</span><span class="at"> </span><span class="dv">5</span></span>
-<span id="cb2-19"><a href="#cb2-19" tabindex="-1"></a><span class="at">  </span><span class="fu">ds</span><span class="kw">:</span><span class="at"> </span><span class="dv">6</span></span>
-<span id="cb2-20"><a href="#cb2-20" tabindex="-1"></a><span class="at">  </span><span class="fu">dh</span><span class="kw">:</span><span class="at"> </span><span class="dv">8</span></span>
-<span id="cb2-21"><a href="#cb2-21" tabindex="-1"></a><span class="at">  </span><span class="fu">dr</span><span class="kw">:</span><span class="at"> </span><span class="dv">180</span></span>
-<span id="cb2-22"><a href="#cb2-22" tabindex="-1"></a><span class="at">  </span><span class="fu">pea</span><span class="kw">:</span><span class="at"> </span><span class="fl">0.3</span></span>
-<span id="cb2-23"><a href="#cb2-23" tabindex="-1"></a><span class="at">  </span><span class="fu">psr</span><span class="kw">:</span><span class="at"> </span><span class="fl">0.95</span></span>
-<span id="cb2-24"><a href="#cb2-24" tabindex="-1"></a><span class="at">  </span><span class="fu">phr</span><span class="kw">:</span><span class="at"> </span><span class="fl">0.97</span></span>
-<span id="cb2-25"><a href="#cb2-25" tabindex="-1"></a><span class="fu">simulation_config</span><span class="kw">:</span></span>
-<span id="cb2-26"><a href="#cb2-26" tabindex="-1"></a><span class="at">  </span><span class="fu">start_date</span><span class="kw">:</span><span class="at"> 01/01/2023</span><span class="co"> # m/d/Y</span></span>
-<span id="cb2-27"><a href="#cb2-27" tabindex="-1"></a><span class="at">  </span><span class="fu">length</span><span class="kw">:</span><span class="at"> </span><span class="dv">150</span></span>
-<span id="cb2-28"><a href="#cb2-28" tabindex="-1"></a><span class="at">  </span><span class="fu">nsim</span><span class="kw">:</span><span class="at"> </span><span class="dv">1</span></span></code></pre></div>
+<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a><span class="at">  </span><span class="fu">initialization</span><span class="kw">:</span><span class="at"> population_init_n24.csv</span></span>
+<span id="cb2-4"><a href="#cb2-4" tabindex="-1"></a><span class="at">  </span><span class="fu">vaccination</span><span class="kw">:</span><span class="at"> vaccination_n24.csv</span></span>
+<span id="cb2-5"><a href="#cb2-5" tabindex="-1"></a><span class="fu">mixing_matrix</span><span class="kw">:</span></span>
+<span id="cb2-6"><a href="#cb2-6" tabindex="-1"></a><span class="at">  </span><span class="fu">weekday_day</span><span class="kw">:</span><span class="at"> m_weekday_day.csv</span></span>
+<span id="cb2-7"><a href="#cb2-7" tabindex="-1"></a><span class="at">  </span><span class="fu">weekday_night</span><span class="kw">:</span><span class="at"> m_weekday_night.csv</span></span>
+<span id="cb2-8"><a href="#cb2-8" tabindex="-1"></a><span class="at">  </span><span class="fu">weekend_day</span><span class="kw">:</span><span class="at"> m_weekend_day.csv</span></span>
+<span id="cb2-9"><a href="#cb2-9" tabindex="-1"></a><span class="at">  </span><span class="fu">weekend_night</span><span class="kw">:</span><span class="at"> m_weekend_night.csv</span></span>
+<span id="cb2-10"><a href="#cb2-10" tabindex="-1"></a><span class="fu">disease_params</span><span class="kw">:</span></span>
+<span id="cb2-11"><a href="#cb2-11" tabindex="-1"></a><span class="at">  </span><span class="fu">ts</span><span class="kw">:</span><span class="at"> </span><span class="fl">0.5</span></span>
+<span id="cb2-12"><a href="#cb2-12" tabindex="-1"></a><span class="at">  </span><span class="fu">ve</span><span class="kw">:</span><span class="at"> </span><span class="fl">0.4</span></span>
+<span id="cb2-13"><a href="#cb2-13" tabindex="-1"></a><span class="at">  </span><span class="fu">dv</span><span class="kw">:</span><span class="at"> </span><span class="dv">180</span></span>
+<span id="cb2-14"><a href="#cb2-14" tabindex="-1"></a><span class="at">  </span><span class="fu">dp</span><span class="kw">:</span><span class="at"> </span><span class="dv">1</span></span>
+<span id="cb2-15"><a href="#cb2-15" tabindex="-1"></a><span class="at">  </span><span class="fu">de</span><span class="kw">:</span><span class="at"> </span><span class="dv">3</span></span>
+<span id="cb2-16"><a href="#cb2-16" tabindex="-1"></a><span class="at">  </span><span class="fu">da</span><span class="kw">:</span><span class="at"> </span><span class="dv">5</span></span>
+<span id="cb2-17"><a href="#cb2-17" tabindex="-1"></a><span class="at">  </span><span class="fu">ds</span><span class="kw">:</span><span class="at"> </span><span class="dv">6</span></span>
+<span id="cb2-18"><a href="#cb2-18" tabindex="-1"></a><span class="at">  </span><span class="fu">dh</span><span class="kw">:</span><span class="at"> </span><span class="dv">8</span></span>
+<span id="cb2-19"><a href="#cb2-19" tabindex="-1"></a><span class="at">  </span><span class="fu">dr</span><span class="kw">:</span><span class="at"> </span><span class="dv">180</span></span>
+<span id="cb2-20"><a href="#cb2-20" tabindex="-1"></a><span class="at">  </span><span class="fu">pea</span><span class="kw">:</span><span class="at"> </span><span class="fl">0.3</span></span>
+<span id="cb2-21"><a href="#cb2-21" tabindex="-1"></a><span class="at">  </span><span class="fu">psr</span><span class="kw">:</span><span class="at"> </span><span class="fl">0.95</span></span>
+<span id="cb2-22"><a href="#cb2-22" tabindex="-1"></a><span class="at">  </span><span class="fu">phr</span><span class="kw">:</span><span class="at"> </span><span class="fl">0.97</span></span>
+<span id="cb2-23"><a href="#cb2-23" tabindex="-1"></a><span class="fu">simulation_config</span><span class="kw">:</span></span>
+<span id="cb2-24"><a href="#cb2-24" tabindex="-1"></a><span class="at">  </span><span class="fu">start_date</span><span class="kw">:</span><span class="at"> 01/01/2023</span><span class="co"> # m/d/Y</span></span>
+<span id="cb2-25"><a href="#cb2-25" tabindex="-1"></a><span class="at">  </span><span class="fu">length</span><span class="kw">:</span><span class="at"> </span><span class="dv">150</span></span>
+<span id="cb2-26"><a href="#cb2-26" tabindex="-1"></a><span class="at">  </span><span class="fu">nsim</span><span class="kw">:</span><span class="at"> </span><span class="dv">1</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="running-the-simulation">Running the Simulation<a class="anchor" aria-label="anchor" href="#running-the-simulation"></a>
@@ -160,9 +173,9 @@ file path, or by creating a <code>MetaRVMConfig</code> object.</p>
 <span><span class="va">config_obj</span></span>
 <span><span class="co">#&gt; MetaRVM Configuration Object</span></span>
 <span><span class="co">#&gt; ============================</span></span>
-<span><span class="co">#&gt; Config file: /tmp/Rtmpj9CZ7i/temp_libpathfe55dc3a2b6/MetaRVM/extdata/example_config.yaml </span></span>
+<span><span class="co">#&gt; Config file: /tmp/RtmpwQdGR9/temp_libpath28fcb321a1e9d/MetaRVM/extdata/example_config.yaml </span></span>
 <span><span class="co">#&gt; Parameters: 40 </span></span>
-<span><span class="co">#&gt; Parameter names (first 10): N_pop, pop_map, S_ini, E_ini, I_asymp_ini, I_presymp_ini, I_symp_ini, H_ini, D_ini, P_ini ...</span></span>
+<span><span class="co">#&gt; Parameter names (first 10): N_pop, pop_map, category_names, S_ini, E_ini, I_asymp_ini, I_presymp_ini, I_symp_ini, H_ini, D_ini ...</span></span>
 <span><span class="co">#&gt; Population groups: 24 </span></span>
 <span><span class="co">#&gt; Start date: 2023-09-30 </span></span>
 <span><span class="co">#&gt; Population mapping: [ 24 rows x 4 columns]</span></span></code></pre></div>
@@ -176,24 +189,24 @@ explore the simulation arguments:</p>
 <code class="sourceCode R"><span><span class="co"># List all available parameters</span></span>
 <span><span class="va">param_names</span> <span class="op">&lt;-</span> <span class="va">config_obj</span><span class="op">$</span><span class="fu">list_parameters</span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">param_names</span>, <span class="fl">10</span><span class="op">)</span></span>
-<span><span class="co">#&gt;  [1] "N_pop"         "pop_map"       "S_ini"         "E_ini"        </span></span>
-<span><span class="co">#&gt;  [5] "I_asymp_ini"   "I_presymp_ini" "I_symp_ini"    "H_ini"        </span></span>
-<span><span class="co">#&gt;  [9] "D_ini"         "P_ini"</span></span>
+<span><span class="co">#&gt;  [1] "N_pop"          "pop_map"        "category_names" "S_ini"         </span></span>
+<span><span class="co">#&gt;  [5] "E_ini"          "I_asymp_ini"    "I_presymp_ini"  "I_symp_ini"    </span></span>
+<span><span class="co">#&gt;  [9] "H_ini"          "D_ini"</span></span>
 <span></span>
 <span><span class="co"># Get a summary of parameter types and sizes</span></span>
 <span><span class="va">param_summary</span> <span class="op">&lt;-</span> <span class="va">config_obj</span><span class="op">$</span><span class="fu">parameter_summary</span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">param_summary</span>, <span class="fl">10</span><span class="op">)</span></span>
-<span><span class="co">#&gt;                   parameter       type length size</span></span>
-<span><span class="co">#&gt; N_pop                 N_pop    integer      1    1</span></span>
-<span><span class="co">#&gt; pop_map             pop_map data.table      4    4</span></span>
-<span><span class="co">#&gt; S_ini                 S_ini    integer     24   24</span></span>
-<span><span class="co">#&gt; E_ini                 E_ini    numeric     24   24</span></span>
-<span><span class="co">#&gt; I_asymp_ini     I_asymp_ini    numeric     24   24</span></span>
-<span><span class="co">#&gt; I_presymp_ini I_presymp_ini    numeric     24   24</span></span>
-<span><span class="co">#&gt; I_symp_ini       I_symp_ini    integer     24   24</span></span>
-<span><span class="co">#&gt; H_ini                 H_ini    numeric     24   24</span></span>
-<span><span class="co">#&gt; D_ini                 D_ini    numeric     24   24</span></span>
-<span><span class="co">#&gt; P_ini                 P_ini    integer     24   24</span></span></code></pre></div>
+<span><span class="co">#&gt;                     parameter       type length size</span></span>
+<span><span class="co">#&gt; N_pop                   N_pop    integer      1    1</span></span>
+<span><span class="co">#&gt; pop_map               pop_map data.table      4    4</span></span>
+<span><span class="co">#&gt; category_names category_names  character      3    3</span></span>
+<span><span class="co">#&gt; S_ini                   S_ini    integer     24   24</span></span>
+<span><span class="co">#&gt; E_ini                   E_ini    numeric     24   24</span></span>
+<span><span class="co">#&gt; I_asymp_ini       I_asymp_ini    numeric     24   24</span></span>
+<span><span class="co">#&gt; I_presymp_ini   I_presymp_ini    numeric     24   24</span></span>
+<span><span class="co">#&gt; I_symp_ini         I_symp_ini    integer     24   24</span></span>
+<span><span class="co">#&gt; H_ini                   H_ini    numeric     24   24</span></span>
+<span><span class="co">#&gt; D_ini                   D_ini    numeric     24   24</span></span></code></pre></div>
 </div>
 <div class="section level4">
 <h4 id="accessing-demographic-information">Accessing Demographic Information<a class="anchor" aria-label="anchor" href="#accessing-demographic-information"></a>
@@ -201,17 +214,17 @@ explore the simulation arguments:</p>
 <p>One of MetaRVM’s key features is demographic stratification, and it’s
 ability to define parameters for specific demographic strata.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Get demographic categories</span></span>
-<span><span class="va">age_categories</span> <span class="op">&lt;-</span> <span class="va">config_obj</span><span class="op">$</span><span class="fu">get_age_categories</span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="va">race_categories</span> <span class="op">&lt;-</span> <span class="va">config_obj</span><span class="op">$</span><span class="fu">get_race_categories</span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="va">zones</span> <span class="op">&lt;-</span> <span class="va">config_obj</span><span class="op">$</span><span class="fu">get_zones</span><span class="op">(</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="co"># Get user-defined demographic category names and values</span></span>
+<span><span class="va">category_names</span> <span class="op">&lt;-</span> <span class="va">config_obj</span><span class="op">$</span><span class="fu">get_category_names</span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"Available categories:"</span>, <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="va">category_names</span>, collapse <span class="op">=</span> <span class="st">", "</span><span class="op">)</span>, <span class="st">"\n"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Available categories: age, race, zone</span></span>
 <span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"Age categories:"</span>, <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="va">age_categories</span>, collapse <span class="op">=</span> <span class="st">", "</span><span class="op">)</span>, <span class="st">"\n"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Age categories: 0-17, 18-64, 65+</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"Race categories:"</span>, <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="va">race_categories</span>, collapse <span class="op">=</span> <span class="st">", "</span><span class="op">)</span>, <span class="st">"\n"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Race categories: A, B, C, D</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"Geographic zones:"</span>, <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="va">zones</span>, collapse <span class="op">=</span> <span class="st">", "</span><span class="op">)</span>, <span class="st">"\n"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Geographic zones: 11, 22</span></span></code></pre></div>
+<span><span class="co"># Example: inspect values for one category (if present)</span></span>
+<span><span class="kw">if</span> <span class="op">(</span><span class="st">"age"</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="va">category_names</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">age_categories</span> <span class="op">&lt;-</span> <span class="va">config_obj</span><span class="op">$</span><span class="fu">get_category_values</span><span class="op">(</span><span class="st">"age"</span><span class="op">)</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"Age categories:"</span>, <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="va">age_categories</span>, collapse <span class="op">=</span> <span class="st">", "</span><span class="op">)</span>, <span class="st">"\n"</span><span class="op">)</span></span>
+<span><span class="op">}</span></span>
+<span><span class="co">#&gt; Age categories: 0-17, 18-64, 65+</span></span></code></pre></div>
 </div>
 <div class="section level4">
 <h4 id="alternative-ways-to-run-the-simulation">Alternative Ways to Run the Simulation<a class="anchor" aria-label="anchor" href="#alternative-ways-to-run-the-simulation"></a>
@@ -238,14 +251,14 @@ attributes, and stored in a data frame called results:</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Look at the structure of formatted results</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">sim_out</span><span class="op">$</span><span class="va">results</span><span class="op">)</span></span>
-<span><span class="co">#&gt;          date    age   race   zone disease_state        value instance</span></span>
-<span><span class="co">#&gt;        &lt;Date&gt; &lt;char&gt; &lt;char&gt; &lt;char&gt;        &lt;char&gt;        &lt;num&gt;    &lt;int&gt;</span></span>
-<span><span class="co">#&gt; 1: 2023-10-01   0-17      A     11             D 2.252583e-04        1</span></span>
-<span><span class="co">#&gt; 2: 2023-10-01   0-17      A     11             E 1.305178e+01        1</span></span>
-<span><span class="co">#&gt; 3: 2023-10-01   0-17      A     11             H 2.304447e-01        1</span></span>
-<span><span class="co">#&gt; 4: 2023-10-01   0-17      A     11         I_all 2.731688e+01        1</span></span>
-<span><span class="co">#&gt; 5: 2023-10-01   0-17      A     11       I_asymp 3.227854e-01        1</span></span>
-<span><span class="co">#&gt; 6: 2023-10-01   0-17      A     11         I_eff 2.476245e+01        1</span></span>
+<span><span class="co">#&gt;          date    age   race  zone disease_state        value instance</span></span>
+<span><span class="co">#&gt;        &lt;Date&gt; &lt;char&gt; &lt;char&gt; &lt;int&gt;        &lt;char&gt;        &lt;num&gt;    &lt;int&gt;</span></span>
+<span><span class="co">#&gt; 1: 2023-10-01   0-17      A    11             D 2.252583e-04        1</span></span>
+<span><span class="co">#&gt; 2: 2023-10-01   0-17      A    11             E 1.305178e+01        1</span></span>
+<span><span class="co">#&gt; 3: 2023-10-01   0-17      A    11             H 2.304447e-01        1</span></span>
+<span><span class="co">#&gt; 4: 2023-10-01   0-17      A    11         I_all 2.731688e+01        1</span></span>
+<span><span class="co">#&gt; 5: 2023-10-01   0-17      A    11       I_asymp 3.227854e-01        1</span></span>
+<span><span class="co">#&gt; 6: 2023-10-01   0-17      A    11         I_eff 2.476245e+01        1</span></span>
 <span></span>
 <span><span class="co"># Check unique values for key variables</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"Disease states:"</span>, <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="va">sim_out</span><span class="op">$</span><span class="va">results</span><span class="op">$</span><span class="va">disease_state</span><span class="op">)</span>, collapse <span class="op">=</span> <span class="st">", "</span><span class="op">)</span>, <span class="st">"\n"</span><span class="op">)</span></span>
@@ -262,19 +275,19 @@ class <code>MetaRVMResults</code>.</p>
 <code class="sourceCode R"><span><span class="co"># Subset by single criteria</span></span>
 <span><span class="va">hospitalized_data</span> <span class="op">&lt;-</span> <span class="va">sim_out</span><span class="op">$</span><span class="fu">subset_data</span><span class="op">(</span>disease_states <span class="op">=</span> <span class="st">"H"</span><span class="op">)</span></span>
 <span><span class="va">hospitalized_data</span><span class="op">$</span><span class="va">results</span></span>
-<span><span class="co">#&gt;             date    age   race   zone disease_state      value instance</span></span>
-<span><span class="co">#&gt;           &lt;Date&gt; &lt;char&gt; &lt;char&gt; &lt;char&gt;        &lt;char&gt;      &lt;num&gt;    &lt;int&gt;</span></span>
-<span><span class="co">#&gt;    1: 2023-10-01   0-17      A     11             H  0.2304447        1</span></span>
-<span><span class="co">#&gt;    2: 2023-10-01   0-17      B     11             H  0.5203590        1</span></span>
-<span><span class="co">#&gt;    3: 2023-10-01   0-17      C     11             H  0.6244308        1</span></span>
-<span><span class="co">#&gt;    4: 2023-10-01   0-17      D     11             H  1.4867401        1</span></span>
-<span><span class="co">#&gt;    5: 2023-10-01  18-64      A     11             H  0.3047817        1</span></span>
-<span><span class="co">#&gt;   ---                                                                  </span></span>
-<span><span class="co">#&gt; 3596: 2024-02-27  18-64      D     22             H  3.0363099        1</span></span>
-<span><span class="co">#&gt; 3597: 2024-02-27    65+      A     22             H  1.1367252        1</span></span>
-<span><span class="co">#&gt; 3598: 2024-02-27    65+      B     22             H  1.8119748        1</span></span>
-<span><span class="co">#&gt; 3599: 2024-02-27    65+      C     22             H 10.5239938        1</span></span>
-<span><span class="co">#&gt; 3600: 2024-02-27    65+      D     22             H 11.8169822        1</span></span>
+<span><span class="co">#&gt;             date    age   race  zone disease_state      value instance</span></span>
+<span><span class="co">#&gt;           &lt;Date&gt; &lt;char&gt; &lt;char&gt; &lt;int&gt;        &lt;char&gt;      &lt;num&gt;    &lt;int&gt;</span></span>
+<span><span class="co">#&gt;    1: 2023-10-01   0-17      A    11             H  0.2304447        1</span></span>
+<span><span class="co">#&gt;    2: 2023-10-01   0-17      A    22             H  0.2081436        1</span></span>
+<span><span class="co">#&gt;    3: 2023-10-01   0-17      B    11             H  0.5203590        1</span></span>
+<span><span class="co">#&gt;    4: 2023-10-01   0-17      B    22             H  0.3939861        1</span></span>
+<span><span class="co">#&gt;    5: 2023-10-01   0-17      C    11             H  0.6244308        1</span></span>
+<span><span class="co">#&gt;   ---                                                                 </span></span>
+<span><span class="co">#&gt; 3596: 2024-02-27    65+      B    22             H  1.6779075        1</span></span>
+<span><span class="co">#&gt; 3597: 2024-02-27    65+      C    11             H  2.4663331        1</span></span>
+<span><span class="co">#&gt; 3598: 2024-02-27    65+      C    22             H 10.0053788        1</span></span>
+<span><span class="co">#&gt; 3599: 2024-02-27    65+      D    11             H  5.6625439        1</span></span>
+<span><span class="co">#&gt; 3600: 2024-02-27    65+      D    22             H 11.3371490        1</span></span>
 <span></span>
 <span><span class="co"># Subset by multiple demographic categories</span></span>
 <span><span class="va">elderly_data</span> <span class="op">&lt;-</span> <span class="va">sim_out</span><span class="op">$</span><span class="fu">subset_data</span><span class="op">(</span></span>
@@ -282,45 +295,43 @@ class <code>MetaRVMResults</code>.</p>
 <span>  disease_states <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"H"</span>, <span class="st">"D"</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
 <span><span class="va">elderly_data</span><span class="op">$</span><span class="va">results</span></span>
-<span><span class="co">#&gt;             date    age   race   zone disease_state        value instance</span></span>
-<span><span class="co">#&gt;           &lt;Date&gt; &lt;char&gt; &lt;char&gt; &lt;char&gt;        &lt;char&gt;        &lt;num&gt;    &lt;int&gt;</span></span>
-<span><span class="co">#&gt;    1: 2023-10-01    65+      A     11             D 2.179919e-05        1</span></span>
-<span><span class="co">#&gt;    2: 2023-10-01    65+      A     11             H 2.230110e-02        1</span></span>
-<span><span class="co">#&gt;    3: 2023-10-01    65+      B     11             D 8.719675e-05        1</span></span>
-<span><span class="co">#&gt;    4: 2023-10-01    65+      B     11             H 8.920441e-02        1</span></span>
-<span><span class="co">#&gt;    5: 2023-10-01    65+      C     11             D 8.719675e-05        1</span></span>
-<span><span class="co">#&gt;   ---                                                                    </span></span>
-<span><span class="co">#&gt; 2396: 2024-02-27    65+      B     22             H 1.811975e+00        1</span></span>
-<span><span class="co">#&gt; 2397: 2024-02-27    65+      C     22             D 7.200555e+01        1</span></span>
-<span><span class="co">#&gt; 2398: 2024-02-27    65+      C     22             H 1.052399e+01        1</span></span>
-<span><span class="co">#&gt; 2399: 2024-02-27    65+      D     22             D 8.575588e+01        1</span></span>
-<span><span class="co">#&gt; 2400: 2024-02-27    65+      D     22             H 1.181698e+01        1</span></span>
+<span><span class="co">#&gt;             date    age   race  zone disease_state        value instance</span></span>
+<span><span class="co">#&gt;           &lt;Date&gt; &lt;char&gt; &lt;char&gt; &lt;int&gt;        &lt;char&gt;        &lt;num&gt;    &lt;int&gt;</span></span>
+<span><span class="co">#&gt;    1: 2023-10-01    65+      A    11             D 2.179919e-05        1</span></span>
+<span><span class="co">#&gt;    2: 2023-10-01    65+      A    11             H 2.230110e-02        1</span></span>
+<span><span class="co">#&gt;    3: 2023-10-01    65+      A    22             D 1.453279e-05        1</span></span>
+<span><span class="co">#&gt;    4: 2023-10-01    65+      A    22             H 1.486740e-02        1</span></span>
+<span><span class="co">#&gt;    5: 2023-10-01    65+      B    11             D 8.719675e-05        1</span></span>
+<span><span class="co">#&gt;   ---                                                                   </span></span>
+<span><span class="co">#&gt; 2396: 2024-02-27    65+      C    22             H 1.000538e+01        1</span></span>
+<span><span class="co">#&gt; 2397: 2024-02-27    65+      D    11             D 3.844495e+01        1</span></span>
+<span><span class="co">#&gt; 2398: 2024-02-27    65+      D    11             H 5.662544e+00        1</span></span>
+<span><span class="co">#&gt; 2399: 2024-02-27    65+      D    22             D 8.556737e+01        1</span></span>
+<span><span class="co">#&gt; 2400: 2024-02-27    65+      D    22             H 1.133715e+01        1</span></span>
 <span></span>
 <span><span class="co"># Specific date range</span></span>
 <span><span class="va">peak_period</span> <span class="op">&lt;-</span> <span class="va">sim_out</span><span class="op">$</span><span class="fu">subset_data</span><span class="op">(</span></span>
 <span>  date_range <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/as.Date.html" class="external-link">as.Date</a></span><span class="op">(</span><span class="st">"2023-10-01"</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/as.Date.html" class="external-link">as.Date</a></span><span class="op">(</span><span class="st">"2023-12-31"</span><span class="op">)</span><span class="op">)</span>,</span>
 <span>  disease_states <span class="op">=</span> <span class="st">"H"</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt; 19631 </span></span>
-<span><span class="co">#&gt; 19722</span></span>
 <span><span class="va">peak_period</span><span class="op">$</span><span class="va">results</span></span>
-<span><span class="co">#&gt;             date    age   race   zone disease_state      value instance</span></span>
-<span><span class="co">#&gt;           &lt;Date&gt; &lt;char&gt; &lt;char&gt; &lt;char&gt;        &lt;char&gt;      &lt;num&gt;    &lt;int&gt;</span></span>
-<span><span class="co">#&gt;    1: 2023-10-01   0-17      A     11             H  0.2304447        1</span></span>
-<span><span class="co">#&gt;    2: 2023-10-01   0-17      B     11             H  0.5203590        1</span></span>
-<span><span class="co">#&gt;    3: 2023-10-01   0-17      C     11             H  0.6244308        1</span></span>
-<span><span class="co">#&gt;    4: 2023-10-01   0-17      D     11             H  1.4867401        1</span></span>
-<span><span class="co">#&gt;    5: 2023-10-01  18-64      A     11             H  0.3047817        1</span></span>
-<span><span class="co">#&gt;   ---                                                                  </span></span>
-<span><span class="co">#&gt; 2204: 2023-12-31  18-64      D     22             H 10.4461399        1</span></span>
-<span><span class="co">#&gt; 2205: 2023-12-31    65+      A     22             H  1.4218017        1</span></span>
-<span><span class="co">#&gt; 2206: 2023-12-31    65+      B     22             H  4.4579963        1</span></span>
-<span><span class="co">#&gt; 2207: 2023-12-31    65+      C     22             H 55.2328788        1</span></span>
-<span><span class="co">#&gt; 2208: 2023-12-31    65+      D     22             H 74.7225667        1</span></span></code></pre></div>
+<span><span class="co">#&gt;             date    age   race  zone disease_state      value instance</span></span>
+<span><span class="co">#&gt;           &lt;Date&gt; &lt;char&gt; &lt;char&gt; &lt;int&gt;        &lt;char&gt;      &lt;num&gt;    &lt;int&gt;</span></span>
+<span><span class="co">#&gt;    1: 2023-10-01   0-17      A    11             H  0.2304447        1</span></span>
+<span><span class="co">#&gt;    2: 2023-10-01   0-17      A    22             H  0.2081436        1</span></span>
+<span><span class="co">#&gt;    3: 2023-10-01   0-17      B    11             H  0.5203590        1</span></span>
+<span><span class="co">#&gt;    4: 2023-10-01   0-17      B    22             H  0.3939861        1</span></span>
+<span><span class="co">#&gt;    5: 2023-10-01   0-17      C    11             H  0.6244308        1</span></span>
+<span><span class="co">#&gt;   ---                                                                 </span></span>
+<span><span class="co">#&gt; 2204: 2023-12-31    65+      B    22             H  4.5130497        1</span></span>
+<span><span class="co">#&gt; 2205: 2023-12-31    65+      C    11             H  6.5013954        1</span></span>
+<span><span class="co">#&gt; 2206: 2023-12-31    65+      C    22             H 55.2465688        1</span></span>
+<span><span class="co">#&gt; 2207: 2023-12-31    65+      D    11             H 27.2044176        1</span></span>
+<span><span class="co">#&gt; 2208: 2023-12-31    65+      D    22             H 74.6798530        1</span></span></code></pre></div>
 </div>
 </div>
 <div class="section level2">
-<h2 id="specifying-disease-parameter-via-distributions">Specifying Disease Parameter via Distributions<a class="anchor" aria-label="anchor" href="#specifying-disease-parameter-via-distributions"></a>
+<h2 id="specifying-disease-parameters-via-distributions">Specifying Disease Parameters via Distributions<a class="anchor" aria-label="anchor" href="#specifying-disease-parameters-via-distributions"></a>
 </h2>
 <p><code>metaRVM</code> allows for disease parameters to be specified as
 distributions, which is useful for capturing uncertainty. When a
@@ -335,44 +346,42 @@ package, <code>example_config_dist.yaml</code>. Here is its content:</p>
 <span><span class="va">yaml_file_dist</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, <span class="st">"example_config_dist.yaml"</span>, package <span class="op">=</span> <span class="st">"MetaRVM"</span><span class="op">)</span></span></code></pre></div>
 <div class="sourceCode" id="cb11"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb11-1"><a href="#cb11-1" tabindex="-1"></a><span class="fu">run_id</span><span class="kw">:</span><span class="at"> ExampleRun_Dist</span></span>
 <span id="cb11-2"><a href="#cb11-2" tabindex="-1"></a><span class="fu">population_data</span><span class="kw">:</span></span>
-<span id="cb11-3"><a href="#cb11-3" tabindex="-1"></a><span class="at">  </span><span class="fu">mapping</span><span class="kw">:</span><span class="at"> demographic_mapping_n24.csv</span></span>
-<span id="cb11-4"><a href="#cb11-4" tabindex="-1"></a><span class="at">  </span><span class="fu">initialization</span><span class="kw">:</span><span class="at"> population_init_n24.csv</span></span>
-<span id="cb11-5"><a href="#cb11-5" tabindex="-1"></a><span class="at">  </span><span class="fu">vaccination</span><span class="kw">:</span><span class="at"> vaccination_n24.csv</span></span>
-<span id="cb11-6"><a href="#cb11-6" tabindex="-1"></a><span class="fu">mixing_matrix</span><span class="kw">:</span></span>
-<span id="cb11-7"><a href="#cb11-7" tabindex="-1"></a><span class="at">  </span><span class="fu">weekday_day</span><span class="kw">:</span><span class="at"> m_weekday_day.csv</span></span>
-<span id="cb11-8"><a href="#cb11-8" tabindex="-1"></a><span class="at">  </span><span class="fu">weekday_night</span><span class="kw">:</span><span class="at"> m_weekday_night.csv</span></span>
-<span id="cb11-9"><a href="#cb11-9" tabindex="-1"></a><span class="at">  </span><span class="fu">weekend_day</span><span class="kw">:</span><span class="at"> m_weekend_day.csv</span></span>
-<span id="cb11-10"><a href="#cb11-10" tabindex="-1"></a><span class="at">  </span><span class="fu">weekend_night</span><span class="kw">:</span><span class="at"> m_weekend_night.csv</span></span>
-<span id="cb11-11"><a href="#cb11-11" tabindex="-1"></a><span class="fu">disease_params</span><span class="kw">:</span></span>
-<span id="cb11-12"><a href="#cb11-12" tabindex="-1"></a><span class="at">  </span><span class="fu">ts</span><span class="kw">:</span><span class="at"> </span><span class="fl">0.5</span></span>
-<span id="cb11-13"><a href="#cb11-13" tabindex="-1"></a><span class="at">  </span><span class="fu">tv</span><span class="kw">:</span><span class="at"> </span><span class="fl">0.25</span></span>
-<span id="cb11-14"><a href="#cb11-14" tabindex="-1"></a><span class="at">  </span><span class="fu">ve</span><span class="kw">:</span><span class="at"> </span></span>
-<span id="cb11-15"><a href="#cb11-15" tabindex="-1"></a><span class="at">    </span><span class="fu">dist</span><span class="kw">:</span><span class="at"> uniform</span></span>
-<span id="cb11-16"><a href="#cb11-16" tabindex="-1"></a><span class="at">    </span><span class="fu">min</span><span class="kw">:</span><span class="at"> </span><span class="fl">0.3</span></span>
-<span id="cb11-17"><a href="#cb11-17" tabindex="-1"></a><span class="at">    </span><span class="fu">max</span><span class="kw">:</span><span class="at"> </span><span class="fl">0.5</span></span>
-<span id="cb11-18"><a href="#cb11-18" tabindex="-1"></a><span class="at">  </span><span class="fu">dv</span><span class="kw">:</span><span class="at"> </span><span class="dv">180</span></span>
-<span id="cb11-19"><a href="#cb11-19" tabindex="-1"></a><span class="at">  </span><span class="fu">dp</span><span class="kw">:</span><span class="at"> </span><span class="dv">1</span></span>
-<span id="cb11-20"><a href="#cb11-20" tabindex="-1"></a><span class="at">  </span><span class="fu">de</span><span class="kw">:</span><span class="at"> </span><span class="dv">3</span></span>
-<span id="cb11-21"><a href="#cb11-21" tabindex="-1"></a><span class="at">  </span><span class="fu">da</span><span class="kw">:</span><span class="at"> </span></span>
-<span id="cb11-22"><a href="#cb11-22" tabindex="-1"></a><span class="at">    </span><span class="fu">dist</span><span class="kw">:</span><span class="at"> uniform</span></span>
-<span id="cb11-23"><a href="#cb11-23" tabindex="-1"></a><span class="at">    </span><span class="fu">min</span><span class="kw">:</span><span class="at"> </span><span class="dv">4</span></span>
-<span id="cb11-24"><a href="#cb11-24" tabindex="-1"></a><span class="at">    </span><span class="fu">max</span><span class="kw">:</span><span class="at"> </span><span class="dv">6</span></span>
-<span id="cb11-25"><a href="#cb11-25" tabindex="-1"></a><span class="at">  </span><span class="fu">ds</span><span class="kw">:</span><span class="at"> </span></span>
-<span id="cb11-26"><a href="#cb11-26" tabindex="-1"></a><span class="at">    </span><span class="fu">dist</span><span class="kw">:</span><span class="at"> uniform</span></span>
-<span id="cb11-27"><a href="#cb11-27" tabindex="-1"></a><span class="at">    </span><span class="fu">min</span><span class="kw">:</span><span class="at"> </span><span class="dv">5</span></span>
-<span id="cb11-28"><a href="#cb11-28" tabindex="-1"></a><span class="at">    </span><span class="fu">max</span><span class="kw">:</span><span class="at"> </span><span class="dv">7</span></span>
-<span id="cb11-29"><a href="#cb11-29" tabindex="-1"></a><span class="at">  </span><span class="fu">dh</span><span class="kw">:</span><span class="at"> </span></span>
-<span id="cb11-30"><a href="#cb11-30" tabindex="-1"></a><span class="at">    </span><span class="fu">dist</span><span class="kw">:</span><span class="at"> lognormal</span></span>
-<span id="cb11-31"><a href="#cb11-31" tabindex="-1"></a><span class="at">    </span><span class="fu">mu</span><span class="kw">:</span><span class="at"> </span><span class="dv">2</span></span>
-<span id="cb11-32"><a href="#cb11-32" tabindex="-1"></a><span class="at">    </span><span class="fu">sd</span><span class="kw">:</span><span class="at"> </span><span class="fl">0.5</span></span>
-<span id="cb11-33"><a href="#cb11-33" tabindex="-1"></a><span class="at">  </span><span class="fu">dr</span><span class="kw">:</span><span class="at"> </span><span class="dv">180</span></span>
-<span id="cb11-34"><a href="#cb11-34" tabindex="-1"></a><span class="at">  </span><span class="fu">pea</span><span class="kw">:</span><span class="at"> </span><span class="fl">0.3</span></span>
-<span id="cb11-35"><a href="#cb11-35" tabindex="-1"></a><span class="at">  </span><span class="fu">psr</span><span class="kw">:</span><span class="at"> </span><span class="fl">0.95</span></span>
-<span id="cb11-36"><a href="#cb11-36" tabindex="-1"></a><span class="at">  </span><span class="fu">phr</span><span class="kw">:</span><span class="at"> </span><span class="fl">0.97</span></span>
-<span id="cb11-37"><a href="#cb11-37" tabindex="-1"></a><span class="fu">simulation_config</span><span class="kw">:</span></span>
-<span id="cb11-38"><a href="#cb11-38" tabindex="-1"></a><span class="at">  </span><span class="fu">start_date</span><span class="kw">:</span><span class="at"> 01/01/2023</span><span class="co"> # m/d/Y</span></span>
-<span id="cb11-39"><a href="#cb11-39" tabindex="-1"></a><span class="at">  </span><span class="fu">length</span><span class="kw">:</span><span class="at"> </span><span class="dv">150</span></span>
-<span id="cb11-40"><a href="#cb11-40" tabindex="-1"></a><span class="at">  </span><span class="fu">nsim</span><span class="kw">:</span><span class="at"> </span><span class="dv">20</span><span class="co"> # Increased nsim for meaningful summary statistics</span></span></code></pre></div>
+<span id="cb11-3"><a href="#cb11-3" tabindex="-1"></a><span class="at">  </span><span class="fu">initialization</span><span class="kw">:</span><span class="at"> population_init_n24.csv</span></span>
+<span id="cb11-4"><a href="#cb11-4" tabindex="-1"></a><span class="at">  </span><span class="fu">vaccination</span><span class="kw">:</span><span class="at"> vaccination_n24.csv</span></span>
+<span id="cb11-5"><a href="#cb11-5" tabindex="-1"></a><span class="fu">mixing_matrix</span><span class="kw">:</span></span>
+<span id="cb11-6"><a href="#cb11-6" tabindex="-1"></a><span class="at">  </span><span class="fu">weekday_day</span><span class="kw">:</span><span class="at"> m_weekday_day.csv</span></span>
+<span id="cb11-7"><a href="#cb11-7" tabindex="-1"></a><span class="at">  </span><span class="fu">weekday_night</span><span class="kw">:</span><span class="at"> m_weekday_night.csv</span></span>
+<span id="cb11-8"><a href="#cb11-8" tabindex="-1"></a><span class="at">  </span><span class="fu">weekend_day</span><span class="kw">:</span><span class="at"> m_weekend_day.csv</span></span>
+<span id="cb11-9"><a href="#cb11-9" tabindex="-1"></a><span class="at">  </span><span class="fu">weekend_night</span><span class="kw">:</span><span class="at"> m_weekend_night.csv</span></span>
+<span id="cb11-10"><a href="#cb11-10" tabindex="-1"></a><span class="fu">disease_params</span><span class="kw">:</span></span>
+<span id="cb11-11"><a href="#cb11-11" tabindex="-1"></a><span class="at">  </span><span class="fu">ts</span><span class="kw">:</span><span class="at"> </span><span class="fl">0.5</span></span>
+<span id="cb11-12"><a href="#cb11-12" tabindex="-1"></a><span class="at">  </span><span class="fu">ve</span><span class="kw">:</span><span class="at"> </span></span>
+<span id="cb11-13"><a href="#cb11-13" tabindex="-1"></a><span class="at">    </span><span class="fu">dist</span><span class="kw">:</span><span class="at"> uniform</span></span>
+<span id="cb11-14"><a href="#cb11-14" tabindex="-1"></a><span class="at">    </span><span class="fu">min</span><span class="kw">:</span><span class="at"> </span><span class="fl">0.3</span></span>
+<span id="cb11-15"><a href="#cb11-15" tabindex="-1"></a><span class="at">    </span><span class="fu">max</span><span class="kw">:</span><span class="at"> </span><span class="fl">0.5</span></span>
+<span id="cb11-16"><a href="#cb11-16" tabindex="-1"></a><span class="at">  </span><span class="fu">dv</span><span class="kw">:</span><span class="at"> </span><span class="dv">180</span></span>
+<span id="cb11-17"><a href="#cb11-17" tabindex="-1"></a><span class="at">  </span><span class="fu">dp</span><span class="kw">:</span><span class="at"> </span><span class="dv">1</span></span>
+<span id="cb11-18"><a href="#cb11-18" tabindex="-1"></a><span class="at">  </span><span class="fu">de</span><span class="kw">:</span><span class="at"> </span><span class="dv">3</span></span>
+<span id="cb11-19"><a href="#cb11-19" tabindex="-1"></a><span class="at">  </span><span class="fu">da</span><span class="kw">:</span><span class="at"> </span></span>
+<span id="cb11-20"><a href="#cb11-20" tabindex="-1"></a><span class="at">    </span><span class="fu">dist</span><span class="kw">:</span><span class="at"> uniform</span></span>
+<span id="cb11-21"><a href="#cb11-21" tabindex="-1"></a><span class="at">    </span><span class="fu">min</span><span class="kw">:</span><span class="at"> </span><span class="dv">4</span></span>
+<span id="cb11-22"><a href="#cb11-22" tabindex="-1"></a><span class="at">    </span><span class="fu">max</span><span class="kw">:</span><span class="at"> </span><span class="dv">6</span></span>
+<span id="cb11-23"><a href="#cb11-23" tabindex="-1"></a><span class="at">  </span><span class="fu">ds</span><span class="kw">:</span><span class="at"> </span></span>
+<span id="cb11-24"><a href="#cb11-24" tabindex="-1"></a><span class="at">    </span><span class="fu">dist</span><span class="kw">:</span><span class="at"> uniform</span></span>
+<span id="cb11-25"><a href="#cb11-25" tabindex="-1"></a><span class="at">    </span><span class="fu">min</span><span class="kw">:</span><span class="at"> </span><span class="dv">5</span></span>
+<span id="cb11-26"><a href="#cb11-26" tabindex="-1"></a><span class="at">    </span><span class="fu">max</span><span class="kw">:</span><span class="at"> </span><span class="dv">7</span></span>
+<span id="cb11-27"><a href="#cb11-27" tabindex="-1"></a><span class="at">  </span><span class="fu">dh</span><span class="kw">:</span><span class="at"> </span></span>
+<span id="cb11-28"><a href="#cb11-28" tabindex="-1"></a><span class="at">    </span><span class="fu">dist</span><span class="kw">:</span><span class="at"> lognormal</span></span>
+<span id="cb11-29"><a href="#cb11-29" tabindex="-1"></a><span class="at">    </span><span class="fu">mu</span><span class="kw">:</span><span class="at"> </span><span class="dv">2</span></span>
+<span id="cb11-30"><a href="#cb11-30" tabindex="-1"></a><span class="at">    </span><span class="fu">sd</span><span class="kw">:</span><span class="at"> </span><span class="fl">0.5</span></span>
+<span id="cb11-31"><a href="#cb11-31" tabindex="-1"></a><span class="at">  </span><span class="fu">dr</span><span class="kw">:</span><span class="at"> </span><span class="dv">180</span></span>
+<span id="cb11-32"><a href="#cb11-32" tabindex="-1"></a><span class="at">  </span><span class="fu">pea</span><span class="kw">:</span><span class="at"> </span><span class="fl">0.3</span></span>
+<span id="cb11-33"><a href="#cb11-33" tabindex="-1"></a><span class="at">  </span><span class="fu">psr</span><span class="kw">:</span><span class="at"> </span><span class="fl">0.95</span></span>
+<span id="cb11-34"><a href="#cb11-34" tabindex="-1"></a><span class="at">  </span><span class="fu">phr</span><span class="kw">:</span><span class="at"> </span><span class="fl">0.97</span></span>
+<span id="cb11-35"><a href="#cb11-35" tabindex="-1"></a><span class="fu">simulation_config</span><span class="kw">:</span></span>
+<span id="cb11-36"><a href="#cb11-36" tabindex="-1"></a><span class="at">  </span><span class="fu">start_date</span><span class="kw">:</span><span class="at"> 01/01/2023</span><span class="co"> # m/d/Y</span></span>
+<span id="cb11-37"><a href="#cb11-37" tabindex="-1"></a><span class="at">  </span><span class="fu">length</span><span class="kw">:</span><span class="at"> </span><span class="dv">150</span></span>
+<span id="cb11-38"><a href="#cb11-38" tabindex="-1"></a><span class="at">  </span><span class="fu">nsim</span><span class="kw">:</span><span class="at"> </span><span class="dv">20</span><span class="co"> # Increased nsim for meaningful summary statistics</span></span></code></pre></div>
 <p>To run a simulation with this configuration, we pass the file path to
 <code>metaRVM</code>.</p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
@@ -401,20 +410,13 @@ simulation with parameter distributions, we can use the
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Plot the summary</span></span>
-<span><span class="va">hospital_summary_dist</span><span class="op">$</span><span class="fu">plot</span><span class="op">(</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ggtitle</a></span><span class="op">(</span><span class="st">"Daily Hospitalizations by Age Group (with 90% confidence interval)"</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html" class="external-link">theme_bw</a></span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Warning: Using `size` aesthetic for lines was deprecated in ggplot2 3.4.0.</span></span>
-<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Please use `linewidth` instead.</span></span>
-<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> The deprecated feature was likely used in the <span style="color: #0000BB;">MetaRVM</span> package.</span></span>
-<span><span class="co">#&gt;   Please report the issue at <span style="color: #0000BB; font-style: italic;">&lt;https://github.com/RESUME-Epi/MetaRVM/issues&gt;</span>.</span></span>
-<span><span class="co">#&gt; <span style="color: #555555;">This warning is displayed once every 8 hours.</span></span></span>
-<span><span class="co">#&gt; <span style="color: #555555;">Call `lifecycle::last_lifecycle_warnings()` to see where this warning was</span></span></span>
-<span><span class="co">#&gt; <span style="color: #555555;">generated.</span></span></span></code></pre></div>
+<span><span class="va">hospital_summary_dist</span><span class="op">$</span><span class="fu">plot</span><span class="op">(</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ggtitle</a></span><span class="op">(</span><span class="st">"Daily Hospitalizations by Age Group (with 90% confidence interval)"</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html" class="external-link">theme_bw</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 <p><img src="running-a-simulation_files/figure-html/unnamed-chunk-12-1.png" width="768" style="display: block; margin: auto;"></p>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span></span>
-<span><span class="co"># Summary of hospitalizations by age and race group</span></span>
+<span><span class="co"># Summary of hospitalizations by two user-defined categories</span></span>
 <span><span class="va">hospital_summary</span> <span class="op">&lt;-</span> <span class="va">sim_out_dist</span><span class="op">$</span><span class="fu">summarize</span><span class="op">(</span></span>
-<span>  group_by <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"age"</span>, <span class="st">"race"</span><span class="op">)</span>,</span>
+<span>  group_by <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"age"</span>, <span class="st">"zone"</span><span class="op">)</span>,</span>
 <span>  disease_states <span class="op">=</span> <span class="st">"n_IsympH"</span>,</span>
 <span>  stats <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"median"</span>, <span class="st">"quantile"</span><span class="op">)</span>,</span>
 <span>  quantiles <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.05</span>, <span class="fl">0.95</span><span class="op">)</span></span>
@@ -423,14 +425,14 @@ simulation with parameter distributions, we can use the
 <span><span class="co">#&gt; MetaRVM Summary Object</span></span>
 <span><span class="co">#&gt; ======================</span></span>
 <span><span class="co">#&gt; Data type: summary </span></span>
-<span><span class="co">#&gt; Observations: 1800 </span></span>
-<span><span class="co">#&gt; Grouped by: age, race </span></span>
+<span><span class="co">#&gt; Observations: 900 </span></span>
+<span><span class="co">#&gt; Grouped by: age, zone </span></span>
 <span><span class="co">#&gt; Disease states: n_IsympH </span></span>
 <span><span class="co">#&gt; Date range: 2023-01-01 to 2023-05-30 </span></span>
 <span><span class="co">#&gt; Summary statistics: median_value, q05, q95</span></span>
 <span></span>
 <span><span class="co"># visualize the summary</span></span>
-<span><span class="va">hospital_summary</span><span class="op">$</span><span class="fu">plot</span><span class="op">(</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ggtitle</a></span><span class="op">(</span><span class="st">"Daily Hospitalizations by Age and Race"</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html" class="external-link">theme_bw</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+<span><span class="va">hospital_summary</span><span class="op">$</span><span class="fu">plot</span><span class="op">(</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ggtitle</a></span><span class="op">(</span><span class="st">"Daily Hospitalizations by Age and Zone"</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html" class="external-link">theme_bw</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 <p><img src="running-a-simulation_files/figure-html/unnamed-chunk-13-1.png" width="768" style="display: block; margin: auto;"></p>
 </div>
 </div>
@@ -449,48 +451,46 @@ distributions.</p>
 <span><span class="va">yaml_file_subgroup</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, <span class="st">"example_config_subgroup_dist.yaml"</span>, package <span class="op">=</span> <span class="st">"MetaRVM"</span><span class="op">)</span></span></code></pre></div>
 <div class="sourceCode" id="cb16"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb16-1"><a href="#cb16-1" tabindex="-1"></a><span class="fu">run_id</span><span class="kw">:</span><span class="at"> ExampleRun_Subgroup_Dist</span></span>
 <span id="cb16-2"><a href="#cb16-2" tabindex="-1"></a><span class="fu">population_data</span><span class="kw">:</span></span>
-<span id="cb16-3"><a href="#cb16-3" tabindex="-1"></a><span class="at">  </span><span class="fu">mapping</span><span class="kw">:</span><span class="at"> demographic_mapping_n24.csv</span></span>
-<span id="cb16-4"><a href="#cb16-4" tabindex="-1"></a><span class="at">  </span><span class="fu">initialization</span><span class="kw">:</span><span class="at"> population_init_n24.csv</span></span>
-<span id="cb16-5"><a href="#cb16-5" tabindex="-1"></a><span class="at">  </span><span class="fu">vaccination</span><span class="kw">:</span><span class="at"> vaccination_n24.csv</span></span>
-<span id="cb16-6"><a href="#cb16-6" tabindex="-1"></a><span class="fu">mixing_matrix</span><span class="kw">:</span></span>
-<span id="cb16-7"><a href="#cb16-7" tabindex="-1"></a><span class="at">  </span><span class="fu">weekday_day</span><span class="kw">:</span><span class="at"> m_weekday_day.csv</span></span>
-<span id="cb16-8"><a href="#cb16-8" tabindex="-1"></a><span class="at">  </span><span class="fu">weekday_night</span><span class="kw">:</span><span class="at"> m_weekday_night.csv</span></span>
-<span id="cb16-9"><a href="#cb16-9" tabindex="-1"></a><span class="at">  </span><span class="fu">weekend_day</span><span class="kw">:</span><span class="at"> m_weekend_day.csv</span></span>
-<span id="cb16-10"><a href="#cb16-10" tabindex="-1"></a><span class="at">  </span><span class="fu">weekend_night</span><span class="kw">:</span><span class="at"> m_weekend_night.csv</span></span>
-<span id="cb16-11"><a href="#cb16-11" tabindex="-1"></a><span class="fu">disease_params</span><span class="kw">:</span></span>
-<span id="cb16-12"><a href="#cb16-12" tabindex="-1"></a><span class="at">  </span><span class="fu">ts</span><span class="kw">:</span><span class="at"> </span><span class="fl">0.5</span></span>
-<span id="cb16-13"><a href="#cb16-13" tabindex="-1"></a><span class="at">  </span><span class="fu">tv</span><span class="kw">:</span><span class="at"> </span><span class="fl">0.25</span></span>
-<span id="cb16-14"><a href="#cb16-14" tabindex="-1"></a><span class="at">  </span><span class="fu">ve</span><span class="kw">:</span><span class="at"> </span></span>
-<span id="cb16-15"><a href="#cb16-15" tabindex="-1"></a><span class="at">    </span><span class="fu">dist</span><span class="kw">:</span><span class="at"> uniform</span></span>
-<span id="cb16-16"><a href="#cb16-16" tabindex="-1"></a><span class="at">    </span><span class="fu">min</span><span class="kw">:</span><span class="at"> </span><span class="fl">0.3</span></span>
-<span id="cb16-17"><a href="#cb16-17" tabindex="-1"></a><span class="at">    </span><span class="fu">max</span><span class="kw">:</span><span class="at"> </span><span class="fl">0.5</span></span>
-<span id="cb16-18"><a href="#cb16-18" tabindex="-1"></a><span class="at">  </span><span class="fu">dv</span><span class="kw">:</span><span class="at"> </span><span class="dv">180</span></span>
-<span id="cb16-19"><a href="#cb16-19" tabindex="-1"></a><span class="at">  </span><span class="fu">dp</span><span class="kw">:</span><span class="at"> </span><span class="dv">1</span></span>
-<span id="cb16-20"><a href="#cb16-20" tabindex="-1"></a><span class="at">  </span><span class="fu">de</span><span class="kw">:</span><span class="at"> </span><span class="dv">3</span></span>
-<span id="cb16-21"><a href="#cb16-21" tabindex="-1"></a><span class="at">  </span><span class="fu">da</span><span class="kw">:</span><span class="at"> </span><span class="dv">5</span></span>
-<span id="cb16-22"><a href="#cb16-22" tabindex="-1"></a><span class="at">  </span><span class="fu">ds</span><span class="kw">:</span><span class="at"> </span><span class="dv">6</span></span>
-<span id="cb16-23"><a href="#cb16-23" tabindex="-1"></a><span class="at">  </span><span class="fu">dh</span><span class="kw">:</span><span class="at"> </span></span>
-<span id="cb16-24"><a href="#cb16-24" tabindex="-1"></a><span class="at">    </span><span class="fu">dist</span><span class="kw">:</span><span class="at"> lognormal</span></span>
-<span id="cb16-25"><a href="#cb16-25" tabindex="-1"></a><span class="at">    </span><span class="fu">mu</span><span class="kw">:</span><span class="at"> </span><span class="dv">2</span></span>
-<span id="cb16-26"><a href="#cb16-26" tabindex="-1"></a><span class="at">    </span><span class="fu">sd</span><span class="kw">:</span><span class="at"> </span><span class="fl">0.5</span></span>
-<span id="cb16-27"><a href="#cb16-27" tabindex="-1"></a><span class="at">  </span><span class="fu">dr</span><span class="kw">:</span><span class="at"> </span><span class="dv">180</span></span>
-<span id="cb16-28"><a href="#cb16-28" tabindex="-1"></a><span class="at">  </span><span class="fu">pea</span><span class="kw">:</span><span class="at"> </span><span class="fl">0.3</span></span>
-<span id="cb16-29"><a href="#cb16-29" tabindex="-1"></a><span class="at">  </span><span class="fu">psr</span><span class="kw">:</span><span class="at"> </span><span class="fl">0.95</span></span>
-<span id="cb16-30"><a href="#cb16-30" tabindex="-1"></a><span class="at">  </span><span class="fu">phr</span><span class="kw">:</span><span class="at"> </span><span class="fl">0.97</span></span>
-<span id="cb16-31"><a href="#cb16-31" tabindex="-1"></a><span class="fu">sub_disease_params</span><span class="kw">:</span></span>
-<span id="cb16-32"><a href="#cb16-32" tabindex="-1"></a><span class="at">    </span><span class="fu">age</span><span class="kw">:</span></span>
-<span id="cb16-33"><a href="#cb16-33" tabindex="-1"></a><span class="at">      </span><span class="fu">0-17</span><span class="kw">:</span></span>
-<span id="cb16-34"><a href="#cb16-34" tabindex="-1"></a><span class="at">        </span><span class="fu">pea</span><span class="kw">:</span><span class="at"> </span><span class="fl">0.08</span></span>
-<span id="cb16-35"><a href="#cb16-35" tabindex="-1"></a><span class="at">      </span><span class="fu">18-64</span><span class="kw">:</span></span>
-<span id="cb16-36"><a href="#cb16-36" tabindex="-1"></a><span class="at">        </span><span class="fu">ts</span><span class="kw">:</span><span class="at"> </span><span class="fl">0.6</span></span>
-<span id="cb16-37"><a href="#cb16-37" tabindex="-1"></a><span class="at">      </span><span class="fu">65+</span><span class="kw">:</span></span>
-<span id="cb16-38"><a href="#cb16-38" tabindex="-1"></a><span class="co">        # This fixed value will override the global lognormal distribution for dh</span></span>
-<span id="cb16-39"><a href="#cb16-39" tabindex="-1"></a><span class="at">        </span><span class="fu">dh</span><span class="kw">:</span><span class="at"> </span><span class="dv">10</span><span class="at"> </span></span>
-<span id="cb16-40"><a href="#cb16-40" tabindex="-1"></a><span class="at">        </span><span class="fu">phr</span><span class="kw">:</span><span class="at"> </span><span class="fl">0.9227</span></span>
-<span id="cb16-41"><a href="#cb16-41" tabindex="-1"></a><span class="fu">simulation_config</span><span class="kw">:</span></span>
-<span id="cb16-42"><a href="#cb16-42" tabindex="-1"></a><span class="at">  </span><span class="fu">start_date</span><span class="kw">:</span><span class="at"> 01/01/2023</span><span class="co"> # m/d/Y</span></span>
-<span id="cb16-43"><a href="#cb16-43" tabindex="-1"></a><span class="at">  </span><span class="fu">length</span><span class="kw">:</span><span class="at"> </span><span class="dv">150</span></span>
-<span id="cb16-44"><a href="#cb16-44" tabindex="-1"></a><span class="at">  </span><span class="fu">nsim</span><span class="kw">:</span><span class="at"> </span><span class="dv">20</span></span></code></pre></div>
+<span id="cb16-3"><a href="#cb16-3" tabindex="-1"></a><span class="at">  </span><span class="fu">initialization</span><span class="kw">:</span><span class="at"> population_init_n24.csv</span></span>
+<span id="cb16-4"><a href="#cb16-4" tabindex="-1"></a><span class="at">  </span><span class="fu">vaccination</span><span class="kw">:</span><span class="at"> vaccination_n24.csv</span></span>
+<span id="cb16-5"><a href="#cb16-5" tabindex="-1"></a><span class="fu">mixing_matrix</span><span class="kw">:</span></span>
+<span id="cb16-6"><a href="#cb16-6" tabindex="-1"></a><span class="at">  </span><span class="fu">weekday_day</span><span class="kw">:</span><span class="at"> m_weekday_day.csv</span></span>
+<span id="cb16-7"><a href="#cb16-7" tabindex="-1"></a><span class="at">  </span><span class="fu">weekday_night</span><span class="kw">:</span><span class="at"> m_weekday_night.csv</span></span>
+<span id="cb16-8"><a href="#cb16-8" tabindex="-1"></a><span class="at">  </span><span class="fu">weekend_day</span><span class="kw">:</span><span class="at"> m_weekend_day.csv</span></span>
+<span id="cb16-9"><a href="#cb16-9" tabindex="-1"></a><span class="at">  </span><span class="fu">weekend_night</span><span class="kw">:</span><span class="at"> m_weekend_night.csv</span></span>
+<span id="cb16-10"><a href="#cb16-10" tabindex="-1"></a><span class="fu">disease_params</span><span class="kw">:</span></span>
+<span id="cb16-11"><a href="#cb16-11" tabindex="-1"></a><span class="at">  </span><span class="fu">ts</span><span class="kw">:</span><span class="at"> </span><span class="fl">0.5</span></span>
+<span id="cb16-12"><a href="#cb16-12" tabindex="-1"></a><span class="at">  </span><span class="fu">ve</span><span class="kw">:</span><span class="at"> </span></span>
+<span id="cb16-13"><a href="#cb16-13" tabindex="-1"></a><span class="at">    </span><span class="fu">dist</span><span class="kw">:</span><span class="at"> uniform</span></span>
+<span id="cb16-14"><a href="#cb16-14" tabindex="-1"></a><span class="at">    </span><span class="fu">min</span><span class="kw">:</span><span class="at"> </span><span class="fl">0.3</span></span>
+<span id="cb16-15"><a href="#cb16-15" tabindex="-1"></a><span class="at">    </span><span class="fu">max</span><span class="kw">:</span><span class="at"> </span><span class="fl">0.5</span></span>
+<span id="cb16-16"><a href="#cb16-16" tabindex="-1"></a><span class="at">  </span><span class="fu">dv</span><span class="kw">:</span><span class="at"> </span><span class="dv">180</span></span>
+<span id="cb16-17"><a href="#cb16-17" tabindex="-1"></a><span class="at">  </span><span class="fu">dp</span><span class="kw">:</span><span class="at"> </span><span class="dv">1</span></span>
+<span id="cb16-18"><a href="#cb16-18" tabindex="-1"></a><span class="at">  </span><span class="fu">de</span><span class="kw">:</span><span class="at"> </span><span class="dv">3</span></span>
+<span id="cb16-19"><a href="#cb16-19" tabindex="-1"></a><span class="at">  </span><span class="fu">da</span><span class="kw">:</span><span class="at"> </span><span class="dv">5</span></span>
+<span id="cb16-20"><a href="#cb16-20" tabindex="-1"></a><span class="at">  </span><span class="fu">ds</span><span class="kw">:</span><span class="at"> </span><span class="dv">6</span></span>
+<span id="cb16-21"><a href="#cb16-21" tabindex="-1"></a><span class="at">  </span><span class="fu">dh</span><span class="kw">:</span><span class="at"> </span></span>
+<span id="cb16-22"><a href="#cb16-22" tabindex="-1"></a><span class="at">    </span><span class="fu">dist</span><span class="kw">:</span><span class="at"> lognormal</span></span>
+<span id="cb16-23"><a href="#cb16-23" tabindex="-1"></a><span class="at">    </span><span class="fu">mu</span><span class="kw">:</span><span class="at"> </span><span class="dv">2</span></span>
+<span id="cb16-24"><a href="#cb16-24" tabindex="-1"></a><span class="at">    </span><span class="fu">sd</span><span class="kw">:</span><span class="at"> </span><span class="fl">0.5</span></span>
+<span id="cb16-25"><a href="#cb16-25" tabindex="-1"></a><span class="at">  </span><span class="fu">dr</span><span class="kw">:</span><span class="at"> </span><span class="dv">180</span></span>
+<span id="cb16-26"><a href="#cb16-26" tabindex="-1"></a><span class="at">  </span><span class="fu">pea</span><span class="kw">:</span><span class="at"> </span><span class="fl">0.3</span></span>
+<span id="cb16-27"><a href="#cb16-27" tabindex="-1"></a><span class="at">  </span><span class="fu">psr</span><span class="kw">:</span><span class="at"> </span><span class="fl">0.95</span></span>
+<span id="cb16-28"><a href="#cb16-28" tabindex="-1"></a><span class="at">  </span><span class="fu">phr</span><span class="kw">:</span><span class="at"> </span><span class="fl">0.97</span></span>
+<span id="cb16-29"><a href="#cb16-29" tabindex="-1"></a><span class="fu">sub_disease_params</span><span class="kw">:</span></span>
+<span id="cb16-30"><a href="#cb16-30" tabindex="-1"></a><span class="at">    </span><span class="fu">age</span><span class="kw">:</span></span>
+<span id="cb16-31"><a href="#cb16-31" tabindex="-1"></a><span class="at">      </span><span class="fu">0-17</span><span class="kw">:</span></span>
+<span id="cb16-32"><a href="#cb16-32" tabindex="-1"></a><span class="at">        </span><span class="fu">pea</span><span class="kw">:</span><span class="at"> </span><span class="fl">0.08</span></span>
+<span id="cb16-33"><a href="#cb16-33" tabindex="-1"></a><span class="at">      </span><span class="fu">18-64</span><span class="kw">:</span></span>
+<span id="cb16-34"><a href="#cb16-34" tabindex="-1"></a><span class="at">        </span><span class="fu">ts</span><span class="kw">:</span><span class="at"> </span><span class="fl">0.6</span></span>
+<span id="cb16-35"><a href="#cb16-35" tabindex="-1"></a><span class="at">      </span><span class="fu">65+</span><span class="kw">:</span></span>
+<span id="cb16-36"><a href="#cb16-36" tabindex="-1"></a><span class="co">        # This fixed value will override the global lognormal distribution for dh</span></span>
+<span id="cb16-37"><a href="#cb16-37" tabindex="-1"></a><span class="at">        </span><span class="fu">dh</span><span class="kw">:</span><span class="at"> </span><span class="dv">10</span><span class="at"> </span></span>
+<span id="cb16-38"><a href="#cb16-38" tabindex="-1"></a><span class="at">        </span><span class="fu">phr</span><span class="kw">:</span><span class="at"> </span><span class="fl">0.9227</span></span>
+<span id="cb16-39"><a href="#cb16-39" tabindex="-1"></a><span class="fu">simulation_config</span><span class="kw">:</span></span>
+<span id="cb16-40"><a href="#cb16-40" tabindex="-1"></a><span class="at">  </span><span class="fu">start_date</span><span class="kw">:</span><span class="at"> 01/01/2023</span><span class="co"> # m/d/Y</span></span>
+<span id="cb16-41"><a href="#cb16-41" tabindex="-1"></a><span class="at">  </span><span class="fu">length</span><span class="kw">:</span><span class="at"> </span><span class="dv">150</span></span>
+<span id="cb16-42"><a href="#cb16-42" tabindex="-1"></a><span class="at">  </span><span class="fu">nsim</span><span class="kw">:</span><span class="at"> </span><span class="dv">20</span></span></code></pre></div>
 <p>Now, let’s run the simulation with this configuration.</p>
 <div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Run the simulation with the subgroup configuration</span></span>

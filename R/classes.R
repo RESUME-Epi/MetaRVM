@@ -256,13 +256,13 @@ MetaRVMConfig <- R6::R6Class(
 #' 
 #' # Subset data with multiple filters
 #' subset_data <- results_obj$subset_data(
-#'   age = c("18-49", "50-64"), 
-#'   disease_state = c("H", "D"),
+#'   age = c("18-64", "65+"), 
+#'   disease_states = c("H", "D"),
 #'   date_range = c(as.Date("2024-01-01"), as.Date("2024-02-01"))
 #' )
 #' 
 #' # Method chaining for analysis and visualization
-#' results_obj$subset_data(disease_state = "H")$summarize(
+#' results_obj$subset_data(disease_states = "H")$summarize(
 #'   group_by = c("age", "zone"), 
 #'   stats = c("median", "quantile"),
 #'   quantiles = c(0.25, 0.75)
@@ -380,7 +380,21 @@ MetaRVMResults <- R6::R6Class(
         for (cat_name in filter_names) {
           filter_values <- category_filters[[cat_name]]
           if (!is.null(filter_values)) {
-            subset_results <- subset_results[get(cat_name) %in% filter_values]
+            valid_values <- unique(self$config$get_category_values(cat_name))
+            valid_values_chr <- as.character(valid_values)
+            filter_values_chr <- as.character(filter_values)
+            invalid_values <- setdiff(filter_values_chr, valid_values_chr)
+
+            if (length(invalid_values) > 0) {
+              stop(sprintf(
+                "Invalid values for category '%s': %s. Valid values are: %s",
+                cat_name,
+                paste(invalid_values, collapse = ", "),
+                paste(valid_values_chr, collapse = ", ")
+              ))
+            }
+
+            subset_results <- subset_results[as.character(get(cat_name)) %in% filter_values_chr]
           }
         }
       }
@@ -625,7 +639,7 @@ MetaRVMResults <- R6::R6Class(
 #' # Run simulation
 #' results <- metaRVM(example_config)
 #' # Typically created through method chaining
-#' summary_obj <- results$subset_data(disease_state = "H")$summarize(
+#' summary_obj <- results$subset_data(disease_states = "H")$summarize(
 #'   group_by = c("age", "zone"), 
 #'   stats = c("median", "quantile"),
 #'   quantiles = c(0.25, 0.75)
@@ -800,7 +814,7 @@ MetaRVMSummary <- R6::R6Class(
       
       # Create the plot
       p <- ggplot(self$data, aes(x = date, y = median_value, color = get(color_var))) +
-        geom_line(size = 1) +
+        geom_line(linewidth = 1) +
         geom_ribbon(aes(ymin = get(ci_lower_col), ymax = get(ci_upper_col), 
                       fill = get(color_var)), alpha = 0.2, color = NA) +
         facet_grid(facet_formula, scales = "free_y") +
@@ -877,7 +891,7 @@ MetaRVMCheck <- R6::R6Class(
       # Basic validation for checkpoint data
       required_fields <- c(
         "N_pop", "delta_t", "m_weekday_day", "m_weekday_night", "m_weekend_day", 
-        "m_weekend_night", "ts", "tv", "ve", "dv", "de", "dp", "da", "ds", 
+        "m_weekend_night", "ts", "ve", "dv", "de", "dp", "da", "ds", 
         "dh", "dr", "pea", "psr", "phr", "S", 
         "E", "Ia", "Ip", "Is", "H", "D", "P", "V", "R", "chk_time_step"
       )

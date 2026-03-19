@@ -7,7 +7,6 @@
 meta_sim(
   N_pop,
   ts,
-  tv,
   S0,
   I0,
   P0,
@@ -49,9 +48,6 @@ meta_sim(
 
 \item{ts}{Numeric vector or scalar. Transmission rate for symptomatic individuals
 in susceptible population. If scalar, applied to all subpopulations}
-
-\item{tv}{Numeric vector or scalar. Transmission rate for symptomatic individuals
-in vaccinated population. If scalar, applied to all subpopulations}
 
 \item{S0}{Numeric vector of length N_pop. Initial number of susceptible individuals
 in each subpopulation}
@@ -221,7 +217,7 @@ Contact patterns vary by:
 Transmission occurs through contact between susceptible/vaccinated individuals and
 all infectious compartments (I_presymp + I_asymp + I_symp), modified by:
 \itemize{
-\item Population-specific transmission rates (ts, tv)
+\item Population-specific transmission rate, ts
 \item Time-varying contact patterns
 \item Vaccine effectiveness for breakthrough infections
 }
@@ -283,7 +279,6 @@ vac_mat[1, 1 + (1:N_pop)] <- P0 * 0.1
 results <- meta_sim(
   N_pop = N_pop,
   ts = 0.5,
-  tv = 0.1,
   S0 = S0,
   I0 = I0,
   P0 = P0,

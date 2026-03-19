@@ -11,8 +11,6 @@
 #' @param N_pop Integer. Number of demographic subpopulations in the model
 #' @param ts Numeric vector or scalar. Transmission rate for symptomatic individuals
 #'   in susceptible population. If scalar, applied to all subpopulations
-#' @param tv Numeric vector or scalar. Transmission rate for symptomatic individuals
-#'   in vaccinated population. If scalar, applied to all subpopulations
 #' @param S0 Numeric vector of length N_pop. Initial number of susceptible individuals
 #'   in each subpopulation
 #' @param I0 Numeric vector of length N_pop. Initial number of symptomatic infected
@@ -123,7 +121,7 @@
 #' Transmission occurs through contact between susceptible/vaccinated individuals and
 #' all infectious compartments (I_presymp + I_asymp + I_symp), modified by:
 #' \itemize{
-#'   \item Population-specific transmission rates (ts, tv)
+#'   \item Population-specific transmission rate, ts
 #'   \item Time-varying contact patterns
 #'   \item Vaccine effectiveness for breakthrough infections
 #' }
@@ -199,7 +197,6 @@
 #' results <- meta_sim(
 #'   N_pop = N_pop,
 #'   ts = 0.5,
-#'   tv = 0.1,
 #'   S0 = S0,
 #'   I0 = I0,
 #'   P0 = P0,
@@ -241,7 +238,7 @@
 #'
 #' @export
 
-meta_sim <- function(N_pop, ts, tv,
+meta_sim <- function(N_pop, ts, 
                      S0, I0, P0, R0,
                      H0 = rep(0, N_pop),
                      D0 = rep(0, N_pop),
@@ -421,7 +418,7 @@ meta_sim <- function(N_pop, ts, tv,
     D_ini[]         <- user()
 
     beta_i[]         <- user()
-    beta_v[]         <- user()
+    # beta_v[]         <- user()
     pretoIsymp[]     <- user()
     IasymptoR[]      <- user()
     IsymptoRH[]      <- user()
@@ -463,7 +460,7 @@ meta_sim <- function(N_pop, ts, tv,
     dim(mob_pop)    <- N_pop
 
     dim(beta_i)         <- N_pop
-    dim(beta_v)         <- N_pop
+    # dim(beta_v)         <- N_pop
     dim(EtoIpresymp)    <- N_pop
     dim(pretoIsymp)     <- N_pop
     dim(IasymptoR)      <- N_pop
@@ -525,7 +522,7 @@ meta_sim <- function(N_pop, ts, tv,
 
   ## If disease parameters are scalars, create the vector inputs
   if(length(ts) == 1) ts <- rep(ts, N_pop)
-  if(length(tv) == 1) tv <- rep(tv, N_pop)
+  # if(length(tv) == 1) tv <- rep(tv, N_pop)
   if(length(ve) == 1) ve <- rep(ve, N_pop)
   if(length(dv) == 1) dv <- rep(dv, N_pop)
   if(length(de) == 1) de <- rep(de, N_pop)
@@ -552,7 +549,7 @@ meta_sim <- function(N_pop, ts, tv,
   model <- metaODIN$new(stoch = as.numeric(is.stoch),
                         N_pop = N_pop,
                         beta_i = ts,
-                        beta_v = tv,
+                        # beta_v = tv,
                         S_ini = S0,
                         E_ini = E0,
                         I_asymp_ini = Ia0,
@@ -611,7 +608,7 @@ meta_sim <- function(N_pop, ts, tv,
           m_weekend_day = m_weekend_day,
           m_weekend_night = m_weekend_night,
           ts = ts,
-          tv = tv,
+          # tv = tv,
           ve = ve,
           dv = dv,
           de = de,

@@ -13,7 +13,7 @@ test_that("parse_config returns expected list structure for example config", {
     "H_ini", "D_ini", "P_ini", "V_ini", "R_ini",
     "vac_time_id", "vac_counts", "vac_mat",
     "m_wd_d", "m_wd_n", "m_we_d", "m_we_n",
-    "ts", "tv", "ve", "dv", "de", "dp", "da", "ds", "dh", "dr",
+    "ts", "ve", "dv", "de", "dp", "da", "ds", "dh", "dr",
     "pea", "psr", "phr",
     "start_date", "sim_length", "nsim", "random_seed",
     "delta_t", "chk_file_names", "chk_time_steps", "do_chk"
@@ -66,7 +66,7 @@ test_that("parse_config expands disease parameters with correct dimensions and r
   nsim  <- cfg$nsim
 
   # All disease params are documented as matrices (nsim x N_pop)
-  mat_params <- c("ts", "tv", "ve", "dv", "de", "dp", "da", "ds", "dh", "dr",
+  mat_params <- c("ts", "ve", "dv", "de", "dp", "da", "ds", "dh", "dr",
                   "pea", "psr", "phr")
 
   for (nm in mat_params) {
@@ -119,3 +119,42 @@ test_that("parse_config with return_object = TRUE returns a MetaRVMConfig with e
   expect_equal(nrow(pop_map), cfg_obj$get("N_pop"))
 })
 
+test_that("parse_config reports valid category values when sub_disease_params value is invalid", {
+  ext <- function(x) system.file("extdata", x, package = "MetaRVM")
+  cfg_path <- tempfile(fileext = ".yaml")
+
+  cfg <- list(
+    run_id = "InvalidSubgroupValue",
+    population_data = list(
+      initialization = ext("population_init_n24.csv"),
+      vaccination = ext("vaccination_n24.csv")
+    ),
+    mixing_matrix = list(
+      weekday_day = ext("m_weekday_day.csv"),
+      weekday_night = ext("m_weekday_night.csv"),
+      weekend_day = ext("m_weekend_day.csv"),
+      weekend_night = ext("m_weekend_night.csv")
+    ),
+    disease_params = list(
+      ts = 0.5, tv = 0.25, ve = 0.4, dv = 180, dp = 1, de = 3,
+      da = 5, ds = 6, dh = 8, dr = 180, pea = 0.3, psr = 0.95, phr = 0.97
+    ),
+    sub_disease_params = list(
+      age = list(
+        INVALID_AGE_GROUP = list(ts = 0.6)
+      )
+    ),
+    simulation_config = list(
+      start_date = "10/01/2023",
+      length = 30,
+      nsim = 1
+    )
+  )
+
+  yaml::write_yaml(cfg, cfg_path)
+
+  expect_error(
+    parse_config(cfg_path),
+    regexp = "Invalid values for category 'age' in sub_disease_params: INVALID_AGE_GROUP\\. Valid values are:"
+  )
+})

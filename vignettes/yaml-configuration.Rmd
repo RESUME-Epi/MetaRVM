@@ -34,7 +34,6 @@ mixing_matrix:
   weekend_night: data/m_weekend_night.csv
 disease_params:
   ts: 0.5
-  tv: 0.25
   ve: 0.4
   dv: 180
   dp: 1
@@ -126,7 +125,6 @@ print(head(row_sums, 10))
 Below is a list of the disease parameters used in `metaRVM`:
 
 -   `ts`: Transmission rate for symptomatic individuals in the susceptible population.
--   `tv`: Transmission rate for symptomatic individuals in the vaccinated population.
 -   `ve`: Vaccine effectiveness (proportion, range: [0, 1]).
 -   `dv`: Mean duration (in days) in the vaccinated state before immunity wanes.
 -   `dp`: Mean duration (in days) in the presymptomatic infectious state.
@@ -147,8 +145,7 @@ Here is an example of defining `ve`, `da`, `ds`, and `dh` with distributions:
 
 ```yaml
 disease_params:
-  ts: 0.7
-  tv: 0.35
+  ts: 0.5
   ve:
     dist: uniform
     min: 0.29
@@ -188,32 +185,16 @@ The following example defines different parameters for different age groups:
 ```yaml
 sub_disease_params:
     age:
-      0-4:
+      0-17:
         dh: 4
         pea: 0.08
         psr: 0.9303
         phr: 0.9920
-      5-11:
+      18-64:
         dh: 4
         pea: 0.08
         psr: 0.9726
         phr: 0.9920
-      12-17:
-        dh: 4
-        pea: 0.08
-        psr: 0.9726
-        phr: 0.9920
-      18-49:
-        ts: 0.01
-        dh: 6
-        pea: 0.12
-        psr: 0.9439
-        phr: 0.9690
-      50-64:
-        dh: 6
-        pea: 0.05
-        psr: 0.9894
-        phr: 0.9425
       65+:
         dh: 7
         pea: 0.05

@@ -89,11 +89,11 @@ format_metarvm_output <- function(sim_output, config) {
 
   if (nrow(n_states_daily) > 0) {
     combined_results <- rbind(
-      regular_states[, ..select_cols],
-      n_states_daily[, ..select_cols]
+      regular_states[, select_cols, with = FALSE],
+      n_states_daily[, select_cols, with = FALSE]
     )
   } else {
-    combined_results <- regular_states[, ..select_cols]
+    combined_results <- regular_states[, select_cols, with = FALSE]
   }
   
   # Convert time to calendar date
@@ -103,7 +103,7 @@ format_metarvm_output <- function(sim_output, config) {
   # only keep time > 0
   # Select and reorder final columns dynamically
   final_cols <- c("date", category_cols, "disease_state", "value", "instance")
-  final_results <- combined_results[time > 0, ..final_cols]
+  final_results <- combined_results[time > 0, final_cols, with = FALSE]
 
   # Sort by date, instance, and demographics for better readability
   sort_cols <- c("date", "instance", category_cols, "disease_state")

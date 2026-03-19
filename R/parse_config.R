@@ -49,7 +49,6 @@
 #' Epidemiological parameters (can be scalars or distributions):
 #' \itemize{
 #'   \item \code{ts}: Transmission rate for symptomatic individuals
-#'   \item \code{tv}: Transmission rate for vaccinated individuals
 #'   \item \code{ve}: Vaccine effectiveness
 #'   \item \code{de, dp, da, ds, dh, dr}: Duration parameters for different disease states
 #'   \item \code{pea, psr, phr}: Probability parameters for disease transitions
@@ -69,7 +68,7 @@
 #'   \item{S_ini, E_ini, I_asymp_ini, I_presymp_ini, I_symp_ini, H_ini, D_ini, P_ini, V_ini, R_ini}{Initial compartment populations}
 #'   \item{vac_time_id, vac_counts, vac_mat}{Vaccination schedule data}
 #'   \item{m_wd_d, m_wd_n, m_we_d, m_we_n}{Contact mixing matrices}
-#'   \item{ts, tv, ve, dv, de, dp, da, ds, dh, dr, pea, psr, phr}{Disease parameter matrices (nsim × N_pop)}
+#'   \item{ts, ve, dv, de, dp, da, ds, dh, dr, pea, psr, phr}{Disease parameter matrices (nsim × N_pop)}
 #'   \item{start_date}{Simulation start date as Date object}
 #'   \item{sim_length}{Simulation length in days}
 #'   \item{nsim}{Number of simulation instances}
@@ -153,6 +152,7 @@ parse_config <- function(config_file, return_object = FALSE){
 
   # =====================================================
   # read mandatory parameters
+  is_restore <- !is.null(yaml_data$simulation_config$restore_from)
 
   delta_t <- 0.5
   if(!is.null(yaml_data$simulation_config$nsim)){
@@ -215,7 +215,7 @@ parse_config <- function(config_file, return_object = FALSE){
   # ======================================================
   # If restore_from is available, initialize
   # meta_sim inputs
-  if(!is.null(yaml_data$simulation_config$restore_from)){
+  if(is_restore){
 
     chk_obj <- readRDS(yaml_data$simulation_config$restore_from)
 
@@ -236,7 +236,7 @@ parse_config <- function(config_file, return_object = FALSE){
 
     # read disease parameters
     ts <- chk_obj$get("ts")
-    tv <- chk_obj$get("tv")
+    # tv <- chk_obj$get("tv")
     ve <- chk_obj$get("ve")
     dv <- chk_obj$get("dv")
     de <- chk_obj$get("de")
@@ -267,68 +267,115 @@ parse_config <- function(config_file, return_object = FALSE){
   if(!is.null(yaml_data$population_data$initialization)){
 
     pop_init_file <- yaml_data$population_data$initialization
-    pop_init <- data.table::fread(pop_init_file)
 
     # Define reserved columns that are NOT categories
     reserved_cols <- c("population_id", "N", "S0", "I0", "R0", "V0",
                        "E0", "Ia0", "Ip0", "H0", "D0", "P0")
 
-    # Detect category columns (all columns except reserved ones)
-    category_cols <- setdiff(names(pop_init), reserved_cols)
+    if (is_restore) {
+      # During restore, initialization file can be used as mapping-only metadata
+      pop_map_raw <- data.table::fread(pop_init_file)
 
-    # Validate required columns are present
-    required_cols <- c("population_id", "N", "S0", "I0", "R0", "V0")
-    missing <- setdiff(required_cols, names(pop_init))
-    if (length(missing) > 0) {
-      setwd(old_wd)
-      stop("Missing required columns in initialization file: ",
-           paste(missing, collapse = ", "))
-    }
+      if (!"population_id" %in% names(pop_map_raw)) {
+        setwd(old_wd)
+        stop("Initialization file must contain column: population_id")
+      }
 
-    # Validate population_id is sequential
-    expected_ids <- 1:nrow(pop_init)
-    if (!all(sort(pop_init$population_id) == expected_ids)) {
-      setwd(old_wd)
-      stop("population_id must be sequential natural numbers: 1, 2, ..., ", nrow(pop_init))
-    }
+      expected_ids <- 1:nrow(pop_map_raw)
+      if (!all(sort(pop_map_raw$population_id) == expected_ids)) {
+        setwd(old_wd)
+        stop("population_id must be sequential natural numbers: 1, 2, ..., ", nrow(pop_map_raw))
+      }
 
-    # Ensure data is ordered by population_id
-    data.table::setorder(pop_init, population_id)
+      data.table::setorder(pop_map_raw, population_id)
 
-    # Create pop_map from initialization file (contains population_id + category columns)
-    if (length(category_cols) > 0) {
-      pop_map <- pop_init[, c("population_id", category_cols), with = FALSE]
+      category_cols <- setdiff(names(pop_map_raw), reserved_cols)
+      if (length(category_cols) > 0) {
+        pop_map <- pop_map_raw[, c("population_id", category_cols), with = FALSE]
+      } else {
+        pop_map <- pop_map_raw[, .(population_id)]
+      }
+      category_names <- category_cols
+
+      if (nrow(pop_map_raw) > 5000) {
+        warning(sprintf("Large number of populations (%d). This may affect performance.",
+                        nrow(pop_map_raw)))
+      }
+      if (length(category_names) > 10) {
+        warning(sprintf("Large number of categories (%d). Consider reducing for better usability.",
+                        length(category_names)))
+      }
+
+      if (nrow(pop_map_raw) != N_pop) {
+        setwd(old_wd)
+        stop("When restoring from checkpoint, initialization/mapping rows must match checkpoint N_pop")
+      }
     } else {
-      # No categories - just population_id
-      pop_map <- pop_init[, .(population_id)]
+      pop_init <- data.table::fread(pop_init_file)
+
+      # Detect category columns (all columns except reserved ones)
+      category_cols <- setdiff(names(pop_init), reserved_cols)
+
+      # Validate required columns are present
+      required_cols <- c("population_id", "N", "S0", "I0", "R0", "V0")
+      missing <- setdiff(required_cols, names(pop_init))
+      if (length(missing) > 0) {
+        setwd(old_wd)
+        stop("Missing required columns in initialization file: ",
+             paste(missing, collapse = ", "))
+      }
+
+      # Validate population_id is sequential
+      expected_ids <- 1:nrow(pop_init)
+      if (!all(sort(pop_init$population_id) == expected_ids)) {
+        setwd(old_wd)
+        stop("population_id must be sequential natural numbers: 1, 2, ..., ", nrow(pop_init))
+      }
+
+      # Ensure data is ordered by population_id
+      data.table::setorder(pop_init, population_id)
+
+      # Create pop_map from initialization file (contains population_id + category columns)
+      if (length(category_cols) > 0) {
+        pop_map <- pop_init[, c("population_id", category_cols), with = FALSE]
+      } else {
+        # No categories - just population_id
+        pop_map <- pop_init[, .(population_id)]
+      }
+
+      # Store category names for later use
+      category_names <- category_cols
+
+      # Warn if too many populations or categories
+      if (nrow(pop_init) > 5000) {
+        warning(sprintf("Large number of populations (%d). This may affect performance.",
+                        nrow(pop_init)))
+      }
+      if (length(category_names) > 10) {
+        warning(sprintf("Large number of categories (%d). Consider reducing for better usability.",
+                        length(category_names)))
+      }
+
+      # Set up initialization values for non-restore runs
+      N_pop <- nrow(pop_init)
+      P_ini <- pop_init[, N]
+      S_ini <- pop_init[, S0]
+      I_symp_ini <- pop_init[, I0]
+      V_ini <- pop_init[, V0]
+      R_ini <- pop_init[, R0]
+      E_ini <- rep(0, N_pop)
+      I_asymp_ini <- rep(0, N_pop)
+      I_presymp_ini <- rep(0, N_pop)
+      H_ini <- rep(0, N_pop)
+      D_ini <- rep(0, N_pop)
     }
 
-    # Store category names for later use
-    category_names <- category_cols
+  }
 
-    # Warn if too many populations or categories
-    if (nrow(pop_init) > 5000) {
-      warning(sprintf("Large number of populations (%d). This may affect performance.",
-                      nrow(pop_init)))
-    }
-    if (length(category_names) > 10) {
-      warning(sprintf("Large number of categories (%d). Consider reducing for better usability.",
-                      length(category_names)))
-    }
-
-    # Set up initialization values
-    N_pop <- nrow(pop_init)
-    P_ini <- pop_init[, N]
-    S_ini <- pop_init[, S0]
-    I_symp_ini <- pop_init[, I0]
-    V_ini <- pop_init[, V0]
-    R_ini <- pop_init[, R0]
-    E_ini <- rep(0, N_pop)
-    I_asymp_ini <- rep(0, N_pop)
-    I_presymp_ini <- rep(0, N_pop)
-    H_ini <- rep(0, N_pop)
-    D_ini <- rep(0, N_pop)
-
+  # If restoring and no population map was provided, create a minimal one
+  if (is_restore && (!exists("pop_map") || is.null(pop_map))) {
+    pop_map <- data.table::data.table(population_id = 1:N_pop)
+    category_names <- character(0)
   }
 
   ## check if vac data is present
@@ -386,7 +433,7 @@ parse_config <- function(config_file, return_object = FALSE){
 
     # read global disease parameters
     if(!is.null(yaml_data$disease_params$ts)) ts <- yaml_data$disease_params$ts
-    if(!is.null(yaml_data$disease_params$tv)) tv <- yaml_data$disease_params$tv
+    # if(!is.null(yaml_data$disease_params$tv)) tv <- yaml_data$disease_params$tv
     if(!is.null(yaml_data$disease_params$ve)) ve <- yaml_data$disease_params$ve
     if(!is.null(yaml_data$disease_params$dv)) dv <- yaml_data$disease_params$dv
     if(!is.null(yaml_data$disease_params$de)) de <- yaml_data$disease_params$de
@@ -401,7 +448,7 @@ parse_config <- function(config_file, return_object = FALSE){
 
 
     if(length(ts) == 1) ts <- rep(ts, N_pop)
-    if(length(tv) == 1) tv <- rep(tv, N_pop)
+    # if(length(tv) == 1) tv <- rep(tv, N_pop)
     if(length(ve) == 1) ve <- rep(ve, N_pop)
     if(length(dv) == 1) dv <- rep(dv, N_pop)
     if(length(de) == 1) de <- rep(de, N_pop)
@@ -419,7 +466,7 @@ parse_config <- function(config_file, return_object = FALSE){
   ## Stochastic parameters
 
   ts <- do.call(rbind, (purrr::map(1:nsim, ~ draw_sample(ts, N_pop))))
-  tv <- do.call(rbind, (purrr::map(1:nsim, ~ draw_sample(tv, N_pop))))
+  # tv <- do.call(rbind, (purrr::map(1:nsim, ~ draw_sample(tv, N_pop))))
   ve <- do.call(rbind, (purrr::map(1:nsim, ~ draw_sample(ve, N_pop))))
   dv <- do.call(rbind, (purrr::map(1:nsim, ~ draw_sample(dv, N_pop))))
   de <- do.call(rbind, (purrr::map(1:nsim, ~ draw_sample(de, N_pop))))
@@ -465,9 +512,13 @@ parse_config <- function(config_file, return_object = FALSE){
       invalid_cat_vals <- setdiff(cat_vals, unique(pop_map[[cat]]))
       if (length(invalid_cat_vals) > 0) {
         setwd(old_wd)
-        stop(paste("Invalid values for category", cat, "in sub_disease_params:",
-                   paste(invalid_cat_vals, collapse = ", "),
-                   ". The valid categories are", paste(unique(pop_map[[cat]]), collapse = ", ")))
+        valid_cat_vals <- as.character(unique(pop_map[[cat]]))
+        stop(sprintf(
+          "Invalid values for category '%s' in sub_disease_params: %s. Valid values are: %s",
+          cat,
+          paste(invalid_cat_vals, collapse = ", "),
+          paste(valid_cat_vals, collapse = ", ")
+        ))
       }
 
       for (cat_val in cat_vals){
@@ -510,7 +561,7 @@ parse_config <- function(config_file, return_object = FALSE){
                       m_we_d = m_we_d,
                       m_we_n = m_we_n,
                       ts = ts,
-                      tv = tv,
+                      # tv = tv,
                       ve = ve,
                       dv = dv,
                       de = de,

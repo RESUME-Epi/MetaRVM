@@ -97,3 +97,13 @@ test_that("MetaRVMResults subset_data and summarize behave as documented", {
 
  
 })
+
+test_that("subset_data reports valid values when category value is invalid", {
+  cfg_path <- system.file("extdata", "example_config.yaml", package = "MetaRVM")
+  res <- metaRVM(cfg_path)
+
+  expect_error(
+    res$subset_data(age = "NOT_A_VALID_AGE"),
+    regexp = "Invalid values for category 'age': NOT_A_VALID_AGE\\. Valid values are:"
+  )
+})

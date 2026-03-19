@@ -22,7 +22,7 @@ If \code{return_object = FALSE} (default), returns a named list containing:
 \item{S_ini, E_ini, I_asymp_ini, I_presymp_ini, I_symp_ini, H_ini, D_ini, P_ini, V_ini, R_ini}{Initial compartment populations}
 \item{vac_time_id, vac_counts, vac_mat}{Vaccination schedule data}
 \item{m_wd_d, m_wd_n, m_we_d, m_we_n}{Contact mixing matrices}
-\item{ts, tv, ve, dv, de, dp, da, ds, dh, dr, pea, psr, phr}{Disease parameter matrices (nsim × N_pop)}
+\item{ts, ve, dv, de, dp, da, ds, dh, dr, pea, psr, phr}{Disease parameter matrices (nsim × N_pop)}
 \item{start_date}{Simulation start date as Date object}
 \item{sim_length}{Simulation length in days}
 \item{nsim}{Number of simulation instances}
@@ -77,7 +77,6 @@ N_pop is the number of subpopulations. It is assumed that the i-th row and j-th 
 Epidemiological parameters (can be scalars or distributions):
 \itemize{
 \item \code{ts}: Transmission rate for symptomatic individuals
-\item \code{tv}: Transmission rate for vaccinated individuals
 \item \code{ve}: Vaccine effectiveness
 \item \code{de, dp, da, ds, dh, dr}: Duration parameters for different disease states
 \item \code{pea, psr, phr}: Probability parameters for disease transitions

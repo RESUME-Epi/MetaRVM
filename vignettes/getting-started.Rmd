@@ -63,7 +63,6 @@ mixing_matrix:
   weekend_night: m_weekend_night.csv
 disease_params:
   ts: 0.5
-  tv: 0.25
   ve: 0.4
   dv: 180
   dp: 1

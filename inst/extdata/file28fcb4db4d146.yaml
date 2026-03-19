@@ -1,4 +1,4 @@
-run_id: ExampleRun
+run_id: CheckpointRun
 population_data:
   initialization: population_init_n24.csv
   vaccination: vaccination_n24.csv
@@ -21,6 +21,7 @@ disease_params:
   psr: 0.95
   phr: 0.97
 simulation_config:
-  start_date: 10/01/2023 # m/d/Y
-  length: 150
+  start_date: 10/01/2024
+  length: 90
   nsim: 1
+  checkpoint_dir: /tmp/RtmpwQdGR9

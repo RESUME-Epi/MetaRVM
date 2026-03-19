@@ -42,7 +42,6 @@ mixing_matrix:
   weekend_night: m_weekend_night.csv
 disease_params:
   ts: 0.5
-  tv: 0.25
   ve: 0.4
   dv: 180
   dp: 1
@@ -172,7 +171,7 @@ peak_period <- sim_out$subset_data(
 peak_period$results
 ```
 
-# Specifying Disease Parameter via Distributions
+# Specifying Disease Parameters via Distributions
 
 `metaRVM` allows for disease parameters to be specified as distributions, which is useful for capturing uncertainty. When a parameter is defined by a distribution, each simulation instance will draw a new value from that distribution. For more details on the available distributions and their parameters, refer to the `yaml-configuration` vignette.
 
@@ -195,7 +194,6 @@ mixing_matrix:
   weekend_night: m_weekend_night.csv
 disease_params:
   ts: 0.5
-  tv: 0.25
   ve: 
     dist: uniform
     min: 0.3
@@ -288,7 +286,6 @@ mixing_matrix:
   weekend_night: m_weekend_night.csv
 disease_params:
   ts: 0.5
-  tv: 0.25
   ve: 
     dist: uniform
     min: 0.3

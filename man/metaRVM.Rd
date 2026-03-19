@@ -47,8 +47,8 @@ object for downstream analysis and plotting.
 \details{
 The configuration input controls:
 \itemize{
-\item \strong{Population structure} (user-defined categories from the initialization file)
-\item \strong{Disease parameters} (\code{ts}, \code{tv}, \code{ve}, \code{de}, \code{dp}, \code{da}, \code{ds},
+\item \strong{Population structure} (user-defined categories and the initial compartment counts from the initialization file)
+\item \strong{Disease parameters} (\code{ts}, \code{ve}, \code{de}, \code{dp}, \code{da}, \code{ds},
 \code{dh}, \code{dr}, \code{pea}, \code{psr}, \code{phr}, \code{dv}, etc.)
 \item \strong{Mixing matrices} (weekday/weekend, day/night contact patterns)
 \item \strong{Vaccination schedule} and immunity waning

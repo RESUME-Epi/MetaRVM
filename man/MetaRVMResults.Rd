@@ -25,13 +25,13 @@ head(results_obj$results)
 
 # Subset data with multiple filters
 subset_data <- results_obj$subset_data(
-  age = c("18-49", "50-64"), 
-  disease_state = c("H", "D"),
+  age = c("18-64", "65+"), 
+  disease_states = c("H", "D"),
   date_range = c(as.Date("2024-01-01"), as.Date("2024-02-01"))
 )
 
 # Method chaining for analysis and visualization
-results_obj$subset_data(disease_state = "H")$summarize(
+results_obj$subset_data(disease_states = "H")$summarize(
   group_by = c("age", "zone"), 
   stats = c("median", "quantile"),
   quantiles = c(0.25, 0.75)

@@ -10,7 +10,8 @@ vignette: >
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
-  comment = "#>"
+  comment = "#>",
+  fig.path = "vignettes/"
 )
 ```
 
@@ -125,9 +126,9 @@ if (length(checkpoint_files_full) > 0) {
   yml_tmp <- data.table::copy(yml)
   yml_tmp$simulation_config$start_date <- new_start_date
   yml_tmp$simulation_config$restore_from <- checkpoint_to_restore
-  yml_tmp$population_data$initialization <- NULL # ensure that we don't want to reinitialize the population from the initialization file
+  yml_tmp$population_data$initialization <- "population_init_n24_only_mapping.csv" # ensure that we don't want to reinitialize the population with the original initial conditions
   
-  temp_config_resume <- tempfile(tmpdir = dirname(example_config),fileext = ".yaml")
+  temp_config_resume <- tempfile(tmpdir = dirname(example_config), fileext = ".yaml")
   yaml::write_yaml(yml_tmp, temp_config_resume)
   temp_config_resume <- normalizePath(temp_config_resume)
   
