@@ -178,7 +178,7 @@ ggplot(rbind(run1_hosp_sum, run2_hosp_sum), aes(date, total)) +
 ```
 
 <div class="figure" style="text-align: center">
-<img src="figure/plot-1.png" alt="plot of chunk plot"  />
+<img src="vignettes/plot-1.png" alt="plot of chunk plot"  />
 <p class="caption">plot of chunk plot</p>
 </div>
 
