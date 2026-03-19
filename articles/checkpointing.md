@@ -178,7 +178,7 @@ ggplot(rbind(run1_hosp_sum, run2_hosp_sum), aes(date, total)) +
   labs(y = "Hospitalizations", x = "Date") + theme_bw()
 ```
 
-![plot of chunk plot](figure/plot-1.png)
+![plot of chunk plot](articles/plot-1.png)
 
 plot of chunk plot
 
