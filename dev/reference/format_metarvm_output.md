@@ -1,0 +1,44 @@
+# Format MetaRVM simulation output
+
+This function formats raw MetaRVM simulation output by:
+
+1.  Converting time steps to calendar dates
+
+2.  Adding user-defined demographic attributes from the
+    initialization-derived population metadata
+
+3.  Handling different disease states appropriately:
+
+    - Regular states (S, E, I, etc.): Keep values at integer time points
+
+    - New count states (n\_ prefix): Sum pairs to get daily counts
+
+## Usage
+
+``` r
+format_metarvm_output(sim_output, config)
+```
+
+## Arguments
+
+- sim_output:
+
+  data.table containing raw simulation output from
+  [`meta_sim`](https://RESUME-Epi.github.io/MetaRVM/reference/meta_sim.md)
+
+- config:
+
+  MetaRVMConfig object or config list containing parameters
+
+## Value
+
+data.table with formatted output including calendar dates and
+demographics
+
+## Note
+
+This function is used for formatting the
+[`meta_sim`](https://RESUME-Epi.github.io/MetaRVM/reference/meta_sim.md)
+output when
+[`MetaRVM`](https://RESUME-Epi.github.io/MetaRVM/reference/MetaRVM-package.md)
+function is called.
