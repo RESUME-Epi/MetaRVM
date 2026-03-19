@@ -36,21 +36,19 @@ For more details, please refer to the paper: [Developing and deploying a use-ins
 
 ## Documentation
 
-Full documentation is available at: https://RESUME-Epi.github.io/MetaRVM/
+Full documentation is available at: https://RESUME-Epi.github.io/MetaRVM/dev/
 
 
 ## Quickstart guide
 
 ### Installation
-```r
-install.packages("MetaRVM")
-```
+
 
 The development version of `MetaRVM` can be installed from [GitHub](https://github.com/) with:
 
 ``` r
 # install.packages("devtools")
-devtools::install_github("RESUME-Epi/MetaRVM")
+devtools::install_github("RESUME-Epi/MetaRVM@user-defined-subpopulation")
 ```
 
 ### Running a simulation
@@ -76,7 +74,6 @@ mixing_matrix:
   weekend_night: m_weekend_night.csv
 disease_params:
   ts: 0.5
-  tv: 0.25
   ve: 0.4
   dv: 180
   dp: 1
@@ -152,7 +149,6 @@ Transmission is stratified by user-defined demographic groups (e.g., age, zone, 
 | Parameter | Description | Units / notes |
 |----------|-------------|---------------|
 | `ts`     | Transmission scaling factor for susceptible individuals; controls strength of `S`–`I` transmission. | Per-contact scaling factor. |
-| `tv`     | Transmission scaling factor for vaccinated individuals. | Same scale as `ts`. |
 | `M`      | Mixing matrix of order `J × J`, where `m_ij` is the fraction of contacts that a member of stratum `i` has with stratum `j`. | Dimensionless; rows sum to 1. |
 
 These parameters drive the transitions from `S` and `V` to `E`, and determine how quickly individuals move through infectious, hospitalized, recovered, and deceased states.

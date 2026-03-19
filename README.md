@@ -42,22 +42,18 @@ outcomes](https://www.medrxiv.org/content/10.1101/2025.05.05.25327021v1.full-tex
 ## Documentation
 
 Full documentation is available at:
-<https://RESUME-Epi.github.io/MetaRVM/>
+<https://RESUME-Epi.github.io/MetaRVM/dev/>
 
 ## Quickstart guide
 
 ### Installation
-
-``` r
-install.packages("MetaRVM")
-```
 
 The development version of `MetaRVM` can be installed from
 [GitHub](https://github.com/) with:
 
 ``` r
 # install.packages("devtools")
-devtools::install_github("RESUME-Epi/MetaRVM")
+devtools::install_github("RESUME-Epi/MetaRVM@user-defined-subpopulation")
 ```
 
 ### Running a simulation
@@ -84,7 +80,6 @@ mixing_matrix:
   weekend_night: m_weekend_night.csv
 disease_params:
   ts: 0.5
-  tv: 0.25
   ve: 0.4
   dv: 180
   dp: 1
@@ -180,7 +175,6 @@ through a YAML configuration.
 | Parameter | Description | Units / notes |
 |----|----|----|
 | `ts` | Transmission scaling factor for susceptible individuals; controls strength of `S`–`I` transmission. | Per-contact scaling factor. |
-| `tv` | Transmission scaling factor for vaccinated individuals. | Same scale as `ts`. |
 | `M` | Mixing matrix of order `J × J`, where `m_ij` is the fraction of contacts that a member of stratum `i` has with stratum `j`. | Dimensionless; rows sum to 1. |
 
 These parameters drive the transitions from `S` and `V` to `E`, and
@@ -196,8 +190,8 @@ inputs.
 
 | Input | Required? | Description |
 |----|----|----|
-| Population mapping (`population.csv`) | Yes | Defines each demographic stratum (e.g., age, zone, race) and its population size. Column names must match those referenced in the YAML configuration. |
-| Mixing matrices (`mixing_matrix_*.csv`) | Yes | Four contact matrices, consistent with the strata defined in `population.csv`. These typically represent weekday/weekend and day/night mixing patterns. |
+| Population initialization (`population_init.csv`) | Yes | Defines demographic strata with user-defined category columns (e.g., age, zone, race, income_level) and initial population states (N, S0, I0, R0, V0). Categories are automatically detected from column names. |
+| Mixing matrices (`mixing_matrix_*.csv`) | Yes | Four contact matrices, consistent with the population strata. These typically represent weekday/weekend and day/night mixing patterns. |
 | Vaccination schedule (`vaccination.csv`) | Yes | Time-varying vaccination counts or rates by stratum, used to move individuals from `S` to `V`. |
 | Model parameters | Yes | High-level model specification: simulation dates, `dt`, parameter values (e.g., `ve`, `de`, `dv`, `pea`, `psr`, `βs`, `βv`), output controls, and checkpointing options. |
 | Checkpoint files | Optional | Internal model state snapshots used to resume or branch simulations (e.g., for phased calibration). |
@@ -239,9 +233,9 @@ List of vignettes:
   parameter blocks, optional modules, and how to define population
   strata and mixing patterns.
 
-- **Running Simulation**  
-  Full example using a complete set of input files, showing how MetaRVM
-  reads population initialization data, mixing matrices, and vaccination schedules.
+- **Running Simulation** Full example using a complete set of input
+  files, showing how MetaRVM reads population initialization data,
+  mixing matrices, and vaccination schedules.
 
 <!-- - **Understanding Outputs**  
   Explains the structure of `sim$results`, the meaning of disease states and flow variables, and how to compute aggregated quantities. -->
