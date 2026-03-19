@@ -42,8 +42,8 @@ R6 object with three key components:
 
   - `date`: calendar date (`Date`)
 
-  - `age`, `race`, `zone`: demographic categories (if present in the
-    population mapping)
+  - user-defined demographic category columns (if present in the
+    initialization file)
 
   - `disease_state`: compartment or flow label (e.g., `S`, `E`,
     `I_symp`, `H`, `R`, `D`, `n_SE`, `n_IsympH`, etc.)
@@ -67,10 +67,11 @@ R6 object with three key components:
 
 The configuration input controls:
 
-- **Population structure** (e.g., age, race, zone)
+- **Population structure** (user-defined categories and the initial
+  compartment counts from the initialization file)
 
-- **Disease parameters** (`ts`, `tv`, `ve`, `de`, `dp`, `da`, `ds`,
-  `dh`, `dr`, `pea`, `psr`, `phr`, `dv`, etc.)
+- **Disease parameters** (`ts`, `ve`, `de`, `dp`, `da`, `ds`, `dh`,
+  `dr`, `pea`, `psr`, `phr`, `dv`, etc.)
 
 - **Mixing matrices** (weekday/weekend, day/night contact patterns)
 
@@ -128,9 +129,6 @@ example_config <- system.file("extdata", "example_config.yaml",
 
 # Run a single-instance simulation from a YAML file
 results <- metaRVM(example_config)
-#> Unused equations: beta_v, dim_beta_v
-#>  beta_v[] <- user() # (line 108)
-#>  dim(beta_v) <- N_pop # (line 145)
 
 # Print a high-level summary
 results
@@ -144,18 +142,18 @@ results
 
 # Access the tidy results table
 head(results$results)
-#>          date    age   race   zone disease_state        value instance
-#>        <Date> <char> <char> <char>        <char>        <num>    <int>
-#> 1: 2023-10-01   0-17      A     11             D 2.252583e-04        1
-#> 2: 2023-10-01   0-17      A     11             E 1.305178e+01        1
-#> 3: 2023-10-01   0-17      A     11             H 2.304447e-01        1
-#> 4: 2023-10-01   0-17      A     11         I_all 2.731688e+01        1
-#> 5: 2023-10-01   0-17      A     11       I_asymp 3.227854e-01        1
-#> 6: 2023-10-01   0-17      A     11         I_eff 2.476245e+01        1
+#>          date    age   race  zone disease_state        value instance
+#>        <Date> <char> <char> <int>        <char>        <num>    <int>
+#> 1: 2023-10-01   0-17      A    11             D 2.252583e-04        1
+#> 2: 2023-10-01   0-17      A    11             E 1.305178e+01        1
+#> 3: 2023-10-01   0-17      A    11             H 2.304447e-01        1
+#> 4: 2023-10-01   0-17      A    11         I_all 2.731688e+01        1
+#> 5: 2023-10-01   0-17      A    11       I_asymp 3.227854e-01        1
+#> 6: 2023-10-01   0-17      A    11         I_eff 2.476245e+01        1
 
-# Summarize and plot hospitalizations and deaths by age and race
+# Summarize and plot hospitalizations and deaths by user-defined categories
 results$summarize(
-  group_by       = c("age", "race"),
+  group_by       = c("age", "zone"),
   disease_states = c("H", "D"),
   stats          = c("median", "quantile"),
   quantiles      = c(0.25, 0.75)
@@ -165,8 +163,5 @@ results$summarize(
 # Using a pre-parsed configuration object
 cfg <- parse_config(example_config, return_object = TRUE)
 results2 <- metaRVM(cfg)
-#> Unused equations: beta_v, dim_beta_v
-#>  beta_v[] <- user() # (line 108)
-#>  dim(beta_v) <- N_pop # (line 145)
 # }
 ```

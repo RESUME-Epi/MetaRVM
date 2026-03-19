@@ -15,7 +15,6 @@ settings, and disease parameters with fixed scalar values.
 ``` yaml
 run_id: SimpleRun
 population_data:
-  mapping: data/demographic_mapping.csv
   initialization: data/population_init.csv
   vaccination: data/vaccination.csv
 mixing_matrix:
@@ -25,7 +24,6 @@ mixing_matrix:
   weekend_night: data/m_weekend_night.csv
 disease_params:
   ts: 0.5
-  tv: 0.25
   ve: 0.4
   dv: 180
   dp: 1
@@ -64,63 +62,50 @@ files, along with examples of what they should look like.
 
 #### Population Data Files
 
-- **`mapping`**: The population mapping file connects population IDs to
-  demographic information. It must contain the following columns:
-  - `population_id`: A unique identifier for each subpopulation, set of
-    natural numbers 1, 2, 3, …
-  - `age`: The age group of the subpopulation (e.g., “0-4”, “65+”).
-  - `race`: The race or ethnicity of the subpopulation.
-  - `zone`: The healthcare zone or geographic region of the
-    subpopulation.
+- **`initialization`**: This file specifies both the demographic
+  structure and initial state of the population for the simulation. It
+  must contain the following **required columns**:
+  - `population_id`: A unique identifier for each subpopulation
+    (sequential natural numbers: 1, 2, 3, …)
+  - `N`: The total number of individuals in each subpopulation
+  - `S0`: The initial number of susceptible individuals
+  - `I0`: The initial number of symptomatic infected individuals
+  - `V0`: The initial number of vaccinated individuals
+  - `R0`: The initial number of recovered individuals
 
-**Example of a population mapping file:**
-
-    #> First 10 rows of demographic_mapping_n24.csv:
-    #>    population_id   age race zone
-    #> 1              1  0-17    A   11
-    #> 2              2 18-64    A   11
-    #> 3              3   65+    A   11
-    #> 4              4  0-17    B   11
-    #> 5              5 18-64    B   11
-    #> 6              6   65+    B   11
-    #> 7              7  0-17    C   11
-    #> 8              8 18-64    C   11
-    #> 9              9   65+    C   11
-    #> 10            10  0-17    D   11
-    #> 
-    #> ... (24 total rows)
-
-- **`initialization`**: This file specifies the initial state of the
-  population for the simulation. It must contain the following columns:
-  - `population_id`: Identifier matching the mapping file.
-  - `N`: The total number of individuals in each subpopulation.
-  - `S0`: The initial number of susceptible individuals.
-  - `I0`: The initial number of symptomatic infected individuals.
-  - `V0`: The initial number of vaccinated individuals.
-  - `R0`: The initial number of recovered individuals.
+  **User-defined demographic category columns**: Any additional columns
+  beyond the required ones are automatically detected as demographic
+  categories. These can be used for stratification and in
+  `sub_disease_params` for category-specific parameters. Common examples
+  include:
+  - `age`: Age groups (e.g., “0-17”, “18-64”, “65+”)
+  - `race`: Race or ethnicity categories
+  - `zone`: Healthcare zones or geographic regions
+  - Or any custom categories like `income_level`, `occupation`,
+    `risk_group`, etc.
 
 **Example of a population initialization file:**
 
     #> First 10 rows of population_init_n24.csv:
-    #>    population_id      N     S0  I0 V0 R0
-    #> 1              1  30742  30711  31  0  7
-    #> 2              2  41429  41388  41  0  9
-    #> 3              3   3321   3318   3  0  0
-    #> 4              4  70138  70068  70  0  6
-    #> 5              5  12298  12286  12  0 32
-    #> 6              6  11549  11537  12  0  0
-    #> 7              7  84178  84094  84  0 13
-    #> 8              8 113521 113407 114  0 15
-    #> 9              9  11924  11912  12  0  0
-    #> 10            10 199686 199486 200  0 14
+    #>    population_id   age race zone      N     S0  I0 V0 R0
+    #> 1              1  0-17    A   11  30742  30711  31  0  7
+    #> 2              2 18-64    A   11  41429  41388  41  0  9
+    #> 3              3   65+    A   11   3321   3318   3  0  0
+    #> 4              4  0-17    B   11  70138  70068  70  0  6
+    #> 5              5 18-64    B   11  12298  12286  12  0 32
+    #> 6              6   65+    B   11  11549  11537  12  0  0
+    #> 7              7  0-17    C   11  84178  84094  84  0 13
+    #> 8              8 18-64    C   11 113521 113407 114  0 15
+    #> 9              9   65+    C   11  11924  11912  12  0  0
+    #> 10            10  0-17    D   11 199686 199486 200  0 14
     #> 
     #> ... (24 total rows)
 
 - **`vaccination`**: The vaccination schedule file contains the number
   of vaccinations administered over time. The first column must be
   `date` in `MM/DD/YYYY` format, followed by columns for each
-  subpopulation in the same order that they are assigned a
-  `population_id` in the mapping file.
+  subpopulation in the same order as `population_id` in the
+  initialization file.
 
 **Example of a vaccination schedule file:**
 
@@ -157,9 +142,9 @@ files, along with examples of what they should look like.
 The mixing matrix files define the contact patterns between different
 subpopulations. Each file should be a CSV without a header, where the
 rows and columns correspond to the subpopulations in the same order as
-the population mapping file. The values in the matrix represent the
-proportion of time that individuals from one subpopulation spend with
-individuals from another. The sum of each row must equal 1.
+`population_id` in the initialization file. The values in the matrix
+represent the proportion of time that individuals from one subpopulation
+spend with individuals from another. The sum of each row must equal 1.
 
 **Example of a mixing matrix file (weekday day):**
 
@@ -197,8 +182,6 @@ Below is a list of the disease parameters used in `metaRVM`:
 
 - `ts`: Transmission rate for symptomatic individuals in the susceptible
   population.
-- `tv`: Transmission rate for symptomatic individuals in the vaccinated
-  population.
 - `ve`: Vaccine effectiveness (proportion, range: \[0, 1\]).
 - `dv`: Mean duration (in days) in the vaccinated state before immunity
   wanes.
@@ -227,8 +210,7 @@ distributions:
 
 ``` yaml
 disease_params:
-  ts: 0.7
-  tv: 0.35
+  ts: 0.5
   ve:
     dist: uniform
     min: 0.29
@@ -265,10 +247,13 @@ demographic subgroups using the `sub_disease_params` section. These
 subgroup-specific parameters will override the global parameters defined
 in `disease_params`.
 
-It is crucial that the demographic categories (e.g., `age`) and the
-specific values (e.g., `0-4`, `5-11`) used in this section exactly match
-the corresponding columns and values in the population mapping CSV file
-specified under `population_data`.
+The demographic categories used in this section must match the
+user-defined category column names in the initialization CSV file
+specified under `population_data`. For example, if your initialization
+file has columns named `age`, `income_level`, and `occupation`, you can
+use any of these categories in `sub_disease_params`. The specific values
+(e.g., `"0-4"`, `"low"`, `"healthcare"`) must exactly match the values
+in those columns.
 
 The following example defines different parameters for different age
 groups:
@@ -276,32 +261,16 @@ groups:
 ``` yaml
 sub_disease_params:
     age:
-      0-4:
+      0-17:
         dh: 4
         pea: 0.08
         psr: 0.9303
         phr: 0.9920
-      5-11:
+      18-64:
         dh: 4
         pea: 0.08
         psr: 0.9726
         phr: 0.9920
-      12-17:
-        dh: 4
-        pea: 0.08
-        psr: 0.9726
-        phr: 0.9920
-      18-49:
-        ts: 0.01
-        dh: 6
-        pea: 0.12
-        psr: 0.9439
-        phr: 0.9690
-      50-64:
-        dh: 6
-        pea: 0.05
-        psr: 0.9894
-        phr: 0.9425
       65+:
         dh: 7
         pea: 0.05

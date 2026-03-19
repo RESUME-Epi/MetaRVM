@@ -48,7 +48,6 @@ the content of the yaml file.
 ``` yaml
 run_id: ExampleRun
 population_data:
-  mapping: demographic_mapping_n24.csv
   initialization: population_init_n24.csv
   vaccination: vaccination_n24.csv
 mixing_matrix:
@@ -58,7 +57,6 @@ mixing_matrix:
   weekend_night: m_weekend_night.csv
 disease_params:
   ts: 0.5
-  tv: 0.25
   ve: 0.4
   dv: 180
   dp: 1
@@ -93,12 +91,9 @@ library(MetaRVM)
 # Run the simulation
 sim_out <- metaRVM(yaml_file)
 #> Loading required namespace: pkgbuild
-#> Unused equations: beta_v, dim_beta_v
-#>  beta_v[] <- user() # (line 108)
-#>  dim(beta_v) <- N_pop # (line 145)
 #> Generating model in c
-#> ℹ Re-compiling odin61873c4e (debug build)
-#> ℹ Loading odin61873c4e
+#> ℹ Re-compiling odin8b079812 (debug build)
+#> ℹ Loading odin8b079812
 ```
 
 ``` r
@@ -111,14 +106,14 @@ print(sim_out)
 #> Total observations: 111600 
 #> Disease states: D, E, H, I_all, I_asymp, I_eff, I_presymp, I_symp, P, R, S, V, cum_V, mob_pop, n_EI, n_EIpresymp, n_HD, n_HR, n_HRD, n_IasympR, n_IsympH, n_IsympR, n_IsympRH, n_SE, n_SV, n_VE, n_VS, n_preIsymp, p_HRD, p_SE, p_VE
 head(sim_out$results)
-#>          date    age   race   zone disease_state        value instance
-#>        <Date> <char> <char> <char>        <char>        <num>    <int>
-#> 1: 2023-10-01   0-17      A     11             D 2.252583e-04        1
-#> 2: 2023-10-01   0-17      A     11             E 1.305178e+01        1
-#> 3: 2023-10-01   0-17      A     11             H 2.304447e-01        1
-#> 4: 2023-10-01   0-17      A     11         I_all 2.731688e+01        1
-#> 5: 2023-10-01   0-17      A     11       I_asymp 3.227854e-01        1
-#> 6: 2023-10-01   0-17      A     11         I_eff 2.476245e+01        1
+#>          date    age   race  zone disease_state        value instance
+#>        <Date> <char> <char> <int>        <char>        <num>    <int>
+#> 1: 2023-10-01   0-17      A    11             D 2.252583e-04        1
+#> 2: 2023-10-01   0-17      A    11             E 1.305178e+01        1
+#> 3: 2023-10-01   0-17      A    11             H 2.304447e-01        1
+#> 4: 2023-10-01   0-17      A    11         I_all 2.731688e+01        1
+#> 5: 2023-10-01   0-17      A    11       I_asymp 3.227854e-01        1
+#> 6: 2023-10-01   0-17      A    11         I_eff 2.476245e+01        1
 ```
 
 For more details on running `metaRVM`, refer to the

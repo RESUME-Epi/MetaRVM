@@ -34,7 +34,8 @@ If `return_object = FALSE` (default), returns a named list containing:
 
 - pop_map:
 
-  Data.table with population mapping and demographics
+  Data.table with `population_id` and user-defined demographic
+  categories
 
 - S_ini, E_ini, I_asymp_ini, I_presymp_ini, I_symp_ini, H_ini, D_ini,
   P_ini, V_ini, R_ini:
@@ -49,7 +50,7 @@ If `return_object = FALSE` (default), returns a named list containing:
 
   Contact mixing matrices
 
-- ts, tv, ve, dv, de, dp, da, ds, dh, dr, pea, psr, phr:
+- ts, ve, dv, de, dp, da, ds, dh, dr, pea, psr, phr:
 
   Disease parameter matrices (nsim × N_pop)
 
@@ -105,13 +106,10 @@ sections:
 
 **Population Data:**
 
-- `mapping`: CSV file path containing population mapping with
-  demographic categories age, race, zone. The file must contains columns
-  `population_id`, `age`, `race`, `zone`, where the `population_id` is
-  defined using natural numbers.
-
-- `initialization`: CSV file with initial population states. The file
-  must contains columns `population_id`, `N`, `S0`, `I0`, `V0`, `R0`.
+- `initialization`: CSV file with initial population states and optional
+  user-defined category columns. The file must contain columns
+  `population_id`, `N`, `S0`, `I0`, `V0`, `R0`. Any additional columns
+  are treated as demographic categories.
 
 - `vaccination`: CSV file with vaccination schedule over time. The first
   column must be dates in MM/DD/YYYY format. The rest of the columns
@@ -131,8 +129,6 @@ column correspond to i-th and j-th subpopulations.
 distributions):
 
 - `ts`: Transmission rate for symptomatic individuals
-
-- `tv`: Transmission rate for vaccinated individuals
 
 - `ve`: Vaccine effectiveness
 
@@ -165,20 +161,17 @@ modeling:
 
 ## File Requirements
 
-**Population mapping file** must contain columns:
+**Population initialization file** must contain columns:
 
 - `population_id`: Unique identifier for each population group, natural
   numbers
 
-- `age`: Age category (e.g., "0-4", "5-11", "12-17", "18-49", "50-64",
-  "65+")
+- `N`: Total population size of the subpopulation
 
-- `race`: Race/ethnicity category
+- `S0`, `I0`, `V0`, `R0`: Initial compartment counts
 
-- `zone`: Geographic zone identifier
-
-**Population initialization file** must contain: `N` (total population),
-`S0`, `I0`, `V0`, `R0` (initial compartment counts)
+- Optional user-defined category columns (e.g., `age`, `race`, `zone`,
+  `income_level`, `occupation`)
 
 **Vaccination file** must contain: `date` (MM/DD/YYYY format) and
 vaccination counts for each population group
@@ -212,12 +205,12 @@ config_obj <- parse_config(example_config, return_object = TRUE)
 config_obj$get("N_pop")
 #> [1] 24
 config_obj$list_parameters()
-#>  [1] "N_pop"          "pop_map"        "S_ini"          "E_ini"         
-#>  [5] "I_asymp_ini"    "I_presymp_ini"  "I_symp_ini"     "H_ini"         
-#>  [9] "D_ini"          "P_ini"          "V_ini"          "R_ini"         
-#> [13] "vac_time_id"    "vac_counts"     "vac_mat"        "m_wd_d"        
-#> [17] "m_wd_n"         "m_we_d"         "m_we_n"         "ts"            
-#> [21] "tv"             "ve"             "dv"             "de"            
+#>  [1] "N_pop"          "pop_map"        "category_names" "S_ini"         
+#>  [5] "E_ini"          "I_asymp_ini"    "I_presymp_ini"  "I_symp_ini"    
+#>  [9] "H_ini"          "D_ini"          "P_ini"          "V_ini"         
+#> [13] "R_ini"          "vac_time_id"    "vac_counts"     "vac_mat"       
+#> [17] "m_wd_d"         "m_wd_n"         "m_we_d"         "m_we_n"        
+#> [21] "ts"             "ve"             "dv"             "de"            
 #> [25] "dp"             "da"             "ds"             "dh"            
 #> [29] "dr"             "pea"            "psr"            "phr"           
 #> [33] "start_date"     "sim_length"     "nsim"           "random_seed"   
@@ -225,8 +218,5 @@ config_obj$list_parameters()
 
 # Use with MetaRVM simulation
 results <- metaRVM(config_obj)
-#> Unused equations: beta_v, dim_beta_v
-#>  beta_v[] <- user() # (line 108)
-#>  dim(beta_v) <- N_pop # (line 145)
 # }
 ```

@@ -13,7 +13,6 @@ complex disease progression pathways.
 meta_sim(
   N_pop,
   ts,
-  tv,
   S0,
   I0,
   P0,
@@ -61,12 +60,6 @@ meta_sim(
 
   Numeric vector or scalar. Transmission rate for symptomatic
   individuals in susceptible population. If scalar, applied to all
-  subpopulations
-
-- tv:
-
-  Numeric vector or scalar. Transmission rate for symptomatic
-  individuals in vaccinated population. If scalar, applied to all
   subpopulations
 
 - S0:
@@ -339,7 +332,7 @@ following features:
 susceptible/vaccinated individuals and all infectious compartments
 (I_presymp + I_asymp + I_symp), modified by:
 
-- Population-specific transmission rates (ts, tv)
+- Population-specific transmission rate, ts
 
 - Time-varying contact patterns
 
@@ -427,7 +420,6 @@ vac_mat[1, 1 + (1:N_pop)] <- P0 * 0.1
 results <- meta_sim(
   N_pop = N_pop,
   ts = 0.5,
-  tv = 0.1,
   S0 = S0,
   I0 = I0,
   P0 = P0,
@@ -452,9 +444,6 @@ results <- meta_sim(
   nsteps = nsteps,
   is.stoch = FALSE
 )
-#> Unused equations: beta_v, dim_beta_v
-#>  beta_v[] <- user() # (line 108)
-#>  dim(beta_v) <- N_pop # (line 145)
 # }
 
 ```

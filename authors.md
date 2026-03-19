@@ -16,19 +16,17 @@
 Source:
 [`inst/CITATION`](https://github.com/RESUME-Epi/MetaRVM/blob/main/inst/CITATION)
 
-Fadikar A, Stevens A, Rimer S, Martinez-Moyano I, Collier N, Ozik J,
-Macal C (2025). “Developing and deploying a use-inspired metapopulation
-modeling framework for detailed tracking of stratified health outcomes.”
-*medarxiv*, **xx**(xx), xx.
-[doi:10.1101/2025.05.05.25327021](https://doi.org/10.1101/2025.05.05.25327021).
+Fadikar A, Stevens A, Rimer S, Martinez-Moyano I, Collier N, Mabil C,
+Jorgensen E, Ruestow P, McSorley VE, Ozik J, Macal C (2025). "Developing
+and Deploying a Use-Inspired Metapopulation Modeling Framework for
+Detailed Tracking of Stratified Health Outcomes." 2025 Winter Simulation
+Conference (WSC), 734--745. doi:10.1109/WSC68292.2025.11338996.
 
-    @Article{,
-      title = {Developing and deploying a use-inspired metapopulation modeling framework for detailed tracking of stratified health outcomes},
-      author = {Arindam Fadikar and Abby Stevens and Sara Rimer and Ignacio Martinez-Moyano and Nicholson Collier and Jonathan Ozik and Charles Macal},
-      journal = {medarxiv},
+    @InProceedings{,
+      title = {Developing and Deploying a Use-Inspired Metapopulation Modeling Framework for Detailed Tracking of Stratified Health Outcomes},
+      author = {Arindam Fadikar and Abby Stevens and Sara Rimer and Ignacio Martinez-Moyano and Nicholson Collier and Chol Mabil and Emile Jorgensen and Peter Ruestow and V. Eloesa McSorley and Jonathan Ozik and Charles Macal},
+      booktitle = {2025 Winter Simulation Conference (WSC)},
       year = {2025},
-      volume = {xx},
-      number = {xx},
-      pages = {xx},
-      doi = {10.1101/2025.05.05.25327021},
+      pages = {734--745},
+      doi = {10.1109/WSC68292.2025.11338996},
     }

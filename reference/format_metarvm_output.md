@@ -4,7 +4,8 @@ This function formats raw MetaRVM simulation output by:
 
 1.  Converting time steps to calendar dates
 
-2.  Adding demographic attributes from population mapping
+2.  Adding user-defined demographic attributes from the
+    initialization-derived population metadata
 
 3.  Handling different disease states appropriately:
 

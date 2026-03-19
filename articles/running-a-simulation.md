@@ -29,7 +29,6 @@ the content of the yaml file.
 ``` yaml
 run_id: ExampleRun
 population_data:
-  mapping: demographic_mapping_n24.csv
   initialization: population_init_n24.csv
   vaccination: vaccination_n24.csv
 mixing_matrix:
@@ -39,7 +38,6 @@ mixing_matrix:
   weekend_night: m_weekend_night.csv
 disease_params:
   ts: 0.5
-  tv: 0.25
   ve: 0.4
   dv: 180
   dp: 1
@@ -72,9 +70,6 @@ options(odin.verbose = FALSE)
 # Run the simulation
 sim_out <- metaRVM(yaml_file)
 #> Loading required namespace: pkgbuild
-#> Unused equations: beta_v, dim_beta_v
-#>  beta_v[] <- user() # (line 108)
-#>  dim(beta_v) <- N_pop # (line 145)
 ```
 
 The
@@ -99,7 +94,7 @@ config_obj
 #> ============================
 #> Config file: /home/runner/work/_temp/Library/MetaRVM/extdata/example_config.yaml 
 #> Parameters: 40 
-#> Parameter names (first 10): N_pop, pop_map, S_ini, E_ini, I_asymp_ini, I_presymp_ini, I_symp_ini, H_ini, D_ini, P_ini ...
+#> Parameter names (first 10): N_pop, pop_map, category_names, S_ini, E_ini, I_asymp_ini, I_presymp_ini, I_symp_ini, H_ini, D_ini ...
 #> Population groups: 24 
 #> Start date: 2023-09-30 
 #> Population mapping: [ 24 rows x 4 columns]
@@ -114,24 +109,24 @@ simulation arguments:
 # List all available parameters
 param_names <- config_obj$list_parameters()
 head(param_names, 10)
-#>  [1] "N_pop"         "pop_map"       "S_ini"         "E_ini"        
-#>  [5] "I_asymp_ini"   "I_presymp_ini" "I_symp_ini"    "H_ini"        
-#>  [9] "D_ini"         "P_ini"
+#>  [1] "N_pop"          "pop_map"        "category_names" "S_ini"         
+#>  [5] "E_ini"          "I_asymp_ini"    "I_presymp_ini"  "I_symp_ini"    
+#>  [9] "H_ini"          "D_ini"
 
 # Get a summary of parameter types and sizes
 param_summary <- config_obj$parameter_summary()
 head(param_summary, 10)
-#>                   parameter       type length size
-#> N_pop                 N_pop    integer      1    1
-#> pop_map             pop_map data.table      4    4
-#> S_ini                 S_ini    integer     24   24
-#> E_ini                 E_ini    numeric     24   24
-#> I_asymp_ini     I_asymp_ini    numeric     24   24
-#> I_presymp_ini I_presymp_ini    numeric     24   24
-#> I_symp_ini       I_symp_ini    integer     24   24
-#> H_ini                 H_ini    numeric     24   24
-#> D_ini                 D_ini    numeric     24   24
-#> P_ini                 P_ini    integer     24   24
+#>                     parameter       type length size
+#> N_pop                   N_pop    integer      1    1
+#> pop_map               pop_map data.table      4    4
+#> category_names category_names  character      3    3
+#> S_ini                   S_ini    integer     24   24
+#> E_ini                   E_ini    numeric     24   24
+#> I_asymp_ini       I_asymp_ini    numeric     24   24
+#> I_presymp_ini   I_presymp_ini    numeric     24   24
+#> I_symp_ini         I_symp_ini    integer     24   24
+#> H_ini                   H_ini    numeric     24   24
+#> D_ini                   D_ini    numeric     24   24
 ```
 
 #### Accessing Demographic Information
@@ -140,17 +135,17 @@ One of MetaRVM’s key features is demographic stratification, and it’s
 ability to define parameters for specific demographic strata.
 
 ``` r
-# Get demographic categories
-age_categories <- config_obj$get_age_categories()
-race_categories <- config_obj$get_race_categories()
-zones <- config_obj$get_zones()
+# Get user-defined demographic category names and values
+category_names <- config_obj$get_category_names()
+cat("Available categories:", paste(category_names, collapse = ", "), "\n")
+#> Available categories: age, race, zone
 
-cat("Age categories:", paste(age_categories, collapse = ", "), "\n")
+# Example: inspect values for one category (if present)
+if ("age" %in% category_names) {
+  age_categories <- config_obj$get_category_values("age")
+  cat("Age categories:", paste(age_categories, collapse = ", "), "\n")
+}
 #> Age categories: 0-17, 18-64, 65+
-cat("Race categories:", paste(race_categories, collapse = ", "), "\n")
-#> Race categories: A, B, C, D
-cat("Geographic zones:", paste(zones, collapse = ", "), "\n")
-#> Geographic zones: 11, 22
 ```
 
 #### Alternative Ways to Run the Simulation
@@ -161,16 +156,10 @@ cat("Geographic zones:", paste(zones, collapse = ", "), "\n")
 
 # Method 2: From MetaRVMConfig object
 sim_out <- metaRVM(config_obj)
-#> Unused equations: beta_v, dim_beta_v
-#>  beta_v[] <- user() # (line 108)
-#>  dim(beta_v) <- N_pop # (line 145)
 
 # Method 3: From parsed configuration list
 config_list <- parse_config(yaml_file)
 sim_out <- metaRVM(config_list)
-#> Unused equations: beta_v, dim_beta_v
-#>  beta_v[] <- user() # (line 108)
-#>  dim(beta_v) <- N_pop # (line 145)
 ```
 
 ### Exploring the Results
@@ -184,14 +173,14 @@ demographic attributes, and stored in a data frame called results:
 ``` r
 # Look at the structure of formatted results
 head(sim_out$results)
-#>          date    age   race   zone disease_state        value instance
-#>        <Date> <char> <char> <char>        <char>        <num>    <int>
-#> 1: 2023-10-01   0-17      A     11             D 2.252583e-04        1
-#> 2: 2023-10-01   0-17      A     11             E 1.305178e+01        1
-#> 3: 2023-10-01   0-17      A     11             H 2.304447e-01        1
-#> 4: 2023-10-01   0-17      A     11         I_all 2.731688e+01        1
-#> 5: 2023-10-01   0-17      A     11       I_asymp 3.227854e-01        1
-#> 6: 2023-10-01   0-17      A     11         I_eff 2.476245e+01        1
+#>          date    age   race  zone disease_state        value instance
+#>        <Date> <char> <char> <int>        <char>        <num>    <int>
+#> 1: 2023-10-01   0-17      A    11             D 2.252583e-04        1
+#> 2: 2023-10-01   0-17      A    11             E 1.305178e+01        1
+#> 3: 2023-10-01   0-17      A    11             H 2.304447e-01        1
+#> 4: 2023-10-01   0-17      A    11         I_all 2.731688e+01        1
+#> 5: 2023-10-01   0-17      A    11       I_asymp 3.227854e-01        1
+#> 6: 2023-10-01   0-17      A    11         I_eff 2.476245e+01        1
 
 # Check unique values for key variables
 cat("Disease states:", paste(unique(sim_out$results$disease_state), collapse = ", "), "\n")
@@ -210,19 +199,19 @@ demographic and temporal dimensions. It returns an object of class
 # Subset by single criteria
 hospitalized_data <- sim_out$subset_data(disease_states = "H")
 hospitalized_data$results
-#>             date    age   race   zone disease_state      value instance
-#>           <Date> <char> <char> <char>        <char>      <num>    <int>
-#>    1: 2023-10-01   0-17      A     11             H  0.2304447        1
-#>    2: 2023-10-01   0-17      B     11             H  0.5203590        1
-#>    3: 2023-10-01   0-17      C     11             H  0.6244308        1
-#>    4: 2023-10-01   0-17      D     11             H  1.4867401        1
-#>    5: 2023-10-01  18-64      A     11             H  0.3047817        1
-#>   ---                                                                  
-#> 3596: 2024-02-27  18-64      D     22             H  2.7365466        1
-#> 3597: 2024-02-27    65+      A     22             H  1.1107446        1
-#> 3598: 2024-02-27    65+      B     22             H  1.6779075        1
-#> 3599: 2024-02-27    65+      C     22             H 10.0053788        1
-#> 3600: 2024-02-27    65+      D     22             H 11.3371490        1
+#>             date    age   race  zone disease_state      value instance
+#>           <Date> <char> <char> <int>        <char>      <num>    <int>
+#>    1: 2023-10-01   0-17      A    11             H  0.2304447        1
+#>    2: 2023-10-01   0-17      A    22             H  0.2081436        1
+#>    3: 2023-10-01   0-17      B    11             H  0.5203590        1
+#>    4: 2023-10-01   0-17      B    22             H  0.3939861        1
+#>    5: 2023-10-01   0-17      C    11             H  0.6244308        1
+#>   ---                                                                 
+#> 3596: 2024-02-27    65+      B    22             H  1.6779075        1
+#> 3597: 2024-02-27    65+      C    11             H  2.4663331        1
+#> 3598: 2024-02-27    65+      C    22             H 10.0053788        1
+#> 3599: 2024-02-27    65+      D    11             H  5.6625439        1
+#> 3600: 2024-02-27    65+      D    22             H 11.3371490        1
 
 # Subset by multiple demographic categories
 elderly_data <- sim_out$subset_data(
@@ -230,44 +219,42 @@ elderly_data <- sim_out$subset_data(
   disease_states = c("H", "D")
 )
 elderly_data$results
-#>             date    age   race   zone disease_state        value instance
-#>           <Date> <char> <char> <char>        <char>        <num>    <int>
-#>    1: 2023-10-01    65+      A     11             D 2.179919e-05        1
-#>    2: 2023-10-01    65+      A     11             H 2.230110e-02        1
-#>    3: 2023-10-01    65+      B     11             D 8.719675e-05        1
-#>    4: 2023-10-01    65+      B     11             H 8.920441e-02        1
-#>    5: 2023-10-01    65+      C     11             D 8.719675e-05        1
-#>   ---                                                                    
-#> 2396: 2024-02-27    65+      B     22             H 1.677908e+00        1
-#> 2397: 2024-02-27    65+      C     22             D 7.181711e+01        1
-#> 2398: 2024-02-27    65+      C     22             H 1.000538e+01        1
-#> 2399: 2024-02-27    65+      D     22             D 8.556737e+01        1
-#> 2400: 2024-02-27    65+      D     22             H 1.133715e+01        1
+#>             date    age   race  zone disease_state        value instance
+#>           <Date> <char> <char> <int>        <char>        <num>    <int>
+#>    1: 2023-10-01    65+      A    11             D 2.179919e-05        1
+#>    2: 2023-10-01    65+      A    11             H 2.230110e-02        1
+#>    3: 2023-10-01    65+      A    22             D 1.453279e-05        1
+#>    4: 2023-10-01    65+      A    22             H 1.486740e-02        1
+#>    5: 2023-10-01    65+      B    11             D 8.719675e-05        1
+#>   ---                                                                   
+#> 2396: 2024-02-27    65+      C    22             H 1.000538e+01        1
+#> 2397: 2024-02-27    65+      D    11             D 3.844495e+01        1
+#> 2398: 2024-02-27    65+      D    11             H 5.662544e+00        1
+#> 2399: 2024-02-27    65+      D    22             D 8.556737e+01        1
+#> 2400: 2024-02-27    65+      D    22             H 1.133715e+01        1
 
 # Specific date range
 peak_period <- sim_out$subset_data(
   date_range = c(as.Date("2023-10-01"), as.Date("2023-12-31")),
   disease_states = "H"
 )
-#> 19631 
-#> 19722
 peak_period$results
-#>             date    age   race   zone disease_state      value instance
-#>           <Date> <char> <char> <char>        <char>      <num>    <int>
-#>    1: 2023-10-01   0-17      A     11             H  0.2304447        1
-#>    2: 2023-10-01   0-17      B     11             H  0.5203590        1
-#>    3: 2023-10-01   0-17      C     11             H  0.6244308        1
-#>    4: 2023-10-01   0-17      D     11             H  1.4867401        1
-#>    5: 2023-10-01  18-64      A     11             H  0.3047817        1
-#>   ---                                                                  
-#> 2204: 2023-12-31  18-64      D     22             H 10.4268911        1
-#> 2205: 2023-12-31    65+      A     22             H  1.3508017        1
-#> 2206: 2023-12-31    65+      B     22             H  4.5130497        1
-#> 2207: 2023-12-31    65+      C     22             H 55.2465688        1
-#> 2208: 2023-12-31    65+      D     22             H 74.6798530        1
+#>             date    age   race  zone disease_state      value instance
+#>           <Date> <char> <char> <int>        <char>      <num>    <int>
+#>    1: 2023-10-01   0-17      A    11             H  0.2304447        1
+#>    2: 2023-10-01   0-17      A    22             H  0.2081436        1
+#>    3: 2023-10-01   0-17      B    11             H  0.5203590        1
+#>    4: 2023-10-01   0-17      B    22             H  0.3939861        1
+#>    5: 2023-10-01   0-17      C    11             H  0.6244308        1
+#>   ---                                                                 
+#> 2204: 2023-12-31    65+      B    22             H  4.5130497        1
+#> 2205: 2023-12-31    65+      C    11             H  6.5013954        1
+#> 2206: 2023-12-31    65+      C    22             H 55.2465688        1
+#> 2207: 2023-12-31    65+      D    11             H 27.2044176        1
+#> 2208: 2023-12-31    65+      D    22             H 74.6798530        1
 ```
 
-## Specifying Disease Parameter via Distributions
+## Specifying Disease Parameters via Distributions
 
 `metaRVM` allows for disease parameters to be specified as
 distributions, which is useful for capturing uncertainty. When a
@@ -287,7 +274,6 @@ yaml_file_dist <- system.file("extdata", "example_config_dist.yaml", package = "
 ``` yaml
 run_id: ExampleRun_Dist
 population_data:
-  mapping: demographic_mapping_n24.csv
   initialization: population_init_n24.csv
   vaccination: vaccination_n24.csv
 mixing_matrix:
@@ -297,7 +283,6 @@ mixing_matrix:
   weekend_night: m_weekend_night.csv
 disease_params:
   ts: 0.5
-  tv: 0.25
   ve: 
     dist: uniform
     min: 0.3
@@ -358,22 +343,15 @@ hospital_summary_dist <- sim_out_dist$summarize(
 
 # Plot the summary
 hospital_summary_dist$plot() + ggtitle("Daily Hospitalizations by Age Group (with 90% confidence interval)") + theme_bw()
-#> Warning: Using `size` aesthetic for lines was deprecated in ggplot2 3.4.0.
-#> ℹ Please use `linewidth` instead.
-#> ℹ The deprecated feature was likely used in the MetaRVM package.
-#>   Please report the issue at <https://github.com/RESUME-Epi/MetaRVM/issues>.
-#> This warning is displayed once per session.
-#> Call `lifecycle::last_lifecycle_warnings()` to see where this warning was
-#> generated.
 ```
 
 ![](running-a-simulation_files/figure-html/unnamed-chunk-12-1.png)
 
 ``` r
 
-# Summary of hospitalizations by age and race group
+# Summary of hospitalizations by two user-defined categories
 hospital_summary <- sim_out_dist$summarize(
-  group_by = c("age", "race"),
+  group_by = c("age", "zone"),
   disease_states = "n_IsympH",
   stats = c("median", "quantile"),
   quantiles = c(0.05, 0.95)
@@ -382,14 +360,14 @@ hospital_summary
 #> MetaRVM Summary Object
 #> ======================
 #> Data type: summary 
-#> Observations: 1800 
-#> Grouped by: age, race 
+#> Observations: 900 
+#> Grouped by: age, zone 
 #> Disease states: n_IsympH 
 #> Date range: 2023-01-01 to 2023-05-30 
 #> Summary statistics: median_value, q05, q95
 
 # visualize the summary
-hospital_summary$plot() + ggtitle("Daily Hospitalizations by Age and Race") + theme_bw()
+hospital_summary$plot() + ggtitle("Daily Hospitalizations by Age and Zone") + theme_bw()
 ```
 
 ![](running-a-simulation_files/figure-html/unnamed-chunk-13-1.png)
@@ -411,7 +389,6 @@ yaml_file_subgroup <- system.file("extdata", "example_config_subgroup_dist.yaml"
 ``` yaml
 run_id: ExampleRun_Subgroup_Dist
 population_data:
-  mapping: demographic_mapping_n24.csv
   initialization: population_init_n24.csv
   vaccination: vaccination_n24.csv
 mixing_matrix:
@@ -421,7 +398,6 @@ mixing_matrix:
   weekend_night: m_weekend_night.csv
 disease_params:
   ts: 0.5
-  tv: 0.25
   ve: 
     dist: uniform
     min: 0.3
