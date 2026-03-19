@@ -2,6 +2,8 @@
 
 ## MetaRVM 2.0.0
 
+CRAN release: 2026-03-19
+
 - Subpopulation categories are now user-defined from
   `population_data$initialization`; non-reserved columns are detected
   automatically.
