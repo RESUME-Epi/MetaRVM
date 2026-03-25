@@ -16,6 +16,8 @@
 #' function is called.
 #' @export
 format_metarvm_output <- function(sim_output, config) {
+  metarvm_log_init()
+  metarvm_log_debug("format_metarvm_output started: input_rows={nrow(sim_output)}")
   
   # Handle both MetaRVMConfig objects and config lists
   if (inherits(config, "MetaRVMConfig")) {
@@ -38,14 +40,17 @@ format_metarvm_output <- function(sim_output, config) {
   if (length(category_cols) == 0 && !is.null(pop_map)) {
     category_cols <- setdiff(names(pop_map), "population_id")
   }
+  metarvm_log_debug("Detected category columns: {paste(category_cols, collapse = ', ')}")
   
   # Make a copy to avoid modifying the original
   formatted_results <- data.table::copy(sim_output)
 
   if (!"population_id" %in% names(formatted_results)) {
+    metarvm_log_error("format_metarvm_output failed: sim_output missing population_id")
     stop("sim_output must contain a 'population_id' column")
   }
   if (is.null(pop_map) || !"population_id" %in% names(pop_map)) {
+    metarvm_log_error("format_metarvm_output failed: config pop_map missing population_id")
     stop("config must provide pop_map with a 'population_id' column")
   }
 
@@ -108,6 +113,7 @@ format_metarvm_output <- function(sim_output, config) {
   # Sort by date, instance, and demographics for better readability
   sort_cols <- c("date", "instance", category_cols, "disease_state")
   data.table::setorderv(final_results, sort_cols)
+  metarvm_log_debug("format_metarvm_output completed: output_rows={nrow(final_results)}")
   
   return(final_results)
 }

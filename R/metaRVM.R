@@ -98,6 +98,9 @@
 #'
 #' @export
 metaRVM <- function(config_input) {
+  metarvm_log_init()
+  metarvm_log_info("metaRVM started")
+
   # Handle different input types
   if (is.character(config_input)) {
     # Input is a file path - create MetaRVMConfig object
@@ -143,6 +146,9 @@ metaRVM <- function(config_input) {
     run_seed_base <- run_seed
   }
   nsteps <- floor(config_obj$config_data$sim_length / config_obj$config_data$delta_t)
+  metarvm_log_info(
+    "Simulation prepared: nsim={nsim}, nsteps={nsteps}, N_pop={config_obj$config_data$N_pop}, start_date={config_obj$config_data$start_date}"
+  )
   day_name <- weekdays(config_obj$config_data$start_date)
   start_day <- dplyr::case_when(
     day_name == "Monday"    ~ 0,
@@ -163,6 +169,7 @@ metaRVM <- function(config_input) {
       if (is_stoch) {
         set.seed(run_seed_base + run_idx - 1L)
       }
+    metarvm_log_debug("Starting simulation instance {ii}/{nsim}")
 
       o <- meta_sim(is.stoch = is_stoch,
                     nsteps = nsteps,
@@ -202,7 +209,8 @@ metaRVM <- function(config_input) {
 
       o$instance <- run_idx
       out <- rbind(out, o)
-    }
+      metarvm_log_debug("Completed simulation instance {ii}/{nsim}: rows={nrow(o)}")
+  }
   }
 
   run_info <- list(
@@ -225,6 +233,7 @@ metaRVM <- function(config_input) {
 
   # Create and return MetaRVMResults object
   results_obj <- MetaRVMResults$new(out, config_obj, run_info = run_info)
+  metarvm_log_info("metaRVM completed: raw_rows={nrow(out)}")
   return(results_obj)
   # return(out)
 }

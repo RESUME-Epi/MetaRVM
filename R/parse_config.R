@@ -136,6 +136,9 @@
 #' @export
 parse_config <- function(config_file, return_object = FALSE){
 
+  metarvm_log_init()
+  metarvm_log_info("parse_config started: file='{config_file}', return_object={return_object}")
+
   # read the yaml config file
   yaml_data <- yaml::read_yaml(config_file)
 
@@ -150,6 +153,7 @@ parse_config <- function(config_file, return_object = FALSE){
   # =====================================================
   # read mandatory parameters
   is_restore <- !is.null(yaml_data$simulation_config$restore_from)
+  metarvm_log_info("Simulation mode: restore={is_restore}")
 
   delta_t <- 0.5
   if(!is.null(yaml_data$simulation_config$nsim)){
@@ -210,6 +214,7 @@ parse_config <- function(config_file, return_object = FALSE){
 
   if(!is.null(yaml_data$simulation_config$checkpoint_dir)){
     checkpoint_dir <- normalizePath(yaml_data$simulation_config$checkpoint_dir, mustWork = FALSE)
+    metarvm_log_info("Checkpointing enabled: dir='{checkpoint_dir}'")
 
     # prepare checkpoint directory
     if(!dir.exists(checkpoint_dir)) dir.create(checkpoint_dir, recursive = TRUE)
@@ -250,12 +255,14 @@ parse_config <- function(config_file, return_object = FALSE){
   # If restore_from is available, initialize
   # meta_sim inputs
   if(is_restore){
+    metarvm_log_info("Restoring simulation from '{yaml_data$simulation_config$restore_from}'")
 
     chk_obj <- readRDS(yaml_data$simulation_config$restore_from)
 
     ## chk_obj should be of class MetaRVMCheck
     ## verfify if chk_obj is of class MetaRVMCheck
     if(!methods::is(chk_obj, "MetaRVMCheck")){
+      metarvm_log_error("Invalid restore object: expected MetaRVMCheck")
       setwd(old_wd)
       stop("The restore_from file does not contain a valid MetaRVMCheck object")
     }
@@ -311,12 +318,14 @@ parse_config <- function(config_file, return_object = FALSE){
       pop_map_raw <- data.table::fread(pop_init_file)
 
       if (!"population_id" %in% names(pop_map_raw)) {
+        metarvm_log_error("Initialization file missing required column 'population_id'")
         setwd(old_wd)
         stop("Initialization file must contain column: population_id")
       }
 
       expected_ids <- 1:nrow(pop_map_raw)
       if (!all(sort(pop_map_raw$population_id) == expected_ids)) {
+        metarvm_log_error("Invalid population_id sequence in initialization file")
         setwd(old_wd)
         stop("population_id must be sequential natural numbers: 1, 2, ..., ", nrow(pop_map_raw))
       }
@@ -332,15 +341,18 @@ parse_config <- function(config_file, return_object = FALSE){
       category_names <- category_cols
 
       if (nrow(pop_map_raw) > 5000) {
+        metarvm_log_warn("Large number of populations detected: {nrow(pop_map_raw)}")
         warning(sprintf("Large number of populations (%d). This may affect performance.",
                         nrow(pop_map_raw)))
       }
       if (length(category_names) > 10) {
+        metarvm_log_warn("Large number of categories detected: {length(category_names)}")
         warning(sprintf("Large number of categories (%d). Consider reducing for better usability.",
                         length(category_names)))
       }
 
       if (nrow(pop_map_raw) != N_pop) {
+        metarvm_log_error("Initialization/mapping row count does not match checkpoint N_pop")
         setwd(old_wd)
         stop("When restoring from checkpoint, initialization/mapping rows must match checkpoint N_pop")
       }
@@ -354,6 +366,7 @@ parse_config <- function(config_file, return_object = FALSE){
       required_cols <- c("population_id", "N", "S0", "I0", "R0", "V0")
       missing <- setdiff(required_cols, names(pop_init))
       if (length(missing) > 0) {
+        metarvm_log_error("Initialization missing required columns: {paste(missing, collapse = ', ')}")
         setwd(old_wd)
         stop("Missing required columns in initialization file: ",
              paste(missing, collapse = ", "))
@@ -362,6 +375,7 @@ parse_config <- function(config_file, return_object = FALSE){
       # Validate population_id is sequential
       expected_ids <- 1:nrow(pop_init)
       if (!all(sort(pop_init$population_id) == expected_ids)) {
+        metarvm_log_error("Invalid population_id sequence in initialization file")
         setwd(old_wd)
         stop("population_id must be sequential natural numbers: 1, 2, ..., ", nrow(pop_init))
       }
@@ -382,10 +396,12 @@ parse_config <- function(config_file, return_object = FALSE){
 
       # Warn if too many populations or categories
       if (nrow(pop_init) > 5000) {
+        metarvm_log_warn("Large number of populations detected: {nrow(pop_init)}")
         warning(sprintf("Large number of populations (%d). This may affect performance.",
                         nrow(pop_init)))
       }
       if (length(category_names) > 10) {
+        metarvm_log_warn("Large number of categories detected: {length(category_names)}")
         warning(sprintf("Large number of categories (%d). Consider reducing for better usability.",
                         length(category_names)))
       }
@@ -446,18 +462,22 @@ parse_config <- function(config_file, return_object = FALSE){
 
   ## check for mixing matrix consistency (rowsum = 1)
   if(any(abs(rowSums(m_wd_d) - 1) > 0.01)) {
+    metarvm_log_error("weekday_day mixing matrix rows do not sum to 1")
     setwd(old_wd)
     stop("Rows of weekday day mixing matrix do not sum to 1")
   }
   if(any(abs(rowSums(m_wd_n) - 1) > 0.01)) {
+    metarvm_log_error("weekday_night mixing matrix rows do not sum to 1")
     setwd(old_wd)
     stop("Rows of weekday night mixing matrix do not sum to 1")
   }
   if(any(abs(rowSums(m_we_d) - 1) > 0.01)) {
+    metarvm_log_error("weekend_day mixing matrix rows do not sum to 1")
     setwd(old_wd)
     stop("Rows of weekend day mixing matrix do not sum to 1")
   }
   if(any(abs(rowSums(m_we_n) - 1) > 0.01)) {
+    metarvm_log_error("weekend_night mixing matrix rows do not sum to 1")
     setwd(old_wd)
     stop("Rows of weekend night mixing matrix do not sum to 1")
   }
@@ -521,6 +541,7 @@ parse_config <- function(config_file, return_object = FALSE){
 
     # check if population_data$initialization was provided
     if (!exists("category_names") || !exists("pop_map")) {
+      metarvm_log_error("sub_disease_params provided without initialization/pop_map")
       setwd(old_wd)
       stop("sub_disease_params requires population_data$initialization to be specified in the config file")
     }
@@ -528,6 +549,7 @@ parse_config <- function(config_file, return_object = FALSE){
     # check if the subgroup names match with detected categories
     invalid_cats <- setdiff(cats_to_modify, category_names)
     if (length(invalid_cats) > 0) {
+      metarvm_log_error("Invalid sub_disease_params categories: {paste(invalid_cats, collapse = ', ')}")
       setwd(old_wd)
       available_cats <- if (length(category_names) > 0) {
         paste(category_names, collapse = ", ")
@@ -545,6 +567,7 @@ parse_config <- function(config_file, return_object = FALSE){
       # check if the subgroup values are valid
       invalid_cat_vals <- setdiff(cat_vals, unique(pop_map[[cat]]))
       if (length(invalid_cat_vals) > 0) {
+        metarvm_log_error("Invalid values for category '{cat}': {paste(invalid_cat_vals, collapse = ', ')}")
         setwd(old_wd)
         valid_cat_vals <- as.character(unique(pop_map[[cat]]))
         stop(sprintf(
@@ -619,6 +642,9 @@ parse_config <- function(config_file, return_object = FALSE){
                       do_chk = do_chk)
 
   setwd(old_wd)  # reset working directory
+  metarvm_log_info(
+    "parse_config completed: N_pop={N_pop}, nsim={nsim}, categories={length(category_names)}, checkpointing={do_chk}"
+  )
   
   if (return_object) {
     return(MetaRVMConfig$new(config_list))
