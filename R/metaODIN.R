@@ -348,18 +348,19 @@ meta_sim <- function(N_pop, ts,
     ## =================================================
     ## Draws from binomial distributions for numbers changing between
     ## compartments:
-    n_SE_eff[, ]      <- if(S[i] <= 0) 0 else (if(stoch == 1) rbinom(S_eff_prod[j, i], p_SE[i]) else S_eff_prod[j, i] * p_SE[i])
-    n_SE[]            <- sum(n_SE_eff[i, ]) # rowSums
+    # n_SE_eff[, ]      <- if(S[i] <= 0) 0 else (if(stoch == 1) rbinom(S_eff_prod[j, i], p_SE[i]) else S_eff_prod[j, i] * p_SE[i])
+    n_SE_eff[, ]      <- if(S[i] <= 0) 0 else (if(stoch == 1) rbinom(S_eff_prod[i, j], p_SE[j]) else S_eff_prod[i, j] * p_SE[j])
+    n_SE[]            <- sum(n_SE_eff[i, ])   # sum over destinations for each origin i
     n_EI[]            <- if(E[i] == 0) 0 else (if(stoch == 1) rbinom(E[i], p_EIpresymp[i]) else E[i] * p_EIpresymp[i])
-    n_EIpresymp[]     <- n_EI[i] * (1 - pea[i])
+    n_EIpresymp[]     <- if(stoch == 1) rbinom(n_EI[i], 1 - pea[i]) else n_EI[i] * (1 - pea[i])
     n_EIasymp[]       <- n_EI[i] - n_EIpresymp[i]
     n_preIsymp[]      <- if(I_presymp[i] == 0) 0 else (if(stoch == 1) rbinom(I_presymp[i], p_preIsymp[i]) else I_presymp[i] * p_preIsymp[i])
     n_IasympR[]       <- if(I_asymp[i] == 0) 0 else (if(stoch == 1) rbinom(I_asymp[i], p_IasympR[i]) else I_asymp[i] * p_IasympR[i])
     n_IsympRH[]       <- if(I_symp[i] == 0) 0 else (if(stoch == 1) rbinom(I_symp[i], p_IsympRH[i]) else I_symp[i] * p_IsympRH[i])
-    n_IsympH[]        <- n_IsympRH[i] * (1 - psr[i])
+    n_IsympH[]        <- if(stoch == 1) rbinom(n_IsympRH[i], 1 - psr[i]) else n_IsympRH[i] * (1 - psr[i])
     n_IsympR[]        <- n_IsympRH[i] - n_IsympH[i]
     n_HRD[]           <- if(H[i] == 0) 0 else (if(stoch == 1) rbinom(H[i], p_HRD[i]) else H[i] * p_HRD[i])
-    n_HR[]            <- n_HRD[i] * phr[i]
+    n_HR[]            <- if(stoch == 1) rbinom(n_HRD[i], phr[i]) else n_HRD[i] * phr[i]
     n_HD[]            <- n_HRD[i] - n_HR[i]
     n_RS[]            <- if(R[i] == 0) 0 else (if(stoch == 1) rbinom(R[i], p_RS[i]) else R[i] * p_RS[i])
     n_VE_eff[, ]      <- if(stoch == 1) rbinom(V_eff_prod[j, i], p_VE[i]) else V_eff_prod[j, i] * p_VE[i]
@@ -387,6 +388,7 @@ meta_sim <- function(N_pop, ts,
     output(p_SE)          <- TRUE
     output(p_VE)          <- TRUE
     output(p_HRD)         <- TRUE
+    output(p_RS)          <- TRUE
     output(I_eff)         <- TRUE
     output(n_SE)          <- TRUE
     output(n_SV)          <- TRUE
@@ -402,6 +404,10 @@ meta_sim <- function(N_pop, ts,
     output(n_HR)          <- TRUE
     output(n_HD)          <- TRUE
     output(n_IasympR)     <- TRUE
+    output(n_RS)          <- TRUE
+
+    output(n_SE_eff)      <- TRUE
+    output(S_eff_prod)      <- TRUE
 
 
     ## =================================================

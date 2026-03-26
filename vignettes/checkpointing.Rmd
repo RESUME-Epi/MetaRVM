@@ -32,7 +32,7 @@ The checkpointing system uses three main configuration options in the `simulatio
 
 ## Example
 
-For this example, the checkpoint directory is set to a temporary directory, and a temporary YAML configuration file is created from a template.
+For the purpose of this example, we will set the checkpointed directory to be a temporary directory, and will create a temporary yaml configuration file based on a template. 
 
 ### Set Up
 
@@ -48,7 +48,7 @@ example_config <- system.file("extdata", "example_config_checkpoint.yaml",
 # Create a temporary directory for checkpoints
 checkpoint_dir <- tempdir()
 cat("Checkpoint directory:", checkpoint_dir, "\n")
-#> Checkpoint directory: /tmp/RtmpwQdGR9
+#> Checkpoint directory: /tmp/RtmpdtpnKS
 ```
 
 ### Create a Configuration with Checkpointing
@@ -63,9 +63,6 @@ yml_tmp <- data.table::copy(yml)
 
 # Assign checkpoint directory
 yml_tmp$simulation_config$checkpoint_dir <- checkpoint_dir
-yml_tmp$simulation_config$nrep <- 1
-yml_tmp$simulation_config$simulation_mode <- "deterministic"
-yml_tmp$simulation_config$random_seed <- 42
 
 # Create a temporary config
 temp_config <- tempfile(tmpdir = dirname(example_config), fileext = ".yaml")
@@ -125,7 +122,7 @@ print(head(results$results, 10))
 
 ### Resume from a Checkpoint
 
-A new configuration is created to restore from the checkpoint. The checkpoint file name must be provided, along with a start date that should be the day after the end date in the previous run.
+We'll create a new configuration that restores from the checkpoint. We need to provide the checkpoint file name, and a start date which should be the next day of the end date in the previous run.
 
 
 ``` r
@@ -142,11 +139,8 @@ if (length(checkpoint_files_full) > 0) {
   new_start_date <- "12/30/2024"
   yml_tmp <- data.table::copy(yml)
   yml_tmp$simulation_config$start_date <- new_start_date
-  yml_tmp$simulation_config$nrep <- 1
-  yml_tmp$simulation_config$simulation_mode <- "deterministic"
-  yml_tmp$simulation_config$random_seed <- 42
   yml_tmp$simulation_config$restore_from <- checkpoint_to_restore
-  yml_tmp$population_data$initialization <- "population_init_n24_only_mapping.csv" # ensure that the original initial conditions are not reapplied during restore
+  yml_tmp$population_data$initialization <- "population_init_n24_only_mapping.csv" # ensure that we don't want to reinitialize the population with the original initial conditions
   
   temp_config_resume <- tempfile(tmpdir = dirname(example_config), fileext = ".yaml")
   yaml::write_yaml(yml_tmp, temp_config_resume)
@@ -163,7 +157,7 @@ if (length(checkpoint_files_full) > 0) {
 } else {
   cat("No checkpoint files found to resume from.\n")
 }
-#> /tmp/RtmpwQdGR9/chk_2024-12-29_1.Rda 
+#> /tmp/RtmpdtpnKS/chk_2024-12-29_1.Rda 
 #> 
 #> Number of instances: 1 
 #> Date range: 2024-12-30 to 2025-03-29
@@ -184,7 +178,7 @@ ggplot(rbind(run1_hosp_sum, run2_hosp_sum), aes(date, total)) +
 ```
 
 <div class="figure" style="text-align: center">
-<img src="plot-1.png" alt="plot of chunk plot"  />
+<img src="vignettes/plot-1.png" alt="plot of chunk plot"  />
 <p class="caption">plot of chunk plot</p>
 </div>
 
@@ -203,3 +197,5 @@ Where:
 
 
 For more information on configuring MetaRVM simulations, see the [YAML Configuration](yaml-configuration.html) vignette.
+
+

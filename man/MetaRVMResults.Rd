@@ -58,6 +58,7 @@ Arindam Fadikar
 \itemize{
 \item \href{#method-MetaRVMResults-new}{\code{MetaRVMResults$new()}}
 \item \href{#method-MetaRVMResults-print}{\code{MetaRVMResults$print()}}
+\item \href{#method-MetaRVMResults-plot}{\code{MetaRVMResults$plot()}}
 \item \href{#method-MetaRVMResults-subset_data}{\code{MetaRVMResults$subset_data()}}
 \item \href{#method-MetaRVMResults-summarize}{\code{MetaRVMResults$summarize()}}
 \item \href{#method-MetaRVMResults-clone}{\code{MetaRVMResults$clone()}}
@@ -105,6 +106,55 @@ Print summary of results
 
 \subsection{Returns}{
 Self (invisible)
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-MetaRVMResults-plot"></a>}}
+\if{latex}{\out{\hypertarget{method-MetaRVMResults-plot}{}}}
+\subsection{Method \code{plot()}}{
+Plot simulation trajectories directly from results
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{MetaRVMResults$plot(
+  group_by = character(0),
+  disease_states = NULL,
+  date_range = NULL,
+  instances = NULL,
+  stats = NULL,
+  quantiles = c(0.25, 0.75),
+  exclude_p_columns = TRUE,
+  ci_level = 0.95,
+  theme = theme_minimal(),
+  title = NULL
+)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{group_by}}{Vector of demographic category names to group/facet by}
+
+\item{\code{disease_states}}{Optional disease states to include}
+
+\item{\code{date_range}}{Optional date range for filtering}
+
+\item{\code{instances}}{Optional instance IDs to include}
+
+\item{\code{stats}}{Statistics for summary plotting. If NULL, plots raw trajectories.}
+
+\item{\code{quantiles}}{Quantiles for uncertainty bands when summary plotting}
+
+\item{\code{exclude_p_columns}}{Logical, whether to exclude p_ columns (default: TRUE)}
+
+\item{\code{ci_level}}{Confidence level label used in summary plot title}
+
+\item{\code{theme}}{ggplot2 theme function (default: theme_minimal())}
+
+\item{\code{title}}{Optional custom title}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+ggplot object
 }
 }
 \if{html}{\out{<hr>}}
