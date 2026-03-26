@@ -308,7 +308,7 @@ meta_sim <- function(N_pop, ts,
     dim(vac)    <- user()
 
     # n_SV_eff[] <- n_SV[i] * vac_eff[i]
-    n_SV_eff[] <- n_SV[i] * 1   # all vaccinated people are moved to V
+    n_SV_eff[] <- if(n_SV[i] < 0) 0 else (if(n_SV[i] > S[i]) S[i] else n_SV[i])   # bounded by available S
 
     ## =================================================
     # time/day specific mobility matrix
@@ -334,22 +334,33 @@ meta_sim <- function(N_pop, ts,
 
     # first remove vaccinated people from S
     S_eff_prod[, ]  <- m[i, j] * (S[i] - n_SV_eff[i])
-
     V_eff_prod[, ]  <- m[i, j] * V[i]
+    S_src_int[]     <- if((S[i] - n_SV_eff[i]) <= 0) 0 else floor(S[i] - n_SV_eff[i])
+    S_target[, ]    <- m[i, j] * S_src_int[i]
+    S_base[, ]      <- floor(S_target[i, j])
+    S_resid[]       <- S_src_int[i] - sum(S_base[i, ])
+    S_alloc[, ]     <- if(j == N_pop) S_base[i, j] + S_resid[i] else S_base[i, j]
+
+    V_src_int[]     <- if(V[i] <= 0) 0 else floor(V[i])
+    V_target[, ]    <- m[i, j] * V_src_int[i]
+    V_base[, ]      <- floor(V_target[i, j])
+    V_resid[]       <- V_src_int[i] - sum(V_base[i, ])
+    V_alloc[, ]     <- if(j == N_pop) V_base[i, j] + V_resid[i] else V_base[i, j]
 
     I_eff_prod[, ]  <- m[i, j] * I_all[i]
     I_eff[]         <- sum(I_eff_prod[, i]) # colSums
 
     ## =================================================
     ## Force of infection
-    lambda_i[] <- beta_i[i] * I_eff[i] / P_eff[i]
-    lambda_v[] <- beta_i[i] * (1 - vac_eff[i]) * I_eff[i] / P_eff[i]
+    lambda_i[] <- if(P_eff[i] <= 0) 0 else beta_i[i] * I_eff[i] / P_eff[i]
+    lambda_v[] <- if(P_eff[i] <= 0) 0 else beta_i[i] * (1 - vac_eff[i]) * I_eff[i] / P_eff[i]
 
     ## =================================================
     ## Draws from binomial distributions for numbers changing between
     ## compartments:
-    # n_SE_eff[, ]      <- if(S[i] <= 0) 0 else (if(stoch == 1) rbinom(S_eff_prod[j, i], p_SE[i]) else S_eff_prod[j, i] * p_SE[i])
-    n_SE_eff[, ]      <- if(S[i] <= 0) 0 else (if(stoch == 1) rbinom(S_eff_prod[i, j], p_SE[j]) else S_eff_prod[i, j] * p_SE[j])
+    n_SE_eff[, ]      <- if((S[i] - n_SV_eff[i]) <= 0) 0 else (
+                          if(stoch == 1) rbinom(S_alloc[i, j], p_SE[j]) else S_eff_prod[i, j] * p_SE[j]
+                        )
     n_SE[]            <- sum(n_SE_eff[i, ])   # sum over destinations for each origin i
     n_EI[]            <- if(E[i] == 0) 0 else (if(stoch == 1) rbinom(E[i], p_EIpresymp[i]) else E[i] * p_EIpresymp[i])
     n_EIpresymp[]     <- if(stoch == 1) rbinom(n_EI[i], 1 - pea[i]) else n_EI[i] * (1 - pea[i])
@@ -363,9 +374,13 @@ meta_sim <- function(N_pop, ts,
     n_HR[]            <- if(stoch == 1) rbinom(n_HRD[i], phr[i]) else n_HRD[i] * phr[i]
     n_HD[]            <- n_HRD[i] - n_HR[i]
     n_RS[]            <- if(R[i] == 0) 0 else (if(stoch == 1) rbinom(R[i], p_RS[i]) else R[i] * p_RS[i])
-    n_VE_eff[, ]      <- if(stoch == 1) rbinom(V_eff_prod[j, i], p_VE[i]) else V_eff_prod[j, i] * p_VE[i]
+    n_VE_eff[, ]      <- if(V[i] <= 0) 0 else (
+                          if(stoch == 1) rbinom(V_alloc[i, j], p_VE[j]) else V_eff_prod[i, j] * p_VE[j]
+                        )
     n_VE[]            <- sum(n_VE_eff[i, ]) # rowSums
-    n_VS[]            <- if(stoch == 1) rbinom(V[i] - n_VE[i], p_VS[i]) else (V[i] - n_VE[i]) * p_VS[i]
+    n_VS[]            <- if((V[i] - n_VE[i]) <= 0) 0 else (
+                          if(stoch == 1) rbinom(V[i] - n_VE[i], p_VS[i]) else (V[i] - n_VE[i]) * p_VS[i]
+                        )
 
     ## =================================================
     ## Initial states:
@@ -408,6 +423,10 @@ meta_sim <- function(N_pop, ts,
 
     output(n_SE_eff)      <- TRUE
     output(S_eff_prod)      <- TRUE
+    output(S_src_int)     <- TRUE
+    output(S_alloc)       <- TRUE
+    output(V_src_int)     <- TRUE
+    output(V_alloc)       <- TRUE
 
 
     ## =================================================
@@ -506,6 +525,16 @@ meta_sim <- function(N_pop, ts,
     dim(n_SV_eff)      <- N_pop
     dim(n_SE_eff)      <- c(N_pop, N_pop)
     dim(n_VE_eff)      <- c(N_pop, N_pop)
+    dim(S_src_int)     <- N_pop
+    dim(S_target)      <- c(N_pop, N_pop)
+    dim(S_base)        <- c(N_pop, N_pop)
+    dim(S_resid)       <- N_pop
+    dim(S_alloc)       <- c(N_pop, N_pop)
+    dim(V_src_int)     <- N_pop
+    dim(V_target)      <- c(N_pop, N_pop)
+    dim(V_base)        <- c(N_pop, N_pop)
+    dim(V_resid)       <- N_pop
+    dim(V_alloc)       <- c(N_pop, N_pop)
 
     dim(lambda_i) <- N_pop
     dim(lambda_v) <- N_pop

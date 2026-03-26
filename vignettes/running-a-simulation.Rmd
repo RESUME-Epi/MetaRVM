@@ -257,21 +257,6 @@ hospital_summary_dist$plot() + ggtitle("Daily Hospitalizations by Age Group (wit
 ```
 
 
-```{r, fig.height = 6, fig.width = 8, fig.align = "center"}
-
-# Summary of hospitalizations by two user-defined categories
-hospital_summary <- sim_out_dist$summarize(
-  group_by = c("age", "zone"),
-  disease_states = "n_IsympH",
-  stats = c("median", "quantile"),
-  quantiles = c(0.05, 0.95)
-)
-hospital_summary
-
-# visualize the summary
-hospital_summary$plot() + ggtitle("Daily Hospitalizations by Age and Zone") + theme_bw()
-```
-
 # Running a Stochastic Simulation with Static Parameters
 
 A stochastic simulation can also be run by setting `simulation_mode: stochastic`.
@@ -280,7 +265,7 @@ An example YAML file with parameter distributions is included in the package, `e
 
 ```{r}
 # Locate the example YAML configuration file with distributions
-yaml_file_dist <- system.file("extdata", "example_config_dist.yaml", package = "MetaRVM")
+yaml_file_stoch <- system.file("extdata", "example_config_stochastic.yaml", package = "MetaRVM")
 ```
 
 ```yaml

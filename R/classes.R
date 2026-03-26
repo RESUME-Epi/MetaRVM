@@ -818,8 +818,8 @@ MetaRVMSummary <- R6::R6Class(
         color_var <- if ("disease_state" %in% columns) "disease_state" else "instance"
 
         p <- ggplot(self$data, aes(x = date, y = value,
-                                   color = rlang::.data[[color_var]],
-                                   group = interaction(rlang::.data[["instance"]], rlang::.data[[color_var]], drop = TRUE))) +
+                                   color = .data[[color_var]],
+                                   group = interaction(.data[["instance"]], .data[[color_var]], drop = TRUE))) +
           geom_line(alpha = 0.45, linewidth = 0.5)
 
         if (length(group_vars) == 1) {
@@ -881,10 +881,10 @@ MetaRVMSummary <- R6::R6Class(
       ci_upper_col <- quantile_cols[length(quantile_cols)]
       
       # Create the plot
-      p <- ggplot(self$data, aes(x = date, y = median_value, color = rlang::.data[[color_var]])) +
+      p <- ggplot(self$data, aes(x = date, y = median_value, color = .data[[color_var]])) +
         geom_line(linewidth = 1) +
-        geom_ribbon(aes(ymin = rlang::.data[[ci_lower_col]], ymax = rlang::.data[[ci_upper_col]],
-                      fill = rlang::.data[[color_var]]), alpha = 0.2, color = NA) +
+        geom_ribbon(aes(ymin = .data[[ci_lower_col]], ymax = .data[[ci_upper_col]],
+                      fill = .data[[color_var]]), alpha = 0.2, color = NA) +
         labs(
           title = title %||% paste0("Median Outcomes with ", ci_level*100, "% Empirical Quantiles"),
           x = "Date",

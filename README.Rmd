@@ -50,6 +50,14 @@ The current CRAN release is **2.0.0**. Install it with:
 install.packages("MetaRVM")
 ```
 
+To install the development branch for **MetaRVM 2.1.0** (branch:
+`feature/simulation-mode-config`) directly from GitHub:
+
+``` r
+# install.packages("remotes")
+remotes::install_github("RESUME-Epi/MetaRVM@feature/simulation-mode-config")
+```
+
 ### Running a simulation
 
 ```{r}
