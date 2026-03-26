@@ -107,3 +107,115 @@ test_that("subset_data reports valid values when category value is invalid", {
     regexp = "Invalid values for category 'age': NOT_A_VALID_AGE\\. Valid values are:"
   )
 })
+
+test_that("metaRVM uses provided random_seed for stochastic runs", {
+  ext <- function(x) system.file("extdata", x, package = "MetaRVM")
+  cfg_path <- tempfile(fileext = ".yaml")
+
+  cfg <- list(
+    run_id = "StochasticSeedProvided",
+    population_data = list(
+      initialization = ext("population_init_n24.csv"),
+      vaccination = ext("vaccination_n24.csv")
+    ),
+    mixing_matrix = list(
+      weekday_day = ext("m_weekday_day.csv"),
+      weekday_night = ext("m_weekday_night.csv"),
+      weekend_day = ext("m_weekend_day.csv"),
+      weekend_night = ext("m_weekend_night.csv")
+    ),
+    disease_params = list(
+      ts = 0.5, ve = 0.4, dv = 180, dp = 1, de = 3,
+      da = 5, ds = 6, dh = 8, dr = 180, pea = 0.3, psr = 0.95, phr = 0.97
+    ),
+    simulation_config = list(
+      start_date = "10/01/2023",
+      length = 20,
+      nsim = 1,
+      simulation_mode = "stochastic",
+      random_seed = 12345
+    )
+  )
+
+  yaml::write_yaml(cfg, cfg_path)
+
+  res1 <- metaRVM(cfg_path)
+  res2 <- metaRVM(cfg_path)
+
+  expect_equal(res1$config$get("random_seed"), 12345L)
+  expect_equal(res2$config$get("random_seed"), 12345L)
+  expect_equal(res1$results$value, res2$results$value)
+})
+
+test_that("metaRVM generates and stores random_seed for stochastic runs when missing", {
+  ext <- function(x) system.file("extdata", x, package = "MetaRVM")
+  cfg_path <- tempfile(fileext = ".yaml")
+
+  cfg <- list(
+    run_id = "StochasticSeedGenerated",
+    population_data = list(
+      initialization = ext("population_init_n24.csv"),
+      vaccination = ext("vaccination_n24.csv")
+    ),
+    mixing_matrix = list(
+      weekday_day = ext("m_weekday_day.csv"),
+      weekday_night = ext("m_weekday_night.csv"),
+      weekend_day = ext("m_weekend_day.csv"),
+      weekend_night = ext("m_weekend_night.csv")
+    ),
+    disease_params = list(
+      ts = 0.5, ve = 0.4, dv = 180, dp = 1, de = 3,
+      da = 5, ds = 6, dh = 8, dr = 180, pea = 0.3, psr = 0.95, phr = 0.97
+    ),
+    simulation_config = list(
+      start_date = "10/01/2023",
+      length = 20,
+      nsim = 1,
+      simulation_mode = "stochastic"
+    )
+  )
+
+  yaml::write_yaml(cfg, cfg_path)
+
+  res <- metaRVM(cfg_path)
+  generated_seed <- res$config$get("random_seed")
+
+  expect_true(!is.null(generated_seed))
+  expect_true(is.numeric(generated_seed))
+  expect_length(generated_seed, 1)
+})
+
+test_that("metaRVM runs nsim * nrep instances", {
+  ext <- function(x) system.file("extdata", x, package = "MetaRVM")
+  cfg_path <- tempfile(fileext = ".yaml")
+
+  cfg <- list(
+    run_id = "ReplicateCount",
+    population_data = list(
+      initialization = ext("population_init_n24.csv"),
+      vaccination = ext("vaccination_n24.csv")
+    ),
+    mixing_matrix = list(
+      weekday_day = ext("m_weekday_day.csv"),
+      weekday_night = ext("m_weekday_night.csv"),
+      weekend_day = ext("m_weekend_day.csv"),
+      weekend_night = ext("m_weekend_night.csv")
+    ),
+    disease_params = list(
+      ts = 0.5, ve = 0.4, dv = 180, dp = 1, de = 3,
+      da = 5, ds = 6, dh = 8, dr = 180, pea = 0.3, psr = 0.95, phr = 0.97
+    ),
+    simulation_config = list(
+      start_date = "10/01/2023",
+      length = 20,
+      nsim = 2,
+      nrep = 3,
+      simulation_mode = "deterministic"
+    )
+  )
+
+  yaml::write_yaml(cfg, cfg_path)
+
+  res <- metaRVM(cfg_path)
+  expect_equal(length(unique(res$results$instance)), 6L)
+})

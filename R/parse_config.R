@@ -19,6 +19,9 @@
 #' \itemize{
 #'   \item \code{random_seed}: Optional random seed for reproducibility in case of stochastic simulations or stochastic parameters
 #'   \item \code{nsim}: Number of simulation instances (default: 1)
+#'   \item \code{nrep}: Number of stochastic replicates per parameter set (default: 1)
+#'   \item \code{simulation_mode}: Optional simulation mode. Must be one of
+#'         \code{"deterministic"} or \code{"stochastic"} (default: \code{"deterministic"}).
 #'   \item \code{start_date}: Simulation start date in MM/DD/YYYY format
 #'   \item \code{length}: Simulation length in days
 #'   \item \code{checkpoint_dir}: Optional checkpoint directory for saving intermediate results
@@ -72,6 +75,8 @@
 #'   \item{start_date}{Simulation start date as Date object}
 #'   \item{sim_length}{Simulation length in days}
 #'   \item{nsim}{Number of simulation instances}
+#'   \item{nrep}{Number of stochastic replicates per parameter set}
+#'   \item{simulation_mode}{Simulation mode: \code{"deterministic"} or \code{"stochastic"}}
 #'   \item{random_seed}{Random seed used (if any)}
 #'   \item{delta_t}{Time step size (fixed at 0.5)}
 #'   \item{chk_file_names, chk_time_steps, do_chk}{Checkpointing configuration}
@@ -142,14 +147,6 @@ parse_config <- function(config_file, return_object = FALSE){
   setwd(yaml_file_path)
   on.exit(setwd(old_wd))
 
-  # check random seed
-  if(!is.null(yaml_data$simulation_config$random_seed)){
-    random_seed <- yaml_data$simulation_config$random_seed
-    set.seed(random_seed)
-  } else {
-    random_seed <- NULL
-  }
-
   # =====================================================
   # read mandatory parameters
   is_restore <- !is.null(yaml_data$simulation_config$restore_from)
@@ -169,6 +166,43 @@ parse_config <- function(config_file, return_object = FALSE){
   sim_length <- yaml_data$simulation_config$length
   nsim <- ifelse(!is.null(yaml_data$simulation_config$nsim),
                  yaml_data$simulation_config$nsim, 1)
+  nrep <- ifelse(!is.null(yaml_data$simulation_config$nrep),
+                 yaml_data$simulation_config$nrep, 1)
+  nrep <- suppressWarnings(as.integer(nrep)[1])
+  if (is.na(nrep) || nrep < 1) {
+    setwd(old_wd)
+    stop("nrep must be a positive integer")
+  }
+  simulation_mode <- "deterministic"
+  if (!is.null(yaml_data$simulation_config$simulation_mode)) {
+    simulation_mode <- tolower(trimws(as.character(yaml_data$simulation_config$simulation_mode)))
+  } else if (!is.null(yaml_data$simulation_config$is_stoch)) {
+    is_stoch <- yaml_data$simulation_config$is_stoch
+    simulation_mode <- if (isTRUE(is_stoch) || (is.numeric(is_stoch) && is_stoch != 0)) {
+      "stochastic"
+    } else {
+      "deterministic"
+    }
+  }
+  if (!simulation_mode %in% c("deterministic", "stochastic")) {
+    setwd(old_wd)
+    stop("simulation_mode must be either 'deterministic' or 'stochastic'")
+  }
+  
+  # check random seed
+  if(!is.null(yaml_data$simulation_config$random_seed)){
+    random_seed <- suppressWarnings(as.integer(yaml_data$simulation_config$random_seed)[1])
+    if (is.na(random_seed)) {
+      setwd(old_wd)
+      stop("random_seed must be coercible to a single integer value")
+    }
+    set.seed(random_seed)
+  } else if (simulation_mode == "stochastic") {
+    random_seed <- sample.int(.Machine$integer.max, 1)
+    set.seed(random_seed)
+  } else {
+    random_seed <- NULL
+  }
 
   chk_time_steps <- NULL
   chk_file_names <- NULL
@@ -192,7 +226,7 @@ parse_config <- function(config_file, return_object = FALSE){
       # Generate a matrix of file names: rows for instances, columns for dates
       chk_file_names <- sapply(chk_dates, function(date) {
         date_str <- format(date, "%Y-%m-%d")
-        paste0(checkpoint_dir, "/checkpoint_", date_str, "_instance_", 1:nsim, ".Rda")
+        paste0(checkpoint_dir, "/checkpoint_", date_str, "_instance_", 1:(nsim * nrep), ".Rda")
       })
       if (is.vector(chk_file_names)) {
         chk_file_names <- matrix(chk_file_names, ncol = 1)
@@ -207,7 +241,7 @@ parse_config <- function(config_file, return_object = FALSE){
       chk_time_steps <- as.integer(sim_length / delta_t)
 
       # Create a 1-column matrix for the single checkpoint date
-      chk_file_names <- matrix(paste0(checkpoint_dir, "/chk_", date_str, "_", 1:nsim, ".Rda"), ncol = 1)
+      chk_file_names <- matrix(paste0(checkpoint_dir, "/chk_", date_str, "_", 1:(nsim * nrep), ".Rda"), ncol = 1)
     }
   }
 
@@ -576,6 +610,8 @@ parse_config <- function(config_file, return_object = FALSE){
                       start_date = start_date,
                       sim_length = sim_length,
                       nsim = nsim,
+                      nrep = nrep,
+                      simulation_mode = simulation_mode,
                       random_seed = random_seed,
                       delta_t = delta_t,
                       chk_file_names = chk_file_names,

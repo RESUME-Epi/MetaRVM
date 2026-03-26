@@ -1,4 +1,4 @@
-run_id: ExampleRun_Dist
+run_id: ExampleRun_Stochastic_Static
 population_data:
   initialization: population_init_n24.csv
   vaccination: vaccination_n24.csv
@@ -9,25 +9,13 @@ mixing_matrix:
   weekend_night: m_weekend_night.csv
 disease_params:
   ts: 0.5
-  ve: 
-    dist: uniform
-    min: 0.3
-    max: 0.5
+  ve: 0.4
   dv: 180
   dp: 1
   de: 3
-  da: 
-    dist: uniform
-    min: 4
-    max: 6
-  ds: 
-    dist: uniform
-    min: 5
-    max: 7
-  dh: 
-    dist: lognormal
-    mu: 2
-    sd: 0.5
+  da: 5
+  ds: 6
+  dh: 8
   dr: 180
   pea: 0.3
   psr: 0.95
@@ -35,5 +23,7 @@ disease_params:
 simulation_config:
   start_date: 01/01/2023 # m/d/Y
   length: 150
-  nsim: 20 # Increased nsim for meaningful summary statistics
-  simulation_mode: deterministic
+  nsim: 1
+  nrep: 5
+  simulation_mode: stochastic
+  random_seed: 42

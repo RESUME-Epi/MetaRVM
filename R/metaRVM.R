@@ -114,6 +114,34 @@ metaRVM <- function(config_input) {
   
   # pass inputs to meta_sim
   nsim <- config_obj$config_data$nsim
+  nrep <- if ("nrep" %in% names(config_obj$config_data)) {
+    as.integer(config_obj$config_data$nrep)
+  } else {
+    1L
+  }
+  if (is.na(nrep) || nrep < 1) {
+    stop("nrep must be a positive integer")
+  }
+  simulation_mode <- if ("simulation_mode" %in% names(config_obj$config_data)) {
+    config_obj$config_data$simulation_mode
+  } else {
+    "deterministic"
+  }
+  is_stoch <- identical(tolower(as.character(simulation_mode)), "stochastic")
+  run_seed_base <- NA_integer_
+  if (is_stoch) {
+    run_seed <- config_obj$config_data$random_seed
+    if (is.null(run_seed)) {
+      run_seed <- sample.int(.Machine$integer.max, 1)
+    } else {
+      run_seed <- suppressWarnings(as.integer(run_seed)[1])
+      if (is.na(run_seed)) {
+        stop("random_seed must be coercible to a single integer value")
+      }
+    }
+    config_obj$config_data$random_seed <- run_seed
+    run_seed_base <- run_seed
+  }
   nsteps <- floor(config_obj$config_data$sim_length / config_obj$config_data$delta_t)
   day_name <- weekdays(config_obj$config_data$start_date)
   start_day <- dplyr::case_when(
@@ -128,51 +156,75 @@ metaRVM <- function(config_input) {
   )
 
   out <- data.table::data.table()
+  run_idx <- 0L
   for (ii in 1:nsim){
+    for (rr in 1:nrep){
+      run_idx <- run_idx + 1L
+      if (is_stoch) {
+        set.seed(run_seed_base + run_idx - 1L)
+      }
 
-    o <- meta_sim(is.stoch = 0,
-                  nsteps = nsteps,
-                  N_pop = config_obj$config_data$N_pop,
-                  S0 = config_obj$config_data$S_ini,
-                  I0 = config_obj$config_data$I_symp_ini,
-                  P0 = config_obj$config_data$P_ini,
-                  V0 = config_obj$config_data$V_ini,
-                  R0 = config_obj$config_data$R_ini,
-                  H0 = config_obj$config_data$H_ini,
-                  D0 = config_obj$config_data$D_ini,
-                  E0 = config_obj$config_data$E_ini,
-                  Ia0 = config_obj$config_data$I_asymp_ini,
-                  Ip0 = config_obj$config_data$I_presymp_ini,
-                  m_weekday_day = config_obj$config_data$m_wd_d,
-                  m_weekday_night = config_obj$config_data$m_wd_n,
-                  m_weekend_day = config_obj$config_data$m_we_d,
-                  m_weekend_night = config_obj$config_data$m_we_n,
-                  start_day = start_day,
-                  delta_t = config_obj$config_data$delta_t,
-                  vac_mat = config_obj$config_data$vac_mat,
-                  ts = config_obj$config_data$ts[ii, ],
-                  dv = config_obj$config_data$dv[ii, ],
-                  de = config_obj$config_data$de[ii, ],
-                  pea = config_obj$config_data$pea[ii, ],
-                  dp = config_obj$config_data$dp[ii, ],
-                  da = config_obj$config_data$da[ii, ],
-                  ds = config_obj$config_data$ds[ii, ],
-                  psr = config_obj$config_data$psr[ii, ],
-                  dh = config_obj$config_data$dh[ii, ],
-                  phr = config_obj$config_data$phr[ii, ],
-                  dr = config_obj$config_data$dr[ii, ],
-                  ve = config_obj$config_data$ve[ii, ],
-                  do_chk = config_obj$config_data$do_chk,
-                  chk_time_steps = config_obj$config_data$chk_time_steps,
-                  chk_file_names = config_obj$config_data$chk_file_names[ii, ])
+      o <- meta_sim(is.stoch = is_stoch,
+                    nsteps = nsteps,
+                    N_pop = config_obj$config_data$N_pop,
+                    S0 = config_obj$config_data$S_ini,
+                    I0 = config_obj$config_data$I_symp_ini,
+                    P0 = config_obj$config_data$P_ini,
+                    V0 = config_obj$config_data$V_ini,
+                    R0 = config_obj$config_data$R_ini,
+                    H0 = config_obj$config_data$H_ini,
+                    D0 = config_obj$config_data$D_ini,
+                    E0 = config_obj$config_data$E_ini,
+                    Ia0 = config_obj$config_data$I_asymp_ini,
+                    Ip0 = config_obj$config_data$I_presymp_ini,
+                    m_weekday_day = config_obj$config_data$m_wd_d,
+                    m_weekday_night = config_obj$config_data$m_wd_n,
+                    m_weekend_day = config_obj$config_data$m_we_d,
+                    m_weekend_night = config_obj$config_data$m_we_n,
+                    start_day = start_day,
+                    delta_t = config_obj$config_data$delta_t,
+                    vac_mat = config_obj$config_data$vac_mat,
+                    ts = config_obj$config_data$ts[ii, ],
+                    dv = config_obj$config_data$dv[ii, ],
+                    de = config_obj$config_data$de[ii, ],
+                    pea = config_obj$config_data$pea[ii, ],
+                    dp = config_obj$config_data$dp[ii, ],
+                    da = config_obj$config_data$da[ii, ],
+                    ds = config_obj$config_data$ds[ii, ],
+                    psr = config_obj$config_data$psr[ii, ],
+                    dh = config_obj$config_data$dh[ii, ],
+                    phr = config_obj$config_data$phr[ii, ],
+                    dr = config_obj$config_data$dr[ii, ],
+                    ve = config_obj$config_data$ve[ii, ],
+                    do_chk = config_obj$config_data$do_chk,
+                    chk_time_steps = config_obj$config_data$chk_time_steps,
+                    chk_file_names = config_obj$config_data$chk_file_names[run_idx, ])
 
-    o$instance <- ii
-    out <- rbind(out, o)
+      o$instance <- run_idx
+      out <- rbind(out, o)
+    }
   }
 
-  
+  run_info <- list(
+    created_at = Sys.time(),
+    N_pop = config_obj$config_data$N_pop,
+    nsim = nsim,
+    nrep = nrep,
+    n_instances = nsim * nrep,
+    simulation_mode = simulation_mode,
+    random_seed = config_obj$config_data$random_seed,
+    delta_t = config_obj$config_data$delta_t,
+    date_range = if (nrow(out) > 0) {
+      c(config_obj$config_data$start_date + 1,
+        config_obj$config_data$start_date + floor(config_obj$config_data$sim_length))
+    } else {
+      c(NA, NA)
+    },
+    checkpointing_enabled = isTRUE(config_obj$config_data$do_chk)
+  )
+
   # Create and return MetaRVMResults object
-  results_obj <- MetaRVMResults$new(out, config_obj)
+  results_obj <- MetaRVMResults$new(out, config_obj, run_info = run_info)
   return(results_obj)
   # return(out)
 }

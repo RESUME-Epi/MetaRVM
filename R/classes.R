@@ -342,6 +342,18 @@ MetaRVMResults <- R6::R6Class(
       cat("Instances:", self$run_info$n_instances, "\n")
       cat("Populations:", self$run_info$n_populations, "\n")
       cat("Date range:", paste(self$run_info$date_range, collapse = " to "), "\n")
+      if (!is.null(self$run_info$nsim)) {
+        cat("Parameter sets (nsim):", self$run_info$nsim, "\n")
+      }
+      if (!is.null(self$run_info$nrep)) {
+        cat("Replicates per set (nrep):", self$run_info$nrep, "\n")
+      }
+      if (!is.null(self$run_info$simulation_mode)) {
+        cat("Simulation mode:", self$run_info$simulation_mode, "\n")
+      }
+      if (!is.null(self$run_info$random_seed)) {
+        cat("Random seed:", self$run_info$random_seed, "\n")
+      }
       cat("Total observations:", nrow(self$results), "\n")
       cat("Disease states:", paste(unique(self$results$disease_state), collapse = ", "), "\n")
       invisible(self)
@@ -435,6 +447,13 @@ MetaRVMResults <- R6::R6Class(
       new_run_info <- list(
         created_at = Sys.time(),
         original_created_at = self$run_info$created_at,
+        N_pop = self$run_info$N_pop,
+        nsim = self$run_info$nsim,
+        nrep = self$run_info$nrep,
+        simulation_mode = self$run_info$simulation_mode,
+        random_seed = self$run_info$random_seed,
+        delta_t = self$run_info$delta_t,
+        checkpointing_enabled = self$run_info$checkpointing_enabled,
         n_instances = length(unique(subset_results$instance)),
         n_populations = private$calculate_n_populations(subset_results),
         date_range = if(nrow(subset_results) > 0) range(subset_results$date, na.rm = TRUE) else c(NA, NA),
