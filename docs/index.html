@@ -32,7 +32,7 @@
 
     <a class="navbar-brand me-2" href="index.html">MetaRVM</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.0.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.1.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -147,7 +147,10 @@ Model schematics
 <span id="cb3-23"><a href="#cb3-23" tabindex="-1"></a><span class="fu">simulation_config</span><span class="kw">:</span></span>
 <span id="cb3-24"><a href="#cb3-24" tabindex="-1"></a><span class="at">  </span><span class="fu">start_date</span><span class="kw">:</span><span class="at"> 10/01/2023</span><span class="co"> # m/d/Y</span></span>
 <span id="cb3-25"><a href="#cb3-25" tabindex="-1"></a><span class="at">  </span><span class="fu">length</span><span class="kw">:</span><span class="at"> </span><span class="dv">150</span></span>
-<span id="cb3-26"><a href="#cb3-26" tabindex="-1"></a><span class="at">  </span><span class="fu">nsim</span><span class="kw">:</span><span class="at"> </span><span class="dv">1</span></span></code></pre></div>
+<span id="cb3-26"><a href="#cb3-26" tabindex="-1"></a><span class="at">  </span><span class="fu">nsim</span><span class="kw">:</span><span class="at"> </span><span class="dv">1</span></span>
+<span id="cb3-27"><a href="#cb3-27" tabindex="-1"></a><span class="at">  </span><span class="fu">nrep</span><span class="kw">:</span><span class="at"> </span><span class="dv">1</span></span>
+<span id="cb3-28"><a href="#cb3-28" tabindex="-1"></a><span class="at">  </span><span class="fu">simulation_mode</span><span class="kw">:</span><span class="at"> deterministic</span></span>
+<span id="cb3-29"><a href="#cb3-29" tabindex="-1"></a><span class="at">  </span><span class="fu">random_seed</span><span class="kw">:</span><span class="at"> </span><span class="dv">42</span></span></code></pre></div>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># run simulation</span></span>
 <span><span class="va">sim_out</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/metaRVM.html">metaRVM</a></span><span class="op">(</span><span class="va">cfg</span><span class="op">)</span></span>
@@ -198,6 +201,7 @@ Model schematics
 </ul>
 <p>At the start of a simulation, nearly all individuals are in <code>S</code>, with optional seeding of initial infections and/or vaccinated individuals in <code>V</code>. When susceptible or vaccinated individuals come into contact with infectious individuals, they become exposed (<code>E</code>) based on age/stratum-specific forces of infection and vaccine protection. Exposed individuals then progress through asymptomatic, presymptomatic, and symptomatic infectious states before either recovering, being hospitalized, or dying. Vaccinated and recovered immunity can wane over time, returning individuals to the susceptible pool, which allows <code>MetaRVM</code> to represent multiple respiratory pathogens with different natural histories.</p>
 <p>Transmission is stratified by user-defined demographic groups (e.g., age, zone, race). Time-varying mixing matrices define how these strata interact (daytime vs. nighttime, weekday vs. weekend), and <code>MetaRVM</code> computes stratum-specific forces of infection for susceptible and vaccinated individuals. Hospitalized and deceased individuals are excluded from the “effective” mixing population. The same model can be run in deterministic or stochastic mode, and parameters are supplied through a YAML configuration.</p>
+<p>For simulation control: - <code>nsim</code> is the number of parameter sets (rows in sampled parameter matrices when distributions are used) - <code>nrep</code> is the number of simulation replicates per parameter set - total runs = <code>nsim * nrep</code> - <code>simulation_mode</code> chooses <code>"deterministic"</code> or <code>"stochastic"</code> - <code>random_seed</code> ensures reproducibility for both parameter sampling and stochastic trajectories</p>
 <hr>
 <div class="section level3">
 <h3 id="core-disease-progression-parameters">Core disease progression parameters<a class="anchor" aria-label="anchor" href="#core-disease-progression-parameters"></a>

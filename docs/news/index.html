@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">MetaRVM</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.0.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.1.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -49,6 +49,25 @@
       <small>Source: <a href="https://github.com/RESUME-Epi/MetaRVM/blob/HEAD/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="2.1.0" id="metarvm-210">MetaRVM 2.1.0<a class="anchor" aria-label="anchor" href="#metarvm-210"></a></h2>
+<ul><li><p>Added <code>simulation_mode</code> (<code>deterministic</code>/<code>stochastic</code>) and <code>nrep</code> support in configuration parsing and run metadata.</p></li>
+<li><p>Improved stochastic reproducibility: provided <code>random_seed</code> is honored, and a seed is generated/stored when missing.</p></li>
+<li><p>Updated stochastic transition splitting to use binomial draws for integer compartment flows (<code>n_EIpresymp</code>, <code>n_IsympH</code>, <code>n_HR</code>).</p></li>
+<li><p>Improved metapopulation infection-flow indexing consistency for destination- specific force of infection in <code>n_SE_eff</code> and <code>n_VE_eff</code>.</p></li>
+<li><p>Added bounded vaccination and transition safeguards to reduce overdraw risks (for example, capping applied vaccination by available susceptible count and guarding zero effective population in force-of-infection calculations).</p></li>
+<li><p>Added integer row allocation for stochastic mixing flows (<code>S</code> and <code>V</code>) using floor-plus-residual adjustment so row totals are conserved.</p></li>
+<li><p>Added regression tests for stochastic seed behavior, <code>nsim * nrep</code> instance counts, and row-allocation conservation checks for <code>S</code>/<code>V</code> mixing.</p></li>
+<li>
+<p>Enhanced results helper APIs:</p>
+<ul><li>
+<code>MetaRVMResults$plot()</code> now provides direct trajectory plotting before summarization.</li>
+<li>
+<code>MetaRVMSummary$plot()</code> now supports instance-trajectory plotting.</li>
+<li>
+<code>summarize()</code> uses a more efficient single-pass grouped aggregation.</li>
+</ul></li>
+</ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="2.0.0" id="metarvm-200">MetaRVM 2.0.0<a class="anchor" aria-label="anchor" href="#metarvm-200"></a></h2><p class="text-muted">CRAN release: 2026-03-19</p>
 <ul><li><p>Subpopulation categories are now user-defined from <code>population_data$initialization</code>; non-reserved columns are detected automatically.</p></li>

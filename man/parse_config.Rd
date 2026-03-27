@@ -26,6 +26,8 @@ If \code{return_object = FALSE} (default), returns a named list containing:
 \item{start_date}{Simulation start date as Date object}
 \item{sim_length}{Simulation length in days}
 \item{nsim}{Number of simulation instances}
+\item{nrep}{Number of stochastic replicates per parameter set}
+\item{simulation_mode}{Simulation mode: \code{"deterministic"} or \code{"stochastic"}}
 \item{random_seed}{Random seed used (if any)}
 \item{delta_t}{Time step size (fixed at 0.5)}
 \item{chk_file_names, chk_time_steps, do_chk}{Checkpointing configuration}
@@ -47,6 +49,9 @@ main sections:
 \itemize{
 \item \code{random_seed}: Optional random seed for reproducibility in case of stochastic simulations or stochastic parameters
 \item \code{nsim}: Number of simulation instances (default: 1)
+\item \code{nrep}: Number of stochastic replicates per parameter set (default: 1)
+\item \code{simulation_mode}: Optional simulation mode. Must be one of
+\code{"deterministic"} or \code{"stochastic"} (default: \code{"deterministic"}).
 \item \code{start_date}: Simulation start date in MM/DD/YYYY format
 \item \code{length}: Simulation length in days
 \item \code{checkpoint_dir}: Optional checkpoint directory for saving intermediate results

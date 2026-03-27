@@ -5,6 +5,13 @@
 
 <!-- badges: start -->
 
+[![R-CMD-check](https://github.com/RESUME-Epi/MetaRVM/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/RESUME-Epi/MetaRVM/actions/workflows/R-CMD-check.yaml)
+[![Codecov test
+coverage](https://codecov.io/gh/RESUME-Epi/MetaRVM/branch/main/graph/badge.svg)](https://app.codecov.io/gh/RESUME-Epi/MetaRVM)
+[![Lifecycle:
+maturing](https://img.shields.io/badge/lifecycle-maturing-blue.svg)](https://lifecycle.r-lib.org/articles/stages.html)
+[![pkgdown
+site](https://img.shields.io/badge/docs-pkgdown-blue.svg)](https://RESUME-Epi.github.io/MetaRVM/)
 [![CRAN
 status](https://www.r-pkg.org/badges/version/MetaRVM)](https://CRAN.R-project.org/package=MetaRVM)
 [![CRAN
@@ -95,6 +102,9 @@ simulation_config:
   start_date: 10/01/2023 # m/d/Y
   length: 150
   nsim: 1
+  nrep: 1
+  simulation_mode: deterministic
+  random_seed: 42
 ```
 
 ``` r
@@ -149,6 +159,13 @@ vaccinated individuals. Hospitalized and deceased individuals are
 excluded from the “effective” mixing population. The same model can be
 run in deterministic or stochastic mode, and parameters are supplied
 through a YAML configuration.
+
+For simulation control: - `nsim` is the number of parameter sets (rows
+in sampled parameter matrices when distributions are used) - `nrep` is
+the number of simulation replicates per parameter set - total runs =
+`nsim * nrep` - `simulation_mode` chooses `"deterministic"` or
+`"stochastic"` - `random_seed` ensures reproducibility for both
+parameter sampling and stochastic trajectories
 
 ------------------------------------------------------------------------
 

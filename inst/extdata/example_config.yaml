@@ -24,3 +24,4 @@ simulation_config:
   start_date: 10/01/2023 # m/d/Y
   length: 150
   nsim: 1
+  simulation_mode: deterministic

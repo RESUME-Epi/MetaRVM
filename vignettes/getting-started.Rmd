@@ -18,11 +18,11 @@ knitr::opts_chunk$set(
 
 ## Introduction
 
-MetaRVM is a comprehensive R package for simulating respiratory virus epidemics using meta-population compartmental models. This vignette will guide you through the basic usage of the package.
+MetaRVM is a comprehensive R package for simulating respiratory virus epidemics using meta-population compartmental models. This vignette describes the basic usage of the package.
 
 ## Installation
 
-You can install the development version of MetaRVM from GitHub:
+The development version of MetaRVM can be installed from GitHub:
 
 ```{r eval=FALSE}
 # install.packages("devtools")
@@ -41,7 +41,7 @@ options(odin.verbose = FALSE)
 
 This example shows how to run a basic meta-population simulation.
 
-The `metaRVM` package includes a set of example files in its `extdata` directory. To run the example, we first need to locate these files. The `system.file()` function in R is the recommended way to do this, as it will find the files wherever the package is installed.
+The `metaRVM` package includes a set of example files in its `extdata` directory. To run the example, these files must first be located. The `system.file()` function in R is the recommended way to do this, as it finds the files wherever the package is installed.
 
 ```{r}
 # Locate the example YAML configuration file
@@ -78,13 +78,16 @@ simulation_config:
   start_date: 01/01/2023 # m/d/Y
   length: 150
   nsim: 1
+  nrep: 1
+  simulation_mode: deterministic
+  random_seed: 42
 ```
 
 For a detailed explanation of all the configuration options, please see the `yaml-configuration.html` vignette.
 
 ## Running the Simulation
 
-Once we have the path to the configuration file, the simulation can be run using the `metaRVM()` function.
+Once the path to the configuration file is available, the simulation can be run using the `metaRVM()` function.
 
 ```{r, results='hide'}
 # Load the metaRVM library

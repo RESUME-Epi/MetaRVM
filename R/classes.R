@@ -342,9 +342,55 @@ MetaRVMResults <- R6::R6Class(
       cat("Instances:", self$run_info$n_instances, "\n")
       cat("Populations:", self$run_info$n_populations, "\n")
       cat("Date range:", paste(self$run_info$date_range, collapse = " to "), "\n")
+      if (!is.null(self$run_info$nsim)) {
+        cat("Parameter sets (nsim):", self$run_info$nsim, "\n")
+      }
+      if (!is.null(self$run_info$nrep)) {
+        cat("Replicates per set (nrep):", self$run_info$nrep, "\n")
+      }
+      if (!is.null(self$run_info$simulation_mode)) {
+        cat("Simulation mode:", self$run_info$simulation_mode, "\n")
+      }
+      if (!is.null(self$run_info$random_seed)) {
+        cat("Random seed:", self$run_info$random_seed, "\n")
+      }
       cat("Total observations:", nrow(self$results), "\n")
       cat("Disease states:", paste(unique(self$results$disease_state), collapse = ", "), "\n")
       invisible(self)
+    },
+
+    #' @description Plot simulation trajectories directly from results
+    #' @param group_by Vector of demographic category names to group/facet by
+    #' @param disease_states Optional disease states to include
+    #' @param date_range Optional date range for filtering
+    #' @param instances Optional instance IDs to include
+    #' @param stats Statistics for summary plotting. If NULL, plots raw trajectories.
+    #' @param quantiles Quantiles for uncertainty bands when summary plotting
+    #' @param exclude_p_columns Logical, whether to exclude p_ columns (default: TRUE)
+    #' @param ci_level Confidence level label used in summary plot title
+    #' @param theme ggplot2 theme function (default: theme_minimal())
+    #' @param title Optional custom title
+    #' @return ggplot object
+    plot = function(group_by = character(0), disease_states = NULL, date_range = NULL,
+                    instances = NULL, stats = NULL, quantiles = c(0.25, 0.75),
+                    exclude_p_columns = TRUE, ci_level = 0.95,
+                    theme = theme_minimal(), title = NULL) {
+
+      plot_data <- self$subset_data(
+        disease_states = disease_states,
+        date_range = date_range,
+        instances = instances,
+        exclude_p_columns = exclude_p_columns
+      )
+
+      summary_obj <- plot_data$summarize(
+        group_by = group_by,
+        stats = stats,
+        quantiles = quantiles,
+        exclude_p_columns = FALSE
+      )
+
+      summary_obj$plot(ci_level = ci_level, theme = theme, title = title)
     },
 
     #' @description Subset the data based on any combination of parameters
@@ -435,6 +481,13 @@ MetaRVMResults <- R6::R6Class(
       new_run_info <- list(
         created_at = Sys.time(),
         original_created_at = self$run_info$created_at,
+        N_pop = self$run_info$N_pop,
+        nsim = self$run_info$nsim,
+        nrep = self$run_info$nrep,
+        simulation_mode = self$run_info$simulation_mode,
+        random_seed = self$run_info$random_seed,
+        delta_t = self$run_info$delta_t,
+        checkpointing_enabled = self$run_info$checkpointing_enabled,
         n_instances = length(unique(subset_results$instance)),
         n_populations = private$calculate_n_populations(subset_results),
         date_range = if(nrow(subset_results) > 0) range(subset_results$date, na.rm = TRUE) else c(NA, NA),
@@ -510,60 +563,45 @@ MetaRVMResults <- R6::R6Class(
       
       # Step 3: Calculate statistics across instances for each date/demographic/disease combination
       final_group_vars <- c("date", group_by, "disease_state")
-      
-      # Start with empty result
-      summary_result <- summed_data[, .(temp = mean(value)), by = final_group_vars][, temp := NULL]
-      
-      # Add each statistic individually
-      if ("mean" %in% stats) {
-        temp_mean <- summed_data[, .(mean_value = mean(value, na.rm = TRUE)), by = final_group_vars]
-        summary_result <- merge(summary_result, temp_mean, by = final_group_vars, all = TRUE)
-      }
-      
-      if ("median" %in% stats) {
-        temp_median <- summed_data[, .(median_value = median(value, na.rm = TRUE)), by = final_group_vars]
-        summary_result <- merge(summary_result, temp_median, by = final_group_vars, all = TRUE)
-      }
-      
-      if ("sd" %in% stats) {
-        temp_sd <- summed_data[, .(sd_value = sd(value, na.rm = TRUE)), by = final_group_vars]
-        summary_result <- merge(summary_result, temp_sd, by = final_group_vars, all = TRUE)
-      }
-      
-      if ("min" %in% stats) {
-        temp_min <- summed_data[, .(min_value = min(value, na.rm = TRUE)), by = final_group_vars]
-        summary_result <- merge(summary_result, temp_min, by = final_group_vars, all = TRUE)
-      }
-      
-      if ("max" %in% stats) {
-        temp_max <- summed_data[, .(max_value = max(value, na.rm = TRUE)), by = final_group_vars]
-        summary_result <- merge(summary_result, temp_max, by = final_group_vars, all = TRUE)
-      }
-      
-      if ("sum" %in% stats) {
-        temp_sum <- summed_data[, .(sum_value = sum(value, na.rm = TRUE)), by = final_group_vars]
-        summary_result <- merge(summary_result, temp_sum, by = final_group_vars, all = TRUE)
-      }
-      
-      # Handle quantiles
-      if ("quantile" %in% stats) {
-        for (q in quantiles) {
-          q_name <- paste0("q", sprintf("%02d", round(q * 100)))
-          temp_q <- summed_data[, .(temp_quantile = quantile(value, q, na.rm = TRUE)), by = final_group_vars]
-          setnames(temp_q, "temp_quantile", q_name)
-          summary_result <- merge(summary_result, temp_q, by = final_group_vars, all = TRUE)
+      summary_result <- summed_data[, {
+        out <- list()
+
+        if ("mean" %in% stats) {
+          out$mean_value <- mean(value, na.rm = TRUE)
         }
-      }
-      
-      # Sort results for better readability
-      setorder(summary_result, date)
+        if ("median" %in% stats) {
+          out$median_value <- median(value, na.rm = TRUE)
+        }
+        if ("sd" %in% stats) {
+          out$sd_value <- stats::sd(value, na.rm = TRUE)
+        }
+        if ("min" %in% stats) {
+          out$min_value <- min(value, na.rm = TRUE)
+        }
+        if ("max" %in% stats) {
+          out$max_value <- max(value, na.rm = TRUE)
+        }
+        if ("sum" %in% stats) {
+          out$sum_value <- sum(value, na.rm = TRUE)
+        }
+        if ("quantile" %in% stats) {
+          for (q in quantiles) {
+            q_name <- paste0("q", sprintf("%02d", round(q * 100)))
+            out[[q_name]] <- stats::quantile(value, probs = q, na.rm = TRUE, names = FALSE)
+          }
+        }
+
+        out
+      }, by = final_group_vars]
       
       # return(summary_result)
       # Return a chainable object
       if (is.null(stats)) {
+        setorder(summed_data, date, disease_state, instance)
         # Return summary object for chaining
         return(MetaRVMSummary$new(summed_data, self$config, type = "instances"))
       } else {
+        setorderv(summary_result, c("date", group_by, "disease_state"))
         # Return summary object for chaining
         return(MetaRVMSummary$new(summary_result, self$config, type = "summary"))
       }
@@ -766,18 +804,7 @@ MetaRVMSummary <- R6::R6Class(
     plot = function(ci_level = 0.95, theme = theme_minimal(), title = NULL) {
       
       columns <- names(self$data)
-      
-      # Check if we have the required columns for plotting
-      if (!("median_value" %in% columns)) {
-        stop("Plot method requires 'median_value' column. Please call summarize() first with stats = c('median', 'quantile')")
-      }
-      
-      # Check for quantile columns
-      quantile_cols <- grep("^q[0-9]", columns, value = TRUE)
-      if (length(quantile_cols) < 2) {
-        stop("Plot method requires quantile columns for confidence bands. Please call summarize() with stats = c('median', 'quantile')")
-      }
-      
+
       # Detect grouping variables dynamically
       available_categories <- self$config$get_category_names()
       group_vars <- if (length(available_categories) > 0) {
@@ -786,12 +813,53 @@ MetaRVMSummary <- R6::R6Class(
         character(0)
       }
 
-      if (length(group_vars) == 0) {
-        stop("Data must be grouped by at least one demographic variable")
+      # Instance trajectory plotting mode
+      if (identical(self$type, "instances")) {
+        color_var <- if ("disease_state" %in% columns) "disease_state" else "instance"
+
+        p <- ggplot(self$data, aes(x = date, y = value,
+                                   color = .data[[color_var]],
+                                   group = interaction(.data[["instance"]], .data[[color_var]], drop = TRUE))) +
+          geom_line(alpha = 0.45, linewidth = 0.5)
+
+        if (length(group_vars) == 1) {
+          p <- p + facet_wrap(stats::as.formula(paste("~", group_vars[1])), scales = "free_y")
+        } else if (length(group_vars) >= 2) {
+          p <- p + facet_grid(stats::as.formula(paste(group_vars[1], "~", group_vars[2])), scales = "free_y")
+        }
+
+        p <- p +
+          labs(
+            title = title %||% "Simulation Trajectories",
+            x = "Date",
+            y = "Value",
+            color = tools::toTitleCase(gsub("_", " ", color_var))
+          ) +
+          theme +
+          theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+        return(p)
       }
       
+      # Check if we have the required columns for plotting
+      if (!("median_value" %in% columns)) {
+        stop("Plot method requires 'median_value' column. Please call summarize() first with stats = c('median', 'quantile')")
+      }
+      
+      # Check for quantile columns
+      quantile_cols <- grep("^q[0-9]+$", columns, value = TRUE)
+      quantile_levels <- suppressWarnings(as.numeric(sub("^q", "", quantile_cols)))
+      valid_q_idx <- which(!is.na(quantile_levels))
+      if (length(valid_q_idx) < 2) {
+        stop("Plot method requires quantile columns for confidence bands. Please call summarize() with stats = c('median', 'quantile')")
+      }
+      quantile_cols <- quantile_cols[valid_q_idx][order(quantile_levels[valid_q_idx])]
+      
       # Create faceting strategy based on number of grouping variables
-      if (length(group_vars) == 1) {
+      if (length(group_vars) == 0) {
+        facet_formula <- NULL
+        color_var <- "disease_state"
+      } else if (length(group_vars) == 1) {
         # Single grouping variable: facet by that variable, color by disease_state
         facet_formula <- as.formula(paste("~", group_vars[1]))
         color_var <- "disease_state"
@@ -808,16 +876,15 @@ MetaRVMSummary <- R6::R6Class(
         color_var <- group_vars[3]
       }
       
-      # Use first and last quantile columns for confidence bands
+      # Use lowest and highest quantile columns for confidence bands
       ci_lower_col <- quantile_cols[1]
       ci_upper_col <- quantile_cols[length(quantile_cols)]
       
       # Create the plot
-      p <- ggplot(self$data, aes(x = date, y = median_value, color = get(color_var))) +
+      p <- ggplot(self$data, aes(x = date, y = median_value, color = .data[[color_var]])) +
         geom_line(linewidth = 1) +
-        geom_ribbon(aes(ymin = get(ci_lower_col), ymax = get(ci_upper_col), 
-                      fill = get(color_var)), alpha = 0.2, color = NA) +
-        facet_grid(facet_formula, scales = "free_y") +
+        geom_ribbon(aes(ymin = .data[[ci_lower_col]], ymax = .data[[ci_upper_col]],
+                      fill = .data[[color_var]]), alpha = 0.2, color = NA) +
         labs(
           title = title %||% paste0("Median Outcomes with ", ci_level*100, "% Empirical Quantiles"),
           x = "Date",
@@ -827,6 +894,10 @@ MetaRVMSummary <- R6::R6Class(
         ) +
         theme +
         theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+      if (!is.null(facet_formula)) {
+        p <- p + facet_grid(facet_formula, scales = "free_y")
+      }
       
       return(p)
     }

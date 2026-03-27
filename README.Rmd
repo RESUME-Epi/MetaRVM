@@ -18,6 +18,10 @@ knitr::opts_chunk$set(
 ```
 
 <!-- badges: start -->
+[![R-CMD-check](https://github.com/RESUME-Epi/MetaRVM/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/RESUME-Epi/MetaRVM/actions/workflows/R-CMD-check.yaml)
+[![Codecov test coverage](https://codecov.io/gh/RESUME-Epi/MetaRVM/branch/main/graph/badge.svg)](https://app.codecov.io/gh/RESUME-Epi/MetaRVM)
+[![Lifecycle: maturing](https://img.shields.io/badge/lifecycle-maturing-blue.svg)](https://lifecycle.r-lib.org/articles/stages.html)
+[![pkgdown site](https://img.shields.io/badge/docs-pkgdown-blue.svg)](https://RESUME-Epi.github.io/MetaRVM/)
 [![CRAN status](https://www.r-pkg.org/badges/version/MetaRVM)](https://CRAN.R-project.org/package=MetaRVM)
 [![CRAN downloads](https://cranlogs.r-pkg.org/badges/MetaRVM)](https://cran.r-project.org/package=MetaRVM)
 <!-- badges: end -->
@@ -88,6 +92,9 @@ simulation_config:
   start_date: 10/01/2023 # m/d/Y
   length: 150
   nsim: 1
+  nrep: 1
+  simulation_mode: deterministic
+  random_seed: 42
 
 ```
 
@@ -122,6 +129,13 @@ ggplot(hosp_sum, aes(date, total)) +
 At the start of a simulation, nearly all individuals are in `S`, with optional seeding of initial infections and/or vaccinated individuals in `V`. When susceptible or vaccinated individuals come into contact with infectious individuals, they become exposed (`E`) based on age/stratum-specific forces of infection and vaccine protection. Exposed individuals then progress through asymptomatic, presymptomatic, and symptomatic infectious states before either recovering, being hospitalized, or dying. Vaccinated and recovered immunity can wane over time, returning individuals to the susceptible pool, which allows `MetaRVM` to represent multiple respiratory pathogens with different natural histories.
 
 Transmission is stratified by user-defined demographic groups (e.g., age, zone, race). Time-varying mixing matrices define how these strata interact (daytime vs. nighttime, weekday vs. weekend), and `MetaRVM` computes stratum-specific forces of infection for susceptible and vaccinated individuals. Hospitalized and deceased individuals are excluded from the “effective” mixing population. The same model can be run in deterministic or stochastic mode, and parameters are supplied through a YAML configuration.
+
+For simulation control:
+- `nsim` is the number of parameter sets (rows in sampled parameter matrices when distributions are used)
+- `nrep` is the number of simulation replicates per parameter set
+- total runs = `nsim * nrep`
+- `simulation_mode` chooses `"deterministic"` or `"stochastic"`
+- `random_seed` ensures reproducibility for both parameter sampling and stochastic trajectories
 
 ---
 
@@ -209,4 +223,3 @@ List of vignettes:
 For the complete function reference, visit:
 
 **https://resume-epi.github.io/MetaRVM/reference/**
-

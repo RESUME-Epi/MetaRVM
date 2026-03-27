@@ -20,7 +20,7 @@ This vignette demonstrates how to run a `metaRVM` simulation using the example c
 
 ## Locating the Example Files
 
-The `metaRVM` package includes a set of example files in its `extdata` directory. To run the example, we first need to locate these files. The `system.file()` function in R is the recommended way to do this, as it will find the files wherever the package is installed.
+The `metaRVM` package includes a set of example files in its `extdata` directory. To run the example, these files must first be located. The `system.file()` function in R is the recommended way to do this, as it finds the files wherever the package is installed.
 
 ```{r}
 # Locate the example YAML configuration file
@@ -57,11 +57,14 @@ simulation_config:
   start_date: 01/01/2023 # m/d/Y
   length: 150
   nsim: 1
+  nrep: 1
+  simulation_mode: deterministic
+  random_seed: 42
 ```
 
 ## Running the Simulation
 
-Once we have the path to the configuration file, the simulation can be run using the `metaRVM()` function.
+Once the path to the configuration file is available, the simulation can be run using the `metaRVM()` function.
 
 ```{r, results='hide'}
 # Load the metaRVM library
@@ -221,18 +224,22 @@ simulation_config:
   start_date: 01/01/2023 # m/d/Y
   length: 150
   nsim: 20 # Increased nsim for meaningful summary statistics
+  nrep: 1
+  simulation_mode: deterministic
+  random_seed: 42
 ```
 
-To run a simulation with this configuration, we pass the file path to `metaRVM`.
+To run a simulation with this configuration, the file path is passed to `metaRVM`.
 
 ```{r, results='hide', message=FALSE, warning=FALSE}
 # Run the simulation with the new configuration
 sim_out_dist <- metaRVM(yaml_file_dist)
 ```
 
+
 ## Generating Summary Statistics across Demographics
 
-The `MetaRVMResults` class provides basic summarization functionality across multiple instances of the simulation, when one or more disease parameters are specified via distribution, and there are more than one simulations per configurations. The `summarize` method generates output of class `MetaRVMSummary` which has a `plot` method available to use. Now that we have run a simulation with parameter distributions, we can use the `summarize` method to see the variability in the results.
+The `MetaRVMResults` class provides basic summarization functionality across multiple instances of the simulation, when one or more disease parameters are specified via distribution, and there are more than one simulations per configurations. The `summarize` method generates output of class `MetaRVMSummary` which has a `plot` method available. After a simulation is run with parameter distributions, the `summarize` method can be used to inspect variability in the results.
 
 ```{r, fig.height = 4, fig.width = 8, fig.align = "center"}
 library(ggplot2)
@@ -250,19 +257,51 @@ hospital_summary_dist$plot() + ggtitle("Daily Hospitalizations by Age Group (wit
 ```
 
 
-```{r, fig.height = 6, fig.width = 8, fig.align = "center"}
+# Running a Stochastic Simulation with Static Parameters
 
-# Summary of hospitalizations by two user-defined categories
-hospital_summary <- sim_out_dist$summarize(
-  group_by = c("age", "zone"),
-  disease_states = "n_IsympH",
-  stats = c("median", "quantile"),
-  quantiles = c(0.05, 0.95)
-)
-hospital_summary
+A stochastic simulation can also be run by setting `simulation_mode: stochastic`.
 
-# visualize the summary
-hospital_summary$plot() + ggtitle("Daily Hospitalizations by Age and Zone") + theme_bw()
+An example YAML file with parameter distributions is included in the package, `example_config_stochastic.yaml`. Here is its content:
+
+```{r}
+# Locate the example YAML configuration file with distributions
+yaml_file_stoch <- system.file("extdata", "example_config_stochastic.yaml", package = "MetaRVM")
+```
+
+```yaml
+run_id: ExampleRun_Stochastic_Static
+population_data:
+  initialization: population_init_n24.csv
+  vaccination: vaccination_n24.csv
+mixing_matrix:
+  weekday_day: m_weekday_day.csv
+  weekday_night: m_weekday_night.csv
+  weekend_day: m_weekend_day.csv
+  weekend_night: m_weekend_night.csv
+disease_params:
+  ts: 0.5
+  ve: 0.4
+  dv: 180
+  dp: 1
+  de: 3
+  da: 5
+  ds: 6
+  dh: 8
+  dr: 180
+  pea: 0.3
+  psr: 0.95
+  phr: 0.97
+simulation_config:
+  start_date: 01/01/2023 # m/d/Y
+  length: 150
+  nsim: 1
+  nrep: 5
+  simulation_mode: stochastic
+  random_seed: 42
+```
+
+```{r, results='hide', message=FALSE, warning=FALSE}
+sim_out_stoch <- metaRVM(yaml_file_stoch)
 ```
 
 # Specifying Disease Parameters by Demographics
@@ -317,6 +356,9 @@ simulation_config:
   start_date: 01/01/2023 # m/d/Y
   length: 150
   nsim: 20
+  nrep: 1
+  simulation_mode: deterministic
+  random_seed: 42
 ```
 
 Now, let's run the simulation with this configuration.
@@ -326,7 +368,7 @@ Now, let's run the simulation with this configuration.
 sim_out_subgroup <- metaRVM(yaml_file_subgroup)
 ```
 
-We can now plot the results to see the impact of the subgroup-specific parameters. For example, we can compare the number of hospitalizations in the "65+" age group, which has a `dh` of 10, to other age groups that use the global `dh` drawn from a lognormal distribution.
+The results can now be plotted to evaluate the impact of subgroup-specific parameters. For example, the number of hospitalizations in the "65+" age group, which has a `dh` of 10, can be compared to other age groups that use the global `dh` drawn from a lognormal distribution.
 
 ```{r, fig.height = 6, fig.width = 8, fig.align = "center"}
 # Summarize hospitalizations by age group
