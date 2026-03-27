@@ -14,7 +14,7 @@
 ## Citation
 
 Source:
-[`inst/CITATION`](https://github.com/RESUME-Epi/MetaRVM/blob/main/inst/CITATION)
+[`inst/CITATION`](https://github.com/RESUME-Epi/MetaRVM/blob/v2.1.0/inst/CITATION)
 
 Fadikar A, Stevens A, Rimer S, Martinez-Moyano I, Collier N, Mabil C,
 Jorgensen E, Ruestow P, McSorley VE, Ozik J, Macal C (2025). "Developing
