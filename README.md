@@ -57,7 +57,7 @@ Full documentation is available at:
 
 ### Installation
 
-The current CRAN release is **2.0.0**. Install it with:
+The current CRAN release is **2.1.0**. Install it with:
 
 ``` r
 install.packages("MetaRVM")
