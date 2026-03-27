@@ -18,6 +18,10 @@ knitr::opts_chunk$set(
 ```
 
 <!-- badges: start -->
+[![R-CMD-check](https://github.com/RESUME-Epi/MetaRVM/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/RESUME-Epi/MetaRVM/actions/workflows/R-CMD-check.yaml)
+[![Codecov test coverage](https://codecov.io/gh/RESUME-Epi/MetaRVM/branch/main/graph/badge.svg)](https://app.codecov.io/gh/RESUME-Epi/MetaRVM)
+[![Lifecycle: maturing](https://img.shields.io/badge/lifecycle-maturing-blue.svg)](https://lifecycle.r-lib.org/articles/stages.html)
+[![pkgdown site](https://img.shields.io/badge/docs-pkgdown-blue.svg)](https://RESUME-Epi.github.io/MetaRVM/)
 [![CRAN status](https://www.r-pkg.org/badges/version/MetaRVM)](https://CRAN.R-project.org/package=MetaRVM)
 [![CRAN downloads](https://cranlogs.r-pkg.org/badges/MetaRVM)](https://cran.r-project.org/package=MetaRVM)
 <!-- badges: end -->
@@ -48,14 +52,6 @@ The current CRAN release is **2.0.0**. Install it with:
 
 ``` r
 install.packages("MetaRVM")
-```
-
-To install the development branch for **MetaRVM 2.1.0** (branch:
-`feature/simulation-mode-config`) directly from GitHub:
-
-``` r
-# install.packages("remotes")
-remotes::install_github("RESUME-Epi/MetaRVM@feature/simulation-mode-config")
 ```
 
 ### Running a simulation
