@@ -39,6 +39,8 @@ Arindam Fadikar
 
 - [`MetaRVMResults$print()`](#method-MetaRVMResults-print)
 
+- [`MetaRVMResults$plot()`](#method-MetaRVMResults-plot)
+
 - [`MetaRVMResults$subset_data()`](#method-MetaRVMResults-subset_data)
 
 - [`MetaRVMResults$summarize()`](#method-MetaRVMResults-summarize)
@@ -95,6 +97,73 @@ Print summary of results
 #### Returns
 
 Self (invisible)
+
+------------------------------------------------------------------------
+
+### Method [`plot()`](https://rdrr.io/r/graphics/plot.default.html)
+
+Plot simulation trajectories directly from results
+
+#### Usage
+
+    MetaRVMResults$plot(
+      group_by = character(0),
+      disease_states = NULL,
+      date_range = NULL,
+      instances = NULL,
+      stats = NULL,
+      quantiles = c(0.25, 0.75),
+      exclude_p_columns = TRUE,
+      ci_level = 0.95,
+      theme = theme_minimal(),
+      title = NULL
+    )
+
+#### Arguments
+
+- `group_by`:
+
+  Vector of demographic category names to group/facet by
+
+- `disease_states`:
+
+  Optional disease states to include
+
+- `date_range`:
+
+  Optional date range for filtering
+
+- `instances`:
+
+  Optional instance IDs to include
+
+- `stats`:
+
+  Statistics for summary plotting. If NULL, plots raw trajectories.
+
+- `quantiles`:
+
+  Quantiles for uncertainty bands when summary plotting
+
+- `exclude_p_columns`:
+
+  Logical, whether to exclude p\_ columns (default: TRUE)
+
+- `ci_level`:
+
+  Confidence level label used in summary plot title
+
+- `theme`:
+
+  ggplot2 theme function (default: theme_minimal())
+
+- `title`:
+
+  Optional custom title
+
+#### Returns
+
+ggplot object
 
 ------------------------------------------------------------------------
 
@@ -225,11 +294,11 @@ head(results_obj$results)
 #>          date    age   race  zone disease_state        value instance
 #>        <Date> <char> <char> <int>        <char>        <num>    <int>
 #> 1: 2023-10-01   0-17      A    11             D 2.252583e-04        1
-#> 2: 2023-10-01   0-17      A    11             E 1.305178e+01        1
+#> 2: 2023-10-01   0-17      A    11             E 1.365434e+01        1
 #> 3: 2023-10-01   0-17      A    11             H 2.304447e-01        1
-#> 4: 2023-10-01   0-17      A    11         I_all 2.731688e+01        1
-#> 5: 2023-10-01   0-17      A    11       I_asymp 3.227854e-01        1
-#> 6: 2023-10-01   0-17      A    11         I_eff 2.476245e+01        1
+#> 4: 2023-10-01   0-17      A    11         I_all 2.742619e+01        1
+#> 5: 2023-10-01   0-17      A    11       I_asymp 3.555784e-01        1
+#> 6: 2023-10-01   0-17      A    11         I_eff 2.483657e+01        1
 
 # Subset data with multiple filters
 subset_data <- results_obj$subset_data(

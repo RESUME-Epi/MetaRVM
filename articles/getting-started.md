@@ -3,12 +3,12 @@
 ## Introduction
 
 MetaRVM is a comprehensive R package for simulating respiratory virus
-epidemics using meta-population compartmental models. This vignette will
-guide you through the basic usage of the package.
+epidemics using meta-population compartmental models. This vignette
+describes the basic usage of the package.
 
 ## Installation
 
-You can install the development version of MetaRVM from GitHub:
+The development version of MetaRVM can be installed from GitHub:
 
 ``` r
 # install.packages("devtools")
@@ -28,10 +28,10 @@ options(odin.verbose = FALSE)
 This example shows how to run a basic meta-population simulation.
 
 The `metaRVM` package includes a set of example files in its `extdata`
-directory. To run the example, we first need to locate these files. The
+directory. To run the example, these files must first be located. The
 [`system.file()`](https://rdrr.io/r/base/system.file.html) function in R
-is the recommended way to do this, as it will find the files wherever
-the package is installed.
+is the recommended way to do this, as it finds the files wherever the
+package is installed.
 
 ``` r
 # Locate the example YAML configuration file
@@ -72,6 +72,9 @@ simulation_config:
   start_date: 01/01/2023 # m/d/Y
   length: 150
   nsim: 1
+  nrep: 1
+  simulation_mode: deterministic
+  random_seed: 42
 ```
 
 For a detailed explanation of all the configuration options, please see
@@ -79,8 +82,8 @@ the `yaml-configuration.html` vignette.
 
 ## Running the Simulation
 
-Once we have the path to the configuration file, the simulation can be
-run using the
+Once the path to the configuration file is available, the simulation can
+be run using the
 [`metaRVM()`](https://RESUME-Epi.github.io/MetaRVM/reference/metaRVM.md)
 function.
 
@@ -92,8 +95,8 @@ library(MetaRVM)
 sim_out <- metaRVM(yaml_file)
 #> Loading required namespace: pkgbuild
 #> Generating model in c
-#> ℹ Re-compiling odin8b079812 (debug build)
-#> ℹ Loading odin8b079812
+#> ℹ Re-compiling odinf64d486c (debug build)
+#> ℹ Loading odinf64d486c
 ```
 
 ``` r
@@ -101,19 +104,22 @@ print(sim_out)
 #> MetaRVM Results Object
 #> =====================
 #> Instances: 1 
-#> Populations: 24 
+#> Populations: 
 #> Date range: 2023-10-01 to 2024-02-27 
-#> Total observations: 111600 
-#> Disease states: D, E, H, I_all, I_asymp, I_eff, I_presymp, I_symp, P, R, S, V, cum_V, mob_pop, n_EI, n_EIpresymp, n_HD, n_HR, n_HRD, n_IasympR, n_IsympH, n_IsympR, n_IsympRH, n_SE, n_SV, n_VE, n_VS, n_preIsymp, p_HRD, p_SE, p_VE
+#> Parameter sets (nsim): 1 
+#> Replicates per set (nrep): 1 
+#> Simulation mode: deterministic 
+#> Total observations: 388800 
+#> Disease states: D, E, H, I_all, I_asymp, I_eff, I_presymp, I_symp, P, R, S, S_alloc, S_eff_prod, S_src_int, V, V_alloc, V_src_int, cum_V, mob_pop, n_EI, n_EIpresymp, n_HD, n_HR, n_HRD, n_IasympR, n_IsympH, n_IsympR, n_IsympRH, n_RS, n_SE, n_SE_eff, n_SV, n_VE, n_VS, n_preIsymp, p_HRD, p_RS, p_SE, p_VE
 head(sim_out$results)
 #>          date    age   race  zone disease_state        value instance
 #>        <Date> <char> <char> <int>        <char>        <num>    <int>
 #> 1: 2023-10-01   0-17      A    11             D 2.252583e-04        1
-#> 2: 2023-10-01   0-17      A    11             E 1.305178e+01        1
+#> 2: 2023-10-01   0-17      A    11             E 1.365434e+01        1
 #> 3: 2023-10-01   0-17      A    11             H 2.304447e-01        1
-#> 4: 2023-10-01   0-17      A    11         I_all 2.731688e+01        1
-#> 5: 2023-10-01   0-17      A    11       I_asymp 3.227854e-01        1
-#> 6: 2023-10-01   0-17      A    11         I_eff 2.476245e+01        1
+#> 4: 2023-10-01   0-17      A    11         I_all 2.742619e+01        1
+#> 5: 2023-10-01   0-17      A    11       I_asymp 3.555784e-01        1
+#> 6: 2023-10-01   0-17      A    11         I_eff 2.483657e+01        1
 ```
 
 For more details on running `metaRVM`, refer to the

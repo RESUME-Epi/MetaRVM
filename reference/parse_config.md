@@ -66,6 +66,14 @@ If `return_object = FALSE` (default), returns a named list containing:
 
   Number of simulation instances
 
+- nrep:
+
+  Number of stochastic replicates per parameter set
+
+- simulation_mode:
+
+  Simulation mode: `"deterministic"` or `"stochastic"`
+
 - random_seed:
 
   Random seed used (if any)
@@ -92,6 +100,11 @@ sections:
   stochastic simulations or stochastic parameters
 
 - `nsim`: Number of simulation instances (default: 1)
+
+- `nrep`: Number of stochastic replicates per parameter set (default: 1)
+
+- `simulation_mode`: Optional simulation mode. Must be one of
+  `"deterministic"` or `"stochastic"` (default: `"deterministic"`).
 
 - `start_date`: Simulation start date in MM/DD/YYYY format
 
@@ -205,16 +218,17 @@ config_obj <- parse_config(example_config, return_object = TRUE)
 config_obj$get("N_pop")
 #> [1] 24
 config_obj$list_parameters()
-#>  [1] "N_pop"          "pop_map"        "category_names" "S_ini"         
-#>  [5] "E_ini"          "I_asymp_ini"    "I_presymp_ini"  "I_symp_ini"    
-#>  [9] "H_ini"          "D_ini"          "P_ini"          "V_ini"         
-#> [13] "R_ini"          "vac_time_id"    "vac_counts"     "vac_mat"       
-#> [17] "m_wd_d"         "m_wd_n"         "m_we_d"         "m_we_n"        
-#> [21] "ts"             "ve"             "dv"             "de"            
-#> [25] "dp"             "da"             "ds"             "dh"            
-#> [29] "dr"             "pea"            "psr"            "phr"           
-#> [33] "start_date"     "sim_length"     "nsim"           "random_seed"   
-#> [37] "delta_t"        "chk_file_names" "chk_time_steps" "do_chk"        
+#>  [1] "N_pop"           "pop_map"         "category_names"  "S_ini"          
+#>  [5] "E_ini"           "I_asymp_ini"     "I_presymp_ini"   "I_symp_ini"     
+#>  [9] "H_ini"           "D_ini"           "P_ini"           "V_ini"          
+#> [13] "R_ini"           "vac_time_id"     "vac_counts"      "vac_mat"        
+#> [17] "m_wd_d"          "m_wd_n"          "m_we_d"          "m_we_n"         
+#> [21] "ts"              "ve"              "dv"              "de"             
+#> [25] "dp"              "da"              "ds"              "dh"             
+#> [29] "dr"              "pea"             "psr"             "phr"            
+#> [33] "start_date"      "sim_length"      "nsim"            "nrep"           
+#> [37] "simulation_mode" "random_seed"     "delta_t"         "chk_file_names" 
+#> [41] "chk_time_steps"  "do_chk"         
 
 # Use with MetaRVM simulation
 results <- metaRVM(config_obj)

@@ -83,6 +83,9 @@ simulation_config:
   start_date: 10/01/2023 # m/d/Y
   length: 150
   nsim: 1
+  nrep: 1
+  simulation_mode: deterministic
+  random_seed: 42
 ```
 
 ``` r
@@ -137,6 +140,13 @@ vaccinated individuals. Hospitalized and deceased individuals are
 excluded from the “effective” mixing population. The same model can be
 run in deterministic or stochastic mode, and parameters are supplied
 through a YAML configuration.
+
+For simulation control: - `nsim` is the number of parameter sets (rows
+in sampled parameter matrices when distributions are used) - `nrep` is
+the number of simulation replicates per parameter set - total runs =
+`nsim * nrep` - `simulation_mode` chooses `"deterministic"` or
+`"stochastic"` - `random_seed` ensures reproducibility for both
+parameter sampling and stochastic trajectories
 
 ------------------------------------------------------------------------
 

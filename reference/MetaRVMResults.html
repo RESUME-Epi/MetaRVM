@@ -11,7 +11,7 @@ subsetting, and visualization with flexible demographic groupings."><meta proper
 
     <a class="navbar-brand me-2" href="../index.html">MetaRVM</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.0.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.1.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -50,7 +50,7 @@ subsetting, and visualization with flexible demographic groupings."><meta proper
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="../logo.png" class="logo" alt=""><h1>MetaRVM Results Class</h1>
-      <small class="dont-index">Source: <a href="https://github.com/RESUME-Epi/MetaRVM/blob/v2.0.0/R/classes.R" class="external-link"><code>R/classes.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/RESUME-Epi/MetaRVM/blob/main/R/classes.R" class="external-link"><code>R/classes.R</code></a></small>
       <div class="d-none name"><code>MetaRVMResults.Rd</code></div>
     </div>
 
@@ -96,6 +96,7 @@ plus method chaining for streamlined analysis workflows.</p>
 
 <ul><li><p><a href="#method-MetaRVMResults-new"><code>MetaRVMResults$new()</code></a></p></li>
 <li><p><a href="#method-MetaRVMResults-print"><code>MetaRVMResults$print()</code></a></p></li>
+<li><p><a href="#method-MetaRVMResults-plot"><code>MetaRVMResults$plot()</code></a></p></li>
 <li><p><a href="#method-MetaRVMResults-subset_data"><code>MetaRVMResults$subset_data()</code></a></p></li>
 <li><p><a href="#method-MetaRVMResults-summarize"><code>MetaRVMResults$summarize()</code></a></p></li>
 <li><p><a href="#method-MetaRVMResults-clone"><code>MetaRVMResults$clone()</code></a></p></li>
@@ -148,10 +149,77 @@ plus method chaining for streamlined analysis workflows.</p>
 <p>Self (invisible)</p>
 </div>
 
+</div><p></p><hr><a id="method-MetaRVMResults-plot"></a><div class="section">
+<h3 id="method-plot-">Method <code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code><a class="anchor" aria-label="anchor" href="#method-plot-"></a></h3>
+<p>Plot simulation trajectories directly from results</p><div class="section">
+<h4 id="usage-2">Usage<a class="anchor" aria-label="anchor" href="#usage-2"></a></h4>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">MetaRVMResults</span><span class="op">$</span><span class="fu">plot</span><span class="op">(</span></span>
+<span>  group_by <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">character</a></span><span class="op">(</span><span class="fl">0</span><span class="op">)</span>,</span>
+<span>  disease_states <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  date_range <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  instances <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  stats <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  quantiles <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.25</span>, <span class="fl">0.75</span><span class="op">)</span>,</span>
+<span>  exclude_p_columns <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  ci_level <span class="op">=</span> <span class="fl">0.95</span>,</span>
+<span>  theme <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html" class="external-link">theme_minimal</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span>  title <span class="op">=</span> <span class="cn">NULL</span></span>
+<span><span class="op">)</span></span></code></pre></div><p></p></div>
+</div>
+
+<div class="section">
+<h4 id="arguments-1">Arguments<a class="anchor" aria-label="anchor" href="#arguments-1"></a></h4>
+<p></p><div class="arguments"><dl><dt><code>group_by</code></dt>
+<dd><p>Vector of demographic category names to group/facet by</p></dd>
+
+
+<dt><code>disease_states</code></dt>
+<dd><p>Optional disease states to include</p></dd>
+
+
+<dt><code>date_range</code></dt>
+<dd><p>Optional date range for filtering</p></dd>
+
+
+<dt><code>instances</code></dt>
+<dd><p>Optional instance IDs to include</p></dd>
+
+
+<dt><code>stats</code></dt>
+<dd><p>Statistics for summary plotting. If NULL, plots raw trajectories.</p></dd>
+
+
+<dt><code>quantiles</code></dt>
+<dd><p>Quantiles for uncertainty bands when summary plotting</p></dd>
+
+
+<dt><code>exclude_p_columns</code></dt>
+<dd><p>Logical, whether to exclude p_ columns (default: TRUE)</p></dd>
+
+
+<dt><code>ci_level</code></dt>
+<dd><p>Confidence level label used in summary plot title</p></dd>
+
+
+<dt><code>theme</code></dt>
+<dd><p>ggplot2 theme function (default: theme_minimal())</p></dd>
+
+
+<dt><code>title</code></dt>
+<dd><p>Optional custom title</p></dd>
+
+
+</dl><p></p></div>
+</div>
+<div class="section">
+<h4 id="returns-2">Returns<a class="anchor" aria-label="anchor" href="#returns-2"></a></h4>
+<p>ggplot object</p>
+</div>
+
 </div><p></p><hr><a id="method-MetaRVMResults-subset_data"></a><div class="section">
 <h3 id="method-subset-data-">Method <code>subset_data()</code><a class="anchor" aria-label="anchor" href="#method-subset-data-"></a></h3>
 <p>Subset the data based on any combination of parameters</p><div class="section">
-<h4 id="usage-2">Usage<a class="anchor" aria-label="anchor" href="#usage-2"></a></h4>
+<h4 id="usage-3">Usage<a class="anchor" aria-label="anchor" href="#usage-3"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">MetaRVMResults</span><span class="op">$</span><span class="fu">subset_data</span><span class="op">(</span></span>
 <span>  <span class="va">...</span>,</span>
 <span>  disease_states <span class="op">=</span> <span class="cn">NULL</span>,</span>
@@ -162,7 +230,7 @@ plus method chaining for streamlined analysis workflows.</p>
 </div>
 
 <div class="section">
-<h4 id="arguments-1">Arguments<a class="anchor" aria-label="anchor" href="#arguments-1"></a></h4>
+<h4 id="arguments-2">Arguments<a class="anchor" aria-label="anchor" href="#arguments-2"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>...</code></dt>
 <dd><p>Named arguments for category filters (e.g., age = c("0-17"), income = c("low", "high"))</p></dd>
 
@@ -186,14 +254,14 @@ plus method chaining for streamlined analysis workflows.</p>
 </dl><p></p></div>
 </div>
 <div class="section">
-<h4 id="returns-2">Returns<a class="anchor" aria-label="anchor" href="#returns-2"></a></h4>
+<h4 id="returns-3">Returns<a class="anchor" aria-label="anchor" href="#returns-3"></a></h4>
 <p>MetaRVMResults object with subset of results</p>
 </div>
 
 </div><p></p><hr><a id="method-MetaRVMResults-summarize"></a><div class="section">
 <h3 id="method-summarize-">Method <code>summarize()</code><a class="anchor" aria-label="anchor" href="#method-summarize-"></a></h3>
 <p>Summarize results across specified demographic characteristics</p><div class="section">
-<h4 id="usage-3">Usage<a class="anchor" aria-label="anchor" href="#usage-3"></a></h4>
+<h4 id="usage-4">Usage<a class="anchor" aria-label="anchor" href="#usage-4"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">MetaRVMResults</span><span class="op">$</span><span class="fu">summarize</span><span class="op">(</span></span>
 <span>  <span class="va">group_by</span>,</span>
 <span>  disease_states <span class="op">=</span> <span class="cn">NULL</span>,</span>
@@ -205,7 +273,7 @@ plus method chaining for streamlined analysis workflows.</p>
 </div>
 
 <div class="section">
-<h4 id="arguments-2">Arguments<a class="anchor" aria-label="anchor" href="#arguments-2"></a></h4>
+<h4 id="arguments-3">Arguments<a class="anchor" aria-label="anchor" href="#arguments-3"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>group_by</code></dt>
 <dd><p>Vector of demographic category names to group by. Must be valid category
 names from the configuration (e.g., c("age", "zone"), c("income_level", "occupation")).
@@ -235,19 +303,19 @@ Use config$get_category_names() to see available categories.</p></dd>
 </dl><p></p></div>
 </div>
 <div class="section">
-<h4 id="returns-3">Returns<a class="anchor" aria-label="anchor" href="#returns-3"></a></h4>
+<h4 id="returns-4">Returns<a class="anchor" aria-label="anchor" href="#returns-4"></a></h4>
 <p>data.table with summarized time series data or all instances if stats = NULL</p>
 </div>
 
 </div><p></p><hr><a id="method-MetaRVMResults-clone"></a><div class="section">
 <h3 id="method-clone-">Method <code>clone()</code><a class="anchor" aria-label="anchor" href="#method-clone-"></a></h3>
 <p>The objects of this class are cloneable with this method.</p><div class="section">
-<h4 id="usage-4">Usage<a class="anchor" aria-label="anchor" href="#usage-4"></a></h4>
+<h4 id="usage-5">Usage<a class="anchor" aria-label="anchor" href="#usage-5"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">MetaRVMResults</span><span class="op">$</span><span class="fu">clone</span><span class="op">(</span>deep <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
-<h4 id="arguments-3">Arguments<a class="anchor" aria-label="anchor" href="#arguments-3"></a></h4>
+<h4 id="arguments-4">Arguments<a class="anchor" aria-label="anchor" href="#arguments-4"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>deep</code></dt>
 <dd><p>Whether to make a deep clone.</p></dd>
 
@@ -272,11 +340,11 @@ Use config$get_category_names() to see available categories.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span>          date    age   race  zone disease_state        value instance</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>        &lt;Date&gt; &lt;char&gt; &lt;char&gt; &lt;int&gt;        &lt;char&gt;        &lt;num&gt;    &lt;int&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 1: 2023-10-01   0-17      A    11             D 2.252583e-04        1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2: 2023-10-01   0-17      A    11             E 1.305178e+01        1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2: 2023-10-01   0-17      A    11             E 1.365434e+01        1</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 3: 2023-10-01   0-17      A    11             H 2.304447e-01        1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4: 2023-10-01   0-17      A    11         I_all 2.731688e+01        1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5: 2023-10-01   0-17      A    11       I_asymp 3.227854e-01        1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6: 2023-10-01   0-17      A    11         I_eff 2.476245e+01        1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4: 2023-10-01   0-17      A    11         I_all 2.742619e+01        1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5: 2023-10-01   0-17      A    11       I_asymp 3.555784e-01        1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6: 2023-10-01   0-17      A    11         I_eff 2.483657e+01        1</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Subset data with multiple filters</span></span></span>
 <span class="r-in"><span><span class="va">subset_data</span> <span class="op">&lt;-</span> <span class="va">results_obj</span><span class="op">$</span><span class="fu">subset_data</span><span class="op">(</span></span></span>

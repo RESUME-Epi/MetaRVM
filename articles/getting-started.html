@@ -26,7 +26,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">MetaRVM</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.0.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.1.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -82,7 +82,7 @@
       <img src="../logo.png" class="logo" alt=""><h1>Getting Started with MetaRVM</h1>
             
       
-      <small class="dont-index">Source: <a href="https://github.com/RESUME-Epi/MetaRVM/blob/v2.0.0/vignettes/getting-started.Rmd" class="external-link"><code>vignettes/getting-started.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/RESUME-Epi/MetaRVM/blob/main/vignettes/getting-started.Rmd" class="external-link"><code>vignettes/getting-started.Rmd</code></a></small>
       <div class="d-none name"><code>getting-started.Rmd</code></div>
     </div>
 
@@ -92,13 +92,13 @@
 <h2 id="introduction">Introduction<a class="anchor" aria-label="anchor" href="#introduction"></a>
 </h2>
 <p>MetaRVM is a comprehensive R package for simulating respiratory virus
-epidemics using meta-population compartmental models. This vignette will
-guide you through the basic usage of the package.</p>
+epidemics using meta-population compartmental models. This vignette
+describes the basic usage of the package.</p>
 </div>
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h2>
-<p>You can install the development version of MetaRVM from GitHub:</p>
+<p>The development version of MetaRVM can be installed from GitHub:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># install.packages("devtools")</span></span>
 <span><span class="fu">devtools</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"RESUME-Epi/MetaRVM"</span><span class="op">)</span></span></code></pre></div>
@@ -116,10 +116,10 @@ guide you through the basic usage of the package.</p>
 </h2>
 <p>This example shows how to run a basic meta-population simulation.</p>
 <p>The <code>metaRVM</code> package includes a set of example files in
-its <code>extdata</code> directory. To run the example, we first need to
-locate these files. The <code><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file()</a></code> function in R is the
-recommended way to do this, as it will find the files wherever the
-package is installed.</p>
+its <code>extdata</code> directory. To run the example, these files must
+first be located. The <code><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file()</a></code> function in R is the
+recommended way to do this, as it finds the files wherever the package
+is installed.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Locate the example YAML configuration file</span></span>
 <span><span class="va">yaml_file</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, <span class="st">"example_config.yaml"</span>, package <span class="op">=</span> <span class="st">"MetaRVM"</span><span class="op">)</span></span>
@@ -154,15 +154,18 @@ paths. Below is the content of the yaml file.</p>
 <span id="cb4-23"><a href="#cb4-23" tabindex="-1"></a><span class="fu">simulation_config</span><span class="kw">:</span></span>
 <span id="cb4-24"><a href="#cb4-24" tabindex="-1"></a><span class="at">  </span><span class="fu">start_date</span><span class="kw">:</span><span class="at"> 01/01/2023</span><span class="co"> # m/d/Y</span></span>
 <span id="cb4-25"><a href="#cb4-25" tabindex="-1"></a><span class="at">  </span><span class="fu">length</span><span class="kw">:</span><span class="at"> </span><span class="dv">150</span></span>
-<span id="cb4-26"><a href="#cb4-26" tabindex="-1"></a><span class="at">  </span><span class="fu">nsim</span><span class="kw">:</span><span class="at"> </span><span class="dv">1</span></span></code></pre></div>
+<span id="cb4-26"><a href="#cb4-26" tabindex="-1"></a><span class="at">  </span><span class="fu">nsim</span><span class="kw">:</span><span class="at"> </span><span class="dv">1</span></span>
+<span id="cb4-27"><a href="#cb4-27" tabindex="-1"></a><span class="at">  </span><span class="fu">nrep</span><span class="kw">:</span><span class="at"> </span><span class="dv">1</span></span>
+<span id="cb4-28"><a href="#cb4-28" tabindex="-1"></a><span class="at">  </span><span class="fu">simulation_mode</span><span class="kw">:</span><span class="at"> deterministic</span></span>
+<span id="cb4-29"><a href="#cb4-29" tabindex="-1"></a><span class="at">  </span><span class="fu">random_seed</span><span class="kw">:</span><span class="at"> </span><span class="dv">42</span></span></code></pre></div>
 <p>For a detailed explanation of all the configuration options, please
 see the <code>yaml-configuration.html</code> vignette.</p>
 </div>
 <div class="section level2">
 <h2 id="running-the-simulation">Running the Simulation<a class="anchor" aria-label="anchor" href="#running-the-simulation"></a>
 </h2>
-<p>Once we have the path to the configuration file, the simulation can
-be run using the <code><a href="../reference/metaRVM.html">metaRVM()</a></code> function.</p>
+<p>Once the path to the configuration file is available, the simulation
+can be run using the <code><a href="../reference/metaRVM.html">metaRVM()</a></code> function.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Load the metaRVM library</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://RESUME-Epi.github.io/MetaRVM/">MetaRVM</a></span><span class="op">)</span></span>
@@ -171,26 +174,29 @@ be run using the <code><a href="../reference/metaRVM.html">metaRVM()</a></code> 
 <span><span class="va">sim_out</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/metaRVM.html">metaRVM</a></span><span class="op">(</span><span class="va">yaml_file</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Loading required namespace: pkgbuild</span></span>
 <span><span class="co">#&gt; Generating model in c</span></span>
-<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Re-compiling <span style="color: #0000BB;">odin8b079812</span> (debug build)</span></span>
-<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Loading <span style="color: #0000BB;">odin8b079812</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Re-compiling <span style="color: #0000BB;">odinf64d486c</span> (debug build)</span></span>
+<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Loading <span style="color: #0000BB;">odinf64d486c</span></span></span></code></pre></div>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">sim_out</span><span class="op">)</span></span>
 <span><span class="co">#&gt; MetaRVM Results Object</span></span>
 <span><span class="co">#&gt; =====================</span></span>
 <span><span class="co">#&gt; Instances: 1 </span></span>
-<span><span class="co">#&gt; Populations: 24 </span></span>
+<span><span class="co">#&gt; Populations: </span></span>
 <span><span class="co">#&gt; Date range: 2023-10-01 to 2024-02-27 </span></span>
-<span><span class="co">#&gt; Total observations: 111600 </span></span>
-<span><span class="co">#&gt; Disease states: D, E, H, I_all, I_asymp, I_eff, I_presymp, I_symp, P, R, S, V, cum_V, mob_pop, n_EI, n_EIpresymp, n_HD, n_HR, n_HRD, n_IasympR, n_IsympH, n_IsympR, n_IsympRH, n_SE, n_SV, n_VE, n_VS, n_preIsymp, p_HRD, p_SE, p_VE</span></span>
+<span><span class="co">#&gt; Parameter sets (nsim): 1 </span></span>
+<span><span class="co">#&gt; Replicates per set (nrep): 1 </span></span>
+<span><span class="co">#&gt; Simulation mode: deterministic </span></span>
+<span><span class="co">#&gt; Total observations: 388800 </span></span>
+<span><span class="co">#&gt; Disease states: D, E, H, I_all, I_asymp, I_eff, I_presymp, I_symp, P, R, S, S_alloc, S_eff_prod, S_src_int, V, V_alloc, V_src_int, cum_V, mob_pop, n_EI, n_EIpresymp, n_HD, n_HR, n_HRD, n_IasympR, n_IsympH, n_IsympR, n_IsympRH, n_RS, n_SE, n_SE_eff, n_SV, n_VE, n_VS, n_preIsymp, p_HRD, p_RS, p_SE, p_VE</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">sim_out</span><span class="op">$</span><span class="va">results</span><span class="op">)</span></span>
 <span><span class="co">#&gt;          date    age   race  zone disease_state        value instance</span></span>
 <span><span class="co">#&gt;        &lt;Date&gt; &lt;char&gt; &lt;char&gt; &lt;int&gt;        &lt;char&gt;        &lt;num&gt;    &lt;int&gt;</span></span>
 <span><span class="co">#&gt; 1: 2023-10-01   0-17      A    11             D 2.252583e-04        1</span></span>
-<span><span class="co">#&gt; 2: 2023-10-01   0-17      A    11             E 1.305178e+01        1</span></span>
+<span><span class="co">#&gt; 2: 2023-10-01   0-17      A    11             E 1.365434e+01        1</span></span>
 <span><span class="co">#&gt; 3: 2023-10-01   0-17      A    11             H 2.304447e-01        1</span></span>
-<span><span class="co">#&gt; 4: 2023-10-01   0-17      A    11         I_all 2.731688e+01        1</span></span>
-<span><span class="co">#&gt; 5: 2023-10-01   0-17      A    11       I_asymp 3.227854e-01        1</span></span>
-<span><span class="co">#&gt; 6: 2023-10-01   0-17      A    11         I_eff 2.476245e+01        1</span></span></code></pre></div>
+<span><span class="co">#&gt; 4: 2023-10-01   0-17      A    11         I_all 2.742619e+01        1</span></span>
+<span><span class="co">#&gt; 5: 2023-10-01   0-17      A    11       I_asymp 3.555784e-01        1</span></span>
+<span><span class="co">#&gt; 6: 2023-10-01   0-17      A    11         I_eff 2.483657e+01        1</span></span></code></pre></div>
 <p>For more details on running <code>metaRVM</code>, refer to the
 <code>running-a-simulation.html</code> vignette.</p>
 </div>

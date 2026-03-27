@@ -9,10 +9,10 @@ a good way to get started and understand the basic workflow.
 ### Locating the Example Files
 
 The `metaRVM` package includes a set of example files in its `extdata`
-directory. To run the example, we first need to locate these files. The
+directory. To run the example, these files must first be located. The
 [`system.file()`](https://rdrr.io/r/base/system.file.html) function in R
-is the recommended way to do this, as it will find the files wherever
-the package is installed.
+is the recommended way to do this, as it finds the files wherever the
+package is installed.
 
 ``` r
 # Locate the example YAML configuration file
@@ -53,12 +53,15 @@ simulation_config:
   start_date: 01/01/2023 # m/d/Y
   length: 150
   nsim: 1
+  nrep: 1
+  simulation_mode: deterministic
+  random_seed: 42
 ```
 
 ### Running the Simulation
 
-Once we have the path to the configuration file, the simulation can be
-run using the
+Once the path to the configuration file is available, the simulation can
+be run using the
 [`metaRVM()`](https://RESUME-Epi.github.io/MetaRVM/reference/metaRVM.md)
 function.
 
@@ -93,7 +96,7 @@ config_obj
 #> MetaRVM Configuration Object
 #> ============================
 #> Config file: /home/runner/work/_temp/Library/MetaRVM/extdata/example_config.yaml 
-#> Parameters: 40 
+#> Parameters: 42 
 #> Parameter names (first 10): N_pop, pop_map, category_names, S_ini, E_ini, I_asymp_ini, I_presymp_ini, I_symp_ini, H_ini, D_ini ...
 #> Population groups: 24 
 #> Start date: 2023-09-30 
@@ -176,15 +179,15 @@ head(sim_out$results)
 #>          date    age   race  zone disease_state        value instance
 #>        <Date> <char> <char> <int>        <char>        <num>    <int>
 #> 1: 2023-10-01   0-17      A    11             D 2.252583e-04        1
-#> 2: 2023-10-01   0-17      A    11             E 1.305178e+01        1
+#> 2: 2023-10-01   0-17      A    11             E 1.365434e+01        1
 #> 3: 2023-10-01   0-17      A    11             H 2.304447e-01        1
-#> 4: 2023-10-01   0-17      A    11         I_all 2.731688e+01        1
-#> 5: 2023-10-01   0-17      A    11       I_asymp 3.227854e-01        1
-#> 6: 2023-10-01   0-17      A    11         I_eff 2.476245e+01        1
+#> 4: 2023-10-01   0-17      A    11         I_all 2.742619e+01        1
+#> 5: 2023-10-01   0-17      A    11       I_asymp 3.555784e-01        1
+#> 6: 2023-10-01   0-17      A    11         I_eff 2.483657e+01        1
 
 # Check unique values for key variables
 cat("Disease states:", paste(unique(sim_out$results$disease_state), collapse = ", "), "\n")
-#> Disease states: D, E, H, I_all, I_asymp, I_eff, I_presymp, I_symp, P, R, S, V, cum_V, mob_pop, n_EI, n_EIpresymp, n_HD, n_HR, n_HRD, n_IasympR, n_IsympH, n_IsympR, n_IsympRH, n_SE, n_SV, n_VE, n_VS, n_preIsymp, p_HRD, p_SE, p_VE
+#> Disease states: D, E, H, I_all, I_asymp, I_eff, I_presymp, I_symp, P, R, S, S_alloc, S_eff_prod, S_src_int, V, V_alloc, V_src_int, cum_V, mob_pop, n_EI, n_EIpresymp, n_HD, n_HR, n_HRD, n_IasympR, n_IsympH, n_IsympR, n_IsympRH, n_RS, n_SE, n_SE_eff, n_SV, n_VE, n_VS, n_preIsymp, p_HRD, p_RS, p_SE, p_VE
 cat("Date range:", paste(range(sim_out$results$date), collapse = " to "), "\n")
 #> Date range: 2023-10-01 to 2024-02-27
 ```
@@ -207,11 +210,11 @@ hospitalized_data$results
 #>    4: 2023-10-01   0-17      B    22             H  0.3939861        1
 #>    5: 2023-10-01   0-17      C    11             H  0.6244308        1
 #>   ---                                                                 
-#> 3596: 2024-02-27    65+      B    22             H  1.6779075        1
-#> 3597: 2024-02-27    65+      C    11             H  2.4663331        1
-#> 3598: 2024-02-27    65+      C    22             H 10.0053788        1
-#> 3599: 2024-02-27    65+      D    11             H  5.6625439        1
-#> 3600: 2024-02-27    65+      D    22             H 11.3371490        1
+#> 3596: 2024-02-27    65+      B    22             H  1.2118718        1
+#> 3597: 2024-02-27    65+      C    11             H  1.8624622        1
+#> 3598: 2024-02-27    65+      C    22             H 10.2755842        1
+#> 3599: 2024-02-27    65+      D    11             H  5.5349332        1
+#> 3600: 2024-02-27    65+      D    22             H 12.4195984        1
 
 # Subset by multiple demographic categories
 elderly_data <- sim_out$subset_data(
@@ -227,11 +230,11 @@ elderly_data$results
 #>    4: 2023-10-01    65+      A    22             H 1.486740e-02        1
 #>    5: 2023-10-01    65+      B    11             D 8.719675e-05        1
 #>   ---                                                                   
-#> 2396: 2024-02-27    65+      C    22             H 1.000538e+01        1
-#> 2397: 2024-02-27    65+      D    11             D 3.844495e+01        1
-#> 2398: 2024-02-27    65+      D    11             H 5.662544e+00        1
-#> 2399: 2024-02-27    65+      D    22             D 8.556737e+01        1
-#> 2400: 2024-02-27    65+      D    22             H 1.133715e+01        1
+#> 2396: 2024-02-27    65+      C    22             H 1.027558e+01        1
+#> 2397: 2024-02-27    65+      D    11             D 3.831713e+01        1
+#> 2398: 2024-02-27    65+      D    11             H 5.534933e+00        1
+#> 2399: 2024-02-27    65+      D    22             D 8.635266e+01        1
+#> 2400: 2024-02-27    65+      D    22             H 1.241960e+01        1
 
 # Specific date range
 peak_period <- sim_out$subset_data(
@@ -247,11 +250,11 @@ peak_period$results
 #>    4: 2023-10-01   0-17      B    22             H  0.3939861        1
 #>    5: 2023-10-01   0-17      C    11             H  0.6244308        1
 #>   ---                                                                 
-#> 2204: 2023-12-31    65+      B    22             H  4.5130497        1
-#> 2205: 2023-12-31    65+      C    11             H  6.5013954        1
-#> 2206: 2023-12-31    65+      C    22             H 55.2465688        1
-#> 2207: 2023-12-31    65+      D    11             H 27.2044176        1
-#> 2208: 2023-12-31    65+      D    22             H 74.6798530        1
+#> 2204: 2023-12-31    65+      B    22             H  7.0258803        1
+#> 2205: 2023-12-31    65+      C    11             H  9.7905521        1
+#> 2206: 2023-12-31    65+      C    22             H 52.9246952        1
+#> 2207: 2023-12-31    65+      D    11             H 28.3456494        1
+#> 2208: 2023-12-31    65+      D    22             H 63.2860726        1
 ```
 
 ## Specifying Disease Parameters via Distributions
@@ -310,9 +313,12 @@ simulation_config:
   start_date: 01/01/2023 # m/d/Y
   length: 150
   nsim: 20 # Increased nsim for meaningful summary statistics
+  nrep: 1
+  simulation_mode: deterministic
+  random_seed: 42
 ```
 
-To run a simulation with this configuration, we pass the file path to
+To run a simulation with this configuration, the file path is passed to
 `metaRVM`.
 
 ``` r
@@ -326,9 +332,9 @@ The `MetaRVMResults` class provides basic summarization functionality
 across multiple instances of the simulation, when one or more disease
 parameters are specified via distribution, and there are more than one
 simulations per configurations. The `summarize` method generates output
-of class `MetaRVMSummary` which has a `plot` method available to use.
-Now that we have run a simulation with parameter distributions, we can
-use the `summarize` method to see the variability in the results.
+of class `MetaRVMSummary` which has a `plot` method available. After a
+simulation is run with parameter distributions, the `summarize` method
+can be used to inspect variability in the results.
 
 ``` r
 library(ggplot2)
@@ -347,30 +353,54 @@ hospital_summary_dist$plot() + ggtitle("Daily Hospitalizations by Age Group (wit
 
 ![](running-a-simulation_files/figure-html/unnamed-chunk-12-1.png)
 
+## Running a Stochastic Simulation with Static Parameters
+
+A stochastic simulation can also be run by setting
+`simulation_mode: stochastic`.
+
+An example YAML file with parameter distributions is included in the
+package, `example_config_stochastic.yaml`. Here is its content:
+
 ``` r
-
-# Summary of hospitalizations by two user-defined categories
-hospital_summary <- sim_out_dist$summarize(
-  group_by = c("age", "zone"),
-  disease_states = "n_IsympH",
-  stats = c("median", "quantile"),
-  quantiles = c(0.05, 0.95)
-)
-hospital_summary
-#> MetaRVM Summary Object
-#> ======================
-#> Data type: summary 
-#> Observations: 900 
-#> Grouped by: age, zone 
-#> Disease states: n_IsympH 
-#> Date range: 2023-01-01 to 2023-05-30 
-#> Summary statistics: median_value, q05, q95
-
-# visualize the summary
-hospital_summary$plot() + ggtitle("Daily Hospitalizations by Age and Zone") + theme_bw()
+# Locate the example YAML configuration file with distributions
+yaml_file_stoch <- system.file("extdata", "example_config_stochastic.yaml", package = "MetaRVM")
 ```
 
-![](running-a-simulation_files/figure-html/unnamed-chunk-13-1.png)
+``` yaml
+run_id: ExampleRun_Stochastic_Static
+population_data:
+  initialization: population_init_n24.csv
+  vaccination: vaccination_n24.csv
+mixing_matrix:
+  weekday_day: m_weekday_day.csv
+  weekday_night: m_weekday_night.csv
+  weekend_day: m_weekend_day.csv
+  weekend_night: m_weekend_night.csv
+disease_params:
+  ts: 0.5
+  ve: 0.4
+  dv: 180
+  dp: 1
+  de: 3
+  da: 5
+  ds: 6
+  dh: 8
+  dr: 180
+  pea: 0.3
+  psr: 0.95
+  phr: 0.97
+simulation_config:
+  start_date: 01/01/2023 # m/d/Y
+  length: 150
+  nsim: 1
+  nrep: 5
+  simulation_mode: stochastic
+  random_seed: 42
+```
+
+``` r
+sim_out_stoch <- metaRVM(yaml_file_stoch)
+```
 
 ## Specifying Disease Parameters by Demographics
 
@@ -429,6 +459,9 @@ simulation_config:
   start_date: 01/01/2023 # m/d/Y
   length: 150
   nsim: 20
+  nrep: 1
+  simulation_mode: deterministic
+  random_seed: 42
 ```
 
 Now, let’s run the simulation with this configuration.
@@ -438,10 +471,11 @@ Now, let’s run the simulation with this configuration.
 sim_out_subgroup <- metaRVM(yaml_file_subgroup)
 ```
 
-We can now plot the results to see the impact of the subgroup-specific
-parameters. For example, we can compare the number of hospitalizations
-in the “65+” age group, which has a `dh` of 10, to other age groups that
-use the global `dh` drawn from a lognormal distribution.
+The results can now be plotted to evaluate the impact of
+subgroup-specific parameters. For example, the number of
+hospitalizations in the “65+” age group, which has a `dh` of 10, can be
+compared to other age groups that use the global `dh` drawn from a
+lognormal distribution.
 
 ``` r
 # Summarize hospitalizations by age group
@@ -456,4 +490,4 @@ hospital_summary_subgroup <- sim_out_subgroup$summarize(
 hospital_summary_subgroup$plot() + ggtitle("Daily Hospitalizations by Age Group (Subgroup Parameters)") + theme_bw()
 ```
 
-![](running-a-simulation_files/figure-html/unnamed-chunk-16-1.png)
+![](running-a-simulation_files/figure-html/unnamed-chunk-17-1.png)

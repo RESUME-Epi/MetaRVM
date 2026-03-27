@@ -39,12 +39,14 @@ simulation_config:
   start_date: 01/01/2025 # m/d/Y
   length: 90
   nsim: 1
+  nrep: 1
+  simulation_mode: deterministic
   random_seed: 42
 ```
 
 ### Configuration Sections
 
-- **`run_id`**: A unique name for your simulation.
+- **`run_id`**: A unique name for the simulation.
 - **`population_data`**: Paths to CSV files for population demographics,
   initial state, and vaccination schedules.
 - **`mixing_matrix`**: Paths to CSV files defining contact patterns for
@@ -200,7 +202,7 @@ Below is a list of the disease parameters used in `metaRVM`:
 
 ## Defining Parameters with Distributions
 
-Instead of fixed values, you can define disease parameters using
+Instead of fixed values, disease parameters can be defined using
 statistical distributions. This is useful for capturing uncertainty in
 the parameters. `metaRVM` supports `uniform` and `lognormal`
 distributions.
@@ -236,24 +238,25 @@ disease_params:
   phr: 0.97
 ```
 
-- For a `uniform` distribution, you must specify `min` and `max` values.
-- For a `lognormal` distribution, you must specify `mu` and `sd` (mean
-  and standard deviation on the log scale).
+- For a `uniform` distribution, `min` and `max` values must be
+  specified.
+- For a `lognormal` distribution, `mu` and `sd` (mean and standard
+  deviation on the log scale) must be specified.
 
 ## Specifying Subgroup Parameters
 
-`metaRVM` allows you to specify different disease parameters for various
+`metaRVM` allows different disease parameters to be specified for
 demographic subgroups using the `sub_disease_params` section. These
-subgroup-specific parameters will override the global parameters defined
-in `disease_params`.
+subgroup-specific parameters override the global parameters defined in
+`disease_params`.
 
 The demographic categories used in this section must match the
 user-defined category column names in the initialization CSV file
-specified under `population_data`. For example, if your initialization
-file has columns named `age`, `income_level`, and `occupation`, you can
-use any of these categories in `sub_disease_params`. The specific values
-(e.g., `"0-4"`, `"low"`, `"healthcare"`) must exactly match the values
-in those columns.
+specified under `population_data`. For example, if the initialization
+file has columns named `age`, `income_level`, and `occupation`, any of
+these categories can be used in `sub_disease_params`. The specific
+values (e.g., `"0-4"`, `"low"`, `"healthcare"`) must exactly match the
+values in those columns.
 
 The following example defines different parameters for different age
 groups:
@@ -283,18 +286,78 @@ In this configuration, individuals in the “0-4” age group will have a
 value. Similarly, the transmission rate `ts` for the “18-49” group is
 set to 0.01.
 
+## Stochastic Simulation with Distributional Parameters
+
+When both parameter uncertainty and stochastic disease transitions are
+represented, set `simulation_mode: stochastic` and define one or more
+disease parameters as distributions.
+
+- `nsim`: number of sampled parameter sets
+- `nrep`: number of stochastic replicates per parameter set
+- total runs = `nsim * nrep`
+
+Example:
+
+``` yaml
+run_id: StochasticDistRun
+population_data:
+  initialization: data/population_init.csv
+  vaccination: data/vaccination.csv
+mixing_matrix:
+  weekday_day: data/m_weekday_day.csv
+  weekday_night: data/m_weekday_night.csv
+  weekend_day: data/m_weekend_day.csv
+  weekend_night: data/m_weekend_night.csv
+disease_params:
+  ts: 0.5
+  ve:
+    dist: uniform
+    min: 0.29
+    max: 0.53
+  dv: 158
+  dp: 1
+  de: 3
+  da:
+    dist: uniform
+    min: 3
+    max: 7
+  ds:
+    dist: uniform
+    min: 5
+    max: 7
+  dh:
+    dist: lognormal
+    mu: 2.0
+    sd: 0.5
+  dr: 187
+  pea: 0.333
+  psr: 0.95
+  phr: 0.97
+simulation_config:
+  start_date: 01/01/2025
+  length: 90
+  nsim: 20
+  nrep: 5
+  simulation_mode: stochastic
+  random_seed: 42
+```
+
+For reproducibility, provide `random_seed`. This seed is used to
+reproduce both the parameter draws (for distributional parameters) and
+the stochastic model replicates.
+
 ## Checkpointing and Restoring Simulations
 
 For long-running simulations, it is useful to save the state of the
 model at intermediate points. This is known as checkpointing. `metaRVM`
-allows you to save checkpoints and restore a simulation from a saved
-state.
+allows checkpoints to be saved and simulations to be restored from a
+saved state.
 
 ### Enabling Checkpointing
 
-To enable checkpointing, you need to add the `checkpoint_dir` and
-optionally `checkpoint_dates` to the `simulation_config` section of your
-YAML file.
+To enable checkpointing, `checkpoint_dir` and optionally
+`checkpoint_dates` need to be added to the `simulation_config` section
+of the YAML file.
 
 - `checkpoint_dir`: The directory where checkpoint files will be saved.
 - `checkpoint_dates`: A list of dates (in `MM/DD/YYYY` format) on which
@@ -308,6 +371,8 @@ simulation_config:
   start_date: 01/01/2025
   length: 90
   nsim: 10
+  nrep: 1
+  simulation_mode: deterministic
   random_seed: 42
   checkpoint_dir: "path/to/checkpoints"
   checkpoint_dates: ["01/15/2025", "01/30/2025"]
@@ -315,15 +380,18 @@ simulation_config:
 
 ### Restoring from a Checkpoint
 
-To restore a simulation from a checkpoint file, use the `restore_from`
-parameter in the `simulation_config` section. This will initialize the
-model with the state saved in the specified checkpoint file.
+To restore a simulation from a checkpoint file, the `restore_from`
+parameter is used in the `simulation_config` section. The model is
+initialized with the state saved in the specified checkpoint file.
 
 ``` yaml
 simulation_config:
   start_date: 01/30/2025 # Should be the next date of the checkpoint date
   length: 60 # Remaining simulation length
   nsim: 10
+  nrep: 1
+  simulation_mode: deterministic
+  random_seed: 42
   restore_from: "path/to/checkpoints/checkpoint_2025-01-30_instance_1.Rda"
 ```
 
