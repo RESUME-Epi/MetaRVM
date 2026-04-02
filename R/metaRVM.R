@@ -163,13 +163,14 @@ metaRVM <- function(config_input) {
 
   out <- data.table::data.table()
   run_idx <- 0L
+  total_runs <- nsim * nrep
   for (ii in 1:nsim){
     for (rr in 1:nrep){
       run_idx <- run_idx + 1L
       if (is_stoch) {
         set.seed(run_seed_base + run_idx - 1L)
       }
-    metarvm_log_debug("Starting simulation instance {ii}/{nsim}")
+      metarvm_log_debug("Starting simulation instance {run_idx}/{total_runs} (nsim={ii}, rep={rr})")
 
       o <- meta_sim(is.stoch = is_stoch,
                     nsteps = nsteps,
@@ -209,8 +210,8 @@ metaRVM <- function(config_input) {
 
       o$instance <- run_idx
       out <- rbind(out, o)
-      metarvm_log_debug("Completed simulation instance {ii}/{nsim}: rows={nrow(o)}")
-  }
+      metarvm_log_debug("Completed simulation instance {run_idx}/{total_runs}: rows={nrow(o)}")
+    }
   }
 
   run_info <- list(
