@@ -1,0 +1,25 @@
+run_id: ExampleMeaslesMin
+model:
+  disease: measles
+population_data:
+  initialization: population_init_measles_min.csv
+mixing_matrix:
+  weekday_day: m_weekday_day_measles_min.csv
+  weekday_night: m_weekday_night_measles_min.csv
+  weekend_day: m_weekend_day_measles_min.csv
+  weekend_night: m_weekend_night_measles_min.csv
+disease_params:
+  beta: 0.65
+  de1: 3
+  de2: 3
+  di1: 2
+  di2: 3
+  prop_I1_Q: 0.2
+  prop_I2_Q: 0.5
+  V1_eff: 0.93
+  V2_eff: 0.97
+simulation_config:
+  start_date: 10/01/2023 # m/d/Y
+  length: 30
+  nsim: 1
+  nrep: 10

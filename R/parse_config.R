@@ -135,74 +135,217 @@
 #'
 #' @export
 parse_config <- function(config_file, return_object = FALSE){
-
-  # read the yaml config file
+  # =============================================================================
+  # Maintainer Notes: Parser architecture philosophy
+  # -----------------------------------------------------------------------------
+  # `parse_config()` is the single public parse entrypoint for all diseases.
+  #
+  # Design goals:
+  # - Keep user-facing API stable over time.
+  # - Keep orchestration generic and disease-agnostic.
+  # - Route disease-specific parsing to registry-selected builders.
+  #
+  # Separation of concerns:
+  # - This function handles dispatch and shared run-level flags only.
+  # - Disease builders implement disease-specific defaults/validation/mapping.
+  # - Shared helper utilities at the bottom centralize common validation logic.
+  #
+  # Extension rule:
+  # When adding a disease, avoid adding disease `if/else` blocks here.
+  # Instead, register a new `config_builder` in `disease_registry.R`.
+  # =============================================================================
   yaml_data <- yaml::read_yaml(config_file)
+  disease <- resolve_disease_from_yaml(yaml_data)
+  verbose <- metarvm_as_logical_flag(
+    yaml_data$simulation_config$verbose,
+    option_name = "simulation_config$verbose",
+    default = FALSE
+  )
+  suppress_odin_messages <- metarvm_as_logical_flag(
+    yaml_data$simulation_config$suppress_odin_messages,
+    option_name = "simulation_config$suppress_odin_messages",
+    default = FALSE
+  )
 
-  # provision of relative paths
+  config_builder <- get_metarvm_config_builder(disease)
+  config_list <- config_builder(
+    yaml_data = yaml_data,
+    config_file = config_file,
+    disease = disease,
+    verbose = verbose,
+    suppress_odin_messages = suppress_odin_messages
+  )
+
+  if (return_object) {
+    return(MetaRVMConfig$new(config_list))
+  }
+  config_list
+}
+
+parse_config_measles_internal <- function(yaml_data, config_file, disease,
+                                          verbose = FALSE,
+                                          suppress_odin_messages = FALSE) {
+  # Maintainer Notes:
+  # This builder handles ONLY measles-specific config mapping:
+  # - initialization schema for measles compartments,
+  # - required measles disease parameters,
+  # - per-parameter expansion/sampling to nsim x N_pop matrices.
+  #
+  # It still reuses shared helpers for:
+  # - simulation config parsing
+  # - population table validation
+  # - mixing matrix loading/validation
+  #
+  # Expected output:
+  # A canonical config list consumed by `metaRVM()` and
+  # `build_metarvm_sim_args("measles", ...)`.
+  disease_entry <- get_metarvm_disease_entry(disease)
+
   yaml_file_path <- dirname(config_file)
-
-  # temporarily set the working directory to the yaml file location
   old_wd <- getwd()
   setwd(yaml_file_path)
-  on.exit(setwd(old_wd))
+  on.exit(setwd(old_wd), add = TRUE)
 
-  # =====================================================
-  # read mandatory parameters
-  is_restore <- !is.null(yaml_data$simulation_config$restore_from)
+  sim_cfg <- metarvm_parse_simulation_config(
+    yaml_data = yaml_data,
+    default_delta_t = 0.5,
+    default_mode = "deterministic",
+    force_stochastic = TRUE
+  )
+  delta_t <- sim_cfg$delta_t
+  start_date <- sim_cfg$start_date
+  sim_length <- sim_cfg$sim_length
+  nsim <- sim_cfg$nsim
+  nrep <- sim_cfg$nrep
+  simulation_mode <- sim_cfg$simulation_mode
+  random_seed <- sim_cfg$random_seed
 
-  delta_t <- 0.5
-  if(!is.null(yaml_data$simulation_config$nsim)){
-    nsim <- yaml_data$simulation_config$nsim
+  if (is.null(yaml_data$population_data$initialization)) {
+    stop("population_data$initialization is required")
   }
+  pop_init <- data.table::fread(yaml_data$population_data$initialization)
+
+  pop_meta <- metarvm_validate_population_table(
+    pop_init = pop_init,
+    reserved_cols = disease_entry$init_reserved_cols,
+    required_cols = disease_entry$init_required_cols,
+    require_any_of = disease_entry$init_require_any_of,
+    require_population_id = TRUE
+  )
+  pop_init <- pop_meta$pop_init
+  pop_map <- pop_meta$pop_map
+  category_names <- pop_meta$category_names
+  N_pop <- pop_meta$N_pop
+  S0 <- pop_init[, S0]
+
+  init_defaults <- disease_entry$init_optional_defaults
+  init_values <- lapply(names(init_defaults), function(col) {
+    if (col %in% names(pop_init)) pop_init[[col]] else rep(init_defaults[[col]], N_pop)
+  })
+  names(init_values) <- names(init_defaults)
+
+  E10 <- init_values$E10
+  E20 <- init_values$E20
+  I1_Q0 <- init_values$I1_Q0
+  I1_U0 <- init_values$I1_U0
+  I2_Q0 <- init_values$I2_Q0
+  I2_U0 <- init_values$I2_U0
+  R0 <- init_values$R0
+
+  mixing <- metarvm_read_mixing_matrices(yaml_data, require_all = TRUE)
+  m_wd_d <- mixing$m_wd_d
+  m_wd_n <- mixing$m_wd_n
+  m_we_d <- mixing$m_we_d
+  m_we_n <- mixing$m_we_n
+
+  if (is.null(yaml_data$disease_params)) {
+    stop("disease_params section is required")
+  }
+  disease_params <- yaml_data$disease_params
+  param_names <- disease_entry$disease_param_required
+  missing_params <- param_names[!param_names %in% names(disease_params)]
+  if (length(missing_params) > 0) {
+    stop("Missing required measles disease parameters: ", paste(missing_params, collapse = ", "))
+  }
+
+  param_values <- lapply(param_names, function(pnm) {
+    val <- disease_params[[pnm]]
+    if (length(val) == 1) val <- rep(val, N_pop)
+    do.call(rbind, purrr::map(1:nsim, ~ draw_sample(val, N_pop)))
+  })
+  names(param_values) <- param_names
+
+  config_list <- list(
+    N_pop = N_pop,
+    disease = disease,
+    pop_map = pop_map,
+    category_names = category_names,
+    S0 = S0,
+    E10 = E10,
+    E20 = E20,
+    I1_Q0 = I1_Q0,
+    I1_U0 = I1_U0,
+    I2_Q0 = I2_Q0,
+    I2_U0 = I2_U0,
+    R0 = R0,
+    m_wd_d = m_wd_d,
+    m_wd_n = m_wd_n,
+    m_we_d = m_we_d,
+    m_we_n = m_we_n,
+    start_date = start_date,
+    sim_length = sim_length,
+    nsim = nsim,
+    nrep = nrep,
+    simulation_mode = simulation_mode,
+    random_seed = random_seed,
+    verbose = verbose,
+    suppress_odin_messages = suppress_odin_messages,
+    delta_t = delta_t,
+    chk_file_names = NULL,
+    chk_time_steps = NULL,
+    do_chk = FALSE
+  )
+  for (pnm in names(param_values)) {
+    config_list[[pnm]] <- param_values[[pnm]]
+  }
+  config_list
+}
+
+parse_config_rvm_internal <- function(yaml_data, config_file, disease,
+                                      verbose = FALSE,
+                                      suppress_odin_messages = FALSE) {
+  # Maintainer Notes:
+  # This builder preserves legacy RVM behavior while fitting the new generic
+  # parse architecture. It owns:
+  # - checkpoint restore semantics (`restore_from`),
+  # - legacy initialization mapping (S_ini, I_symp_ini, etc.),
+  # - sub_disease_params category overrides,
+  # - conversion of global disease params to nsim x N_pop sampled matrices.
+  #
+  # Keep this logic here (not in `parse_config()`) so adding new diseases does not
+  # increase complexity of the public entrypoint.
+  yaml_file_path <- dirname(config_file)
+  old_wd <- getwd()
+  setwd(yaml_file_path)
+  on.exit(setwd(old_wd), add = TRUE)
+
+  is_restore <- !is.null(yaml_data$simulation_config$restore_from)
+  sim_cfg <- metarvm_parse_simulation_config(
+    yaml_data = yaml_data,
+    default_delta_t = 0.5,
+    default_mode = "deterministic",
+    force_stochastic = FALSE
+  )
+  delta_t <- sim_cfg$delta_t
+  start_date <- sim_cfg$start_date
+  sim_length <- sim_cfg$sim_length
+  nsim <- sim_cfg$nsim
+  nrep <- sim_cfg$nrep
+  simulation_mode <- sim_cfg$simulation_mode
+  random_seed <- sim_cfg$random_seed
 
   vac_time_id <- NULL
   vac_counts <- NULL
-
-  if(!is.null(yaml_data$simulation_config$start_date)) {
-    start_date <- as.Date(yaml_data$simulation_config$start_date,
-                          tryFormats = c("%m/%d/%Y")) - 1 # we start one day before to treat the first day of simulation as day 1. 
-  }
-  sim_length <- yaml_data$simulation_config$length
-  nsim <- ifelse(!is.null(yaml_data$simulation_config$nsim),
-                 yaml_data$simulation_config$nsim, 1)
-  nrep <- ifelse(!is.null(yaml_data$simulation_config$nrep),
-                 yaml_data$simulation_config$nrep, 1)
-  nrep <- suppressWarnings(as.integer(nrep)[1])
-  if (is.na(nrep) || nrep < 1) {
-    setwd(old_wd)
-    stop("nrep must be a positive integer")
-  }
-  simulation_mode <- "deterministic"
-  if (!is.null(yaml_data$simulation_config$simulation_mode)) {
-    simulation_mode <- tolower(trimws(as.character(yaml_data$simulation_config$simulation_mode)))
-  } else if (!is.null(yaml_data$simulation_config$is_stoch)) {
-    is_stoch <- yaml_data$simulation_config$is_stoch
-    simulation_mode <- if (isTRUE(is_stoch) || (is.numeric(is_stoch) && is_stoch != 0)) {
-      "stochastic"
-    } else {
-      "deterministic"
-    }
-  }
-  if (!simulation_mode %in% c("deterministic", "stochastic")) {
-    setwd(old_wd)
-    stop("simulation_mode must be either 'deterministic' or 'stochastic'")
-  }
-  
-  # check random seed
-  if(!is.null(yaml_data$simulation_config$random_seed)){
-    random_seed <- suppressWarnings(as.integer(yaml_data$simulation_config$random_seed)[1])
-    if (is.na(random_seed)) {
-      setwd(old_wd)
-      stop("random_seed must be coercible to a single integer value")
-    }
-    set.seed(random_seed)
-  } else if (simulation_mode == "stochastic") {
-    random_seed <- sample.int(.Machine$integer.max, 1)
-    set.seed(random_seed)
-  } else {
-    random_seed <- NULL
-  }
 
   chk_time_steps <- NULL
   chk_file_names <- NULL
@@ -210,20 +353,14 @@ parse_config <- function(config_file, return_object = FALSE){
 
   if(!is.null(yaml_data$simulation_config$checkpoint_dir)){
     checkpoint_dir <- normalizePath(yaml_data$simulation_config$checkpoint_dir, mustWork = FALSE)
-
-    # prepare checkpoint directory
     if(!dir.exists(checkpoint_dir)) dir.create(checkpoint_dir, recursive = TRUE)
     do_chk <- TRUE
 
     if (!is.null(yaml_data$simulation_config$checkpoint_dates)) {
-      # Checkpoint at specified dates
       chk_dates <- as.Date(yaml_data$simulation_config$checkpoint_dates,
                            tryFormats = c("%m/%d/%Y"))
-
-      # Convert dates to time steps
       chk_time_steps <- as.integer((chk_dates - start_date) / delta_t)
 
-      # Generate a matrix of file names: rows for instances, columns for dates
       chk_file_names <- sapply(chk_dates, function(date) {
         date_str <- format(date, "%Y-%m-%d")
         paste0(checkpoint_dir, "/checkpoint_", date_str, "_instance_", 1:(nsim * nrep), ".Rda")
@@ -233,30 +370,16 @@ parse_config <- function(config_file, return_object = FALSE){
       }
 
     } else {
-      # Default behavior: checkpoint at the end of the simulation
       end_date <- start_date + sim_length
       date_str <- format(end_date, "%Y-%m-%d")
-
-      # The time step is the last one
       chk_time_steps <- as.integer(sim_length / delta_t)
-
-      # Create a 1-column matrix for the single checkpoint date
       chk_file_names <- matrix(paste0(checkpoint_dir, "/chk_", date_str, "_", 1:(nsim * nrep), ".Rda"), ncol = 1)
     }
   }
 
-
-  # ======================================================
-  # If restore_from is available, initialize
-  # meta_sim inputs
   if(is_restore){
-
     chk_obj <- readRDS(yaml_data$simulation_config$restore_from)
-
-    ## chk_obj should be of class MetaRVMCheck
-    ## verfify if chk_obj is of class MetaRVMCheck
     if(!methods::is(chk_obj, "MetaRVMCheck")){
-      setwd(old_wd)
       stop("The restore_from file does not contain a valid MetaRVMCheck object")
     }
 
@@ -268,9 +391,7 @@ parse_config <- function(config_file, return_object = FALSE){
     m_we_d <- chk_obj$get("m_weekend_day")
     m_we_n <- chk_obj$get("m_weekend_night")
 
-    # read disease parameters
     ts <- chk_obj$get("ts")
-    # tv <- chk_obj$get("tv")
     ve <- chk_obj$get("ve")
     dv <- chk_obj$get("dv")
     de <- chk_obj$get("de")
@@ -293,105 +414,40 @@ parse_config <- function(config_file, return_object = FALSE){
     P_ini = chk_obj$get("P")$value
     V_ini = chk_obj$get("V")$value
     R_ini = chk_obj$get("R")$value
-
   }
 
-  ## If other parameters are present, override them
-  ## population initialization
   if(!is.null(yaml_data$population_data$initialization)){
-
     pop_init_file <- yaml_data$population_data$initialization
-
-    # Define reserved columns that are NOT categories
     reserved_cols <- c("population_id", "N", "S0", "I0", "R0", "V0",
                        "E0", "Ia0", "Ip0", "H0", "D0", "P0")
 
     if (is_restore) {
-      # During restore, initialization file can be used as mapping-only metadata
       pop_map_raw <- data.table::fread(pop_init_file)
+      pop_meta <- metarvm_validate_population_table(
+        pop_init = pop_map_raw,
+        reserved_cols = reserved_cols,
+        required_cols = "population_id",
+        require_population_id = TRUE
+      )
+      pop_map <- pop_meta$pop_map
+      category_names <- pop_meta$category_names
 
-      if (!"population_id" %in% names(pop_map_raw)) {
-        setwd(old_wd)
-        stop("Initialization file must contain column: population_id")
-      }
-
-      expected_ids <- 1:nrow(pop_map_raw)
-      if (!all(sort(pop_map_raw$population_id) == expected_ids)) {
-        setwd(old_wd)
-        stop("population_id must be sequential natural numbers: 1, 2, ..., ", nrow(pop_map_raw))
-      }
-
-      data.table::setorder(pop_map_raw, population_id)
-
-      category_cols <- setdiff(names(pop_map_raw), reserved_cols)
-      if (length(category_cols) > 0) {
-        pop_map <- pop_map_raw[, c("population_id", category_cols), with = FALSE]
-      } else {
-        pop_map <- pop_map_raw[, .(population_id)]
-      }
-      category_names <- category_cols
-
-      if (nrow(pop_map_raw) > 5000) {
-        warning(sprintf("Large number of populations (%d). This may affect performance.",
-                        nrow(pop_map_raw)))
-      }
-      if (length(category_names) > 10) {
-        warning(sprintf("Large number of categories (%d). Consider reducing for better usability.",
-                        length(category_names)))
-      }
-
-      if (nrow(pop_map_raw) != N_pop) {
-        setwd(old_wd)
+      if (pop_meta$N_pop != N_pop) {
         stop("When restoring from checkpoint, initialization/mapping rows must match checkpoint N_pop")
       }
     } else {
       pop_init <- data.table::fread(pop_init_file)
+      pop_meta <- metarvm_validate_population_table(
+        pop_init = pop_init,
+        reserved_cols = reserved_cols,
+        required_cols = c("population_id", "N", "S0", "I0", "R0", "V0"),
+        require_population_id = TRUE
+      )
+      pop_init <- pop_meta$pop_init
+      pop_map <- pop_meta$pop_map
+      category_names <- pop_meta$category_names
 
-      # Detect category columns (all columns except reserved ones)
-      category_cols <- setdiff(names(pop_init), reserved_cols)
-
-      # Validate required columns are present
-      required_cols <- c("population_id", "N", "S0", "I0", "R0", "V0")
-      missing <- setdiff(required_cols, names(pop_init))
-      if (length(missing) > 0) {
-        setwd(old_wd)
-        stop("Missing required columns in initialization file: ",
-             paste(missing, collapse = ", "))
-      }
-
-      # Validate population_id is sequential
-      expected_ids <- 1:nrow(pop_init)
-      if (!all(sort(pop_init$population_id) == expected_ids)) {
-        setwd(old_wd)
-        stop("population_id must be sequential natural numbers: 1, 2, ..., ", nrow(pop_init))
-      }
-
-      # Ensure data is ordered by population_id
-      data.table::setorder(pop_init, population_id)
-
-      # Create pop_map from initialization file (contains population_id + category columns)
-      if (length(category_cols) > 0) {
-        pop_map <- pop_init[, c("population_id", category_cols), with = FALSE]
-      } else {
-        # No categories - just population_id
-        pop_map <- pop_init[, .(population_id)]
-      }
-
-      # Store category names for later use
-      category_names <- category_cols
-
-      # Warn if too many populations or categories
-      if (nrow(pop_init) > 5000) {
-        warning(sprintf("Large number of populations (%d). This may affect performance.",
-                        nrow(pop_init)))
-      }
-      if (length(category_names) > 10) {
-        warning(sprintf("Large number of categories (%d). Consider reducing for better usability.",
-                        length(category_names)))
-      }
-
-      # Set up initialization values for non-restore runs
-      N_pop <- nrow(pop_init)
+      N_pop <- pop_meta$N_pop
       P_ini <- pop_init[, N]
       S_ini <- pop_init[, S0]
       I_symp_ini <- pop_init[, I0]
@@ -403,18 +459,14 @@ parse_config <- function(config_file, return_object = FALSE){
       H_ini <- rep(0, N_pop)
       D_ini <- rep(0, N_pop)
     }
-
   }
 
-  # If restoring and no population map was provided, create a minimal one
   if (is_restore && (!exists("pop_map") || is.null(pop_map))) {
     pop_map <- data.table::data.table(population_id = 1:N_pop)
     category_names <- character(0)
   }
 
-  ## check if vac data is present
   if(!is.null(yaml_data$population_data$vaccination)){
-
     vac_file <- yaml_data$population_data$vaccination
     vac_dt <- data.table::fread(vac_file, header = TRUE)
     processed_vac <- process_vac_data(vac_dt,
@@ -425,49 +477,14 @@ parse_config <- function(config_file, return_object = FALSE){
     vac_counts <- as.matrix(processed_vac[, -1])
   }
 
-  ## check if mixing matrices are present
-  if(!is.null(yaml_data$mixing_matrix$weekday_day)){
-    m_wd_d_file <- yaml_data$mixing_matrix$weekday_day
-    m_wd_d <- as.matrix(utils::read.csv(m_wd_d_file, header = F))
-  }
-  if(!is.null(yaml_data$mixing_matrix$weekday_night)){
-    m_wd_n_file <- yaml_data$mixing_matrix$weekday_night
-    m_wd_n <- as.matrix(utils::read.csv(m_wd_n_file, header = F))
-  }
-  if(!is.null(yaml_data$mixing_matrix$weekend_day)){
-    m_we_d_file <- yaml_data$mixing_matrix$weekend_day
-    m_we_d <- as.matrix(utils::read.csv(m_we_d_file, header = F))
-  }
-  
-  if(!is.null(yaml_data$mixing_matrix$weekend_night)){
-    m_we_n_file <- yaml_data$mixing_matrix$weekend_night
-    m_we_n <- as.matrix(utils::read.csv(m_we_n_file, header = F))
-  }
+  mixing <- metarvm_read_mixing_matrices(yaml_data, require_all = TRUE)
+  m_wd_d <- mixing$m_wd_d
+  m_wd_n <- mixing$m_wd_n
+  m_we_d <- mixing$m_we_d
+  m_we_n <- mixing$m_we_n
 
-  ## check for mixing matrix consistency (rowsum = 1)
-  if(any(abs(rowSums(m_wd_d) - 1) > 0.01)) {
-    setwd(old_wd)
-    stop("Rows of weekday day mixing matrix do not sum to 1")
-  }
-  if(any(abs(rowSums(m_wd_n) - 1) > 0.01)) {
-    setwd(old_wd)
-    stop("Rows of weekday night mixing matrix do not sum to 1")
-  }
-  if(any(abs(rowSums(m_we_d) - 1) > 0.01)) {
-    setwd(old_wd)
-    stop("Rows of weekend day mixing matrix do not sum to 1")
-  }
-  if(any(abs(rowSums(m_we_n) - 1) > 0.01)) {
-    setwd(old_wd)
-    stop("Rows of weekend night mixing matrix do not sum to 1")
-  }
-
-  ## check if global disease params are present
   if(!is.null(yaml_data$disease_params)){
-
-    # read global disease parameters
     if(!is.null(yaml_data$disease_params$ts)) ts <- yaml_data$disease_params$ts
-    # if(!is.null(yaml_data$disease_params$tv)) tv <- yaml_data$disease_params$tv
     if(!is.null(yaml_data$disease_params$ve)) ve <- yaml_data$disease_params$ve
     if(!is.null(yaml_data$disease_params$dv)) dv <- yaml_data$disease_params$dv
     if(!is.null(yaml_data$disease_params$de)) de <- yaml_data$disease_params$de
@@ -480,9 +497,7 @@ parse_config <- function(config_file, return_object = FALSE){
     if(!is.null(yaml_data$disease_params$psr)) psr <- yaml_data$disease_params$psr
     if(!is.null(yaml_data$disease_params$phr)) phr <- yaml_data$disease_params$phr
 
-
     if(length(ts) == 1) ts <- rep(ts, N_pop)
-    # if(length(tv) == 1) tv <- rep(tv, N_pop)
     if(length(ve) == 1) ve <- rep(ve, N_pop)
     if(length(dv) == 1) dv <- rep(dv, N_pop)
     if(length(de) == 1) de <- rep(de, N_pop)
@@ -496,11 +511,7 @@ parse_config <- function(config_file, return_object = FALSE){
     if(length(phr) == 1) phr <- rep(phr, N_pop)
   }
 
-
-  ## Stochastic parameters
-
   ts <- do.call(rbind, (purrr::map(1:nsim, ~ draw_sample(ts, N_pop))))
-  # tv <- do.call(rbind, (purrr::map(1:nsim, ~ draw_sample(tv, N_pop))))
   ve <- do.call(rbind, (purrr::map(1:nsim, ~ draw_sample(ve, N_pop))))
   dv <- do.call(rbind, (purrr::map(1:nsim, ~ draw_sample(dv, N_pop))))
   de <- do.call(rbind, (purrr::map(1:nsim, ~ draw_sample(de, N_pop))))
@@ -513,22 +524,16 @@ parse_config <- function(config_file, return_object = FALSE){
   psr <- do.call(rbind, (purrr::map(1:nsim, ~ draw_sample(psr, N_pop))))
   phr <- do.call(rbind, (purrr::map(1:nsim, ~ draw_sample(phr, N_pop))))
 
-  ## check if population specific disease params are present
   if(!is.null(yaml_data$sub_disease_params)){
-
     sub_disease_params <- yaml_data$sub_disease_params
     cats_to_modify <- names(sub_disease_params)
 
-    # check if population_data$initialization was provided
     if (!exists("category_names") || !exists("pop_map")) {
-      setwd(old_wd)
       stop("sub_disease_params requires population_data$initialization to be specified in the config file")
     }
 
-    # check if the subgroup names match with detected categories
     invalid_cats <- setdiff(cats_to_modify, category_names)
     if (length(invalid_cats) > 0) {
-      setwd(old_wd)
       available_cats <- if (length(category_names) > 0) {
         paste(category_names, collapse = ", ")
       } else {
@@ -541,11 +546,8 @@ parse_config <- function(config_file, return_object = FALSE){
 
     for (cat in cats_to_modify){
       cat_vals <- names(sub_disease_params[[cat]])
-
-      # check if the subgroup values are valid
       invalid_cat_vals <- setdiff(cat_vals, unique(pop_map[[cat]]))
       if (length(invalid_cat_vals) > 0) {
-        setwd(old_wd)
         valid_cat_vals <- as.character(unique(pop_map[[cat]]))
         stop(sprintf(
           "Invalid values for category '%s' in sub_disease_params: %s. Valid values are: %s",
@@ -558,7 +560,6 @@ parse_config <- function(config_file, return_object = FALSE){
       for (cat_val in cat_vals){
         row_ids <- which(pop_map[[cat]] == cat_val)
         params_to_modify <- names(sub_disease_params[[cat]][[cat_val]])
-
         for (param in params_to_modify){
           temp_param <- get(param)
           temp_param[, row_ids] <- sub_disease_params[[cat]][[cat_val]][[param]]
@@ -566,66 +567,245 @@ parse_config <- function(config_file, return_object = FALSE){
         }
       }
     }
-
   }
 
-  # Ensure category_names is defined (empty if not set)
   if (!exists("category_names")) {
     category_names <- character(0)
   }
 
-  config_list <- list(N_pop = N_pop,
-                      pop_map = pop_map,
-                      category_names = category_names,
-                      S_ini = S_ini,
-                      E_ini = E_ini,
-                      I_asymp_ini = I_asymp_ini,
-                      I_presymp_ini = I_presymp_ini,
-                      I_symp_ini = I_symp_ini,
-                      H_ini = H_ini,
-                      D_ini = D_ini,
-                      P_ini = P_ini,
-                      V_ini = V_ini,
-                      R_ini = R_ini,
-                      vac_time_id = unlist(vac_time_id, use.names = F),
-                      vac_counts = vac_counts,
-                      vac_mat = cbind(unlist(vac_time_id, use.names = F), vac_counts),
-                      m_wd_d = m_wd_d,
-                      m_wd_n = m_wd_n,
-                      m_we_d = m_we_d,
-                      m_we_n = m_we_n,
-                      ts = ts,
-                      # tv = tv,
-                      ve = ve,
-                      dv = dv,
-                      de = de,
-                      dp = dp,
-                      da = da,
-                      ds = ds,
-                      dh = dh,
-                      dr = dr,
-                      pea = pea,
-                      psr = psr,
-                      phr = phr,
-                      start_date = start_date,
-                      sim_length = sim_length,
-                      nsim = nsim,
-                      nrep = nrep,
-                      simulation_mode = simulation_mode,
-                      random_seed = random_seed,
-                      delta_t = delta_t,
-                      chk_file_names = chk_file_names,
-                      chk_time_steps = chk_time_steps,
-                      do_chk = do_chk)
+  list(N_pop = N_pop,
+       disease = disease,
+       pop_map = pop_map,
+       category_names = category_names,
+       S_ini = S_ini,
+       E_ini = E_ini,
+       I_asymp_ini = I_asymp_ini,
+       I_presymp_ini = I_presymp_ini,
+       I_symp_ini = I_symp_ini,
+       H_ini = H_ini,
+       D_ini = D_ini,
+       P_ini = P_ini,
+       V_ini = V_ini,
+       R_ini = R_ini,
+       vac_time_id = unlist(vac_time_id, use.names = FALSE),
+       vac_counts = vac_counts,
+       vac_mat = cbind(unlist(vac_time_id, use.names = FALSE), vac_counts),
+       m_wd_d = m_wd_d,
+       m_wd_n = m_wd_n,
+       m_we_d = m_we_d,
+       m_we_n = m_we_n,
+       ts = ts,
+       ve = ve,
+       dv = dv,
+       de = de,
+       dp = dp,
+       da = da,
+       ds = ds,
+       dh = dh,
+       dr = dr,
+       pea = pea,
+       psr = psr,
+       phr = phr,
+       start_date = start_date,
+       sim_length = sim_length,
+       nsim = nsim,
+       nrep = nrep,
+       simulation_mode = simulation_mode,
+       random_seed = random_seed,
+       verbose = verbose,
+       suppress_odin_messages = suppress_odin_messages,
+       delta_t = delta_t,
+       chk_file_names = chk_file_names,
+       chk_time_steps = chk_time_steps,
+       do_chk = do_chk)
+}
 
-  setwd(old_wd)  # reset working directory
-  
-  if (return_object) {
-    return(MetaRVMConfig$new(config_list))
+metarvm_parse_simulation_config <- function(yaml_data,
+                                            default_delta_t = 0.5,
+                                            default_mode = "deterministic",
+                                            force_stochastic = FALSE) {
+  # Maintainer Notes:
+  # Shared parser for simulation-level controls.
+  # This helper defines normalization semantics used across diseases:
+  # - `start_date` interpreted as simulation day 0 being one day prior.
+  # - `nrep` normalized to positive integer.
+  # - `simulation_mode` can be explicit or inferred from legacy `is_stoch`.
+  # - seed policy:
+  #     * use provided seed when available
+  #     * auto-generate seed for stochastic mode if missing
+  #     * leave NULL for deterministic mode
+  #
+  # If you change behavior here, check both deterministic and stochastic disease
+  # configs because all builders rely on this helper now.
+  sim_cfg <- yaml_data$simulation_config
+
+  delta_t <- ifelse(!is.null(sim_cfg$delta_t), sim_cfg$delta_t, default_delta_t)
+
+  if (!is.null(sim_cfg$start_date)) {
+    start_date <- as.Date(sim_cfg$start_date, tryFormats = c("%m/%d/%Y")) - 1
   } else {
-    return(config_list)  # Backward compatibility
+    stop("simulation_config$start_date is required")
   }
 
+  sim_length <- sim_cfg$length
+  if (is.null(sim_length)) {
+    stop("simulation_config$length is required")
+  }
+
+  nsim <- ifelse(!is.null(sim_cfg$nsim), sim_cfg$nsim, 1)
+  nrep <- ifelse(!is.null(sim_cfg$nrep), sim_cfg$nrep, 1)
+  nrep <- suppressWarnings(as.integer(nrep)[1])
+  if (is.na(nrep) || nrep < 1) {
+    stop("nrep must be a positive integer")
+  }
+
+  if (isTRUE(force_stochastic)) {
+    simulation_mode <- "stochastic"
+  } else {
+    simulation_mode <- default_mode
+    if (!is.null(sim_cfg$simulation_mode)) {
+      simulation_mode <- tolower(trimws(as.character(sim_cfg$simulation_mode)))
+    } else if (!is.null(sim_cfg$is_stoch)) {
+      is_stoch <- sim_cfg$is_stoch
+      simulation_mode <- if (isTRUE(is_stoch) || (is.numeric(is_stoch) && is_stoch != 0)) {
+        "stochastic"
+      } else {
+        "deterministic"
+      }
+    }
+    if (!simulation_mode %in% c("deterministic", "stochastic")) {
+      stop("simulation_mode must be either 'deterministic' or 'stochastic'")
+    }
+  }
+
+  if(!is.null(sim_cfg$random_seed)){
+    random_seed <- suppressWarnings(as.integer(sim_cfg$random_seed)[1])
+    if (is.na(random_seed)) {
+      stop("random_seed must be coercible to a single integer value")
+    }
+    set.seed(random_seed)
+  } else if (simulation_mode == "stochastic") {
+    random_seed <- sample.int(.Machine$integer.max, 1)
+    set.seed(random_seed)
+  } else {
+    random_seed <- NULL
+  }
+
+  list(
+    delta_t = delta_t,
+    start_date = start_date,
+    sim_length = sim_length,
+    nsim = nsim,
+    nrep = nrep,
+    simulation_mode = simulation_mode,
+    random_seed = random_seed
+  )
+}
+
+metarvm_validate_population_table <- function(pop_init,
+                                              reserved_cols,
+                                              required_cols = NULL,
+                                              require_any_of = NULL,
+                                              require_population_id = TRUE) {
+  # Maintainer Notes:
+  # Shared validator for initialization/map files.
+  # Responsibilities:
+  # - validate required columns
+  # - validate "at least one-of" constraints
+  # - enforce sequential population_id convention (1..N)
+  # - derive `pop_map` + `category_names`
+  #
+  # Why sequential IDs?
+  # Simulation outputs and matrix indexing assume deterministic ordering.
+  # Sequential IDs reduce ambiguity in joins/subsetting and avoid silent mapping
+  # errors between config files and engine state vectors.
+  if (!is.null(required_cols)) {
+    missing <- setdiff(required_cols, names(pop_init))
+    if (length(missing) > 0) {
+      stop("Missing required columns in initialization file: ",
+           paste(missing, collapse = ", "))
+    }
+  }
+
+  if (!is.null(require_any_of) && length(require_any_of) > 0 &&
+      !any(require_any_of %in% names(pop_init))) {
+    stop("Initialization file must contain at least one of: ",
+         paste(require_any_of, collapse = ", "))
+  }
+
+  if (isTRUE(require_population_id) && !"population_id" %in% names(pop_init)) {
+    stop("Initialization file must contain column: population_id")
+  }
+
+  if (isTRUE(require_population_id)) {
+    expected_ids <- 1:nrow(pop_init)
+    if (!all(sort(pop_init$population_id) == expected_ids)) {
+      stop("population_id must be sequential natural numbers: 1, 2, ..., ", nrow(pop_init))
+    }
+    data.table::setorder(pop_init, population_id)
+  }
+
+  category_cols <- setdiff(names(pop_init), reserved_cols)
+  if (length(category_cols) > 0) {
+    pop_map <- pop_init[, c("population_id", category_cols), with = FALSE]
+  } else {
+    pop_map <- pop_init[, .(population_id)]
+  }
+  category_names <- category_cols
+
+  if (nrow(pop_init) > 5000) {
+    warning(sprintf("Large number of populations (%d). This may affect performance.",
+                    nrow(pop_init)))
+  }
+  if (length(category_names) > 10) {
+    warning(sprintf("Large number of categories (%d). Consider reducing for better usability.",
+                    length(category_names)))
+  }
+
+  list(
+    pop_init = pop_init,
+    pop_map = pop_map,
+    category_names = category_names,
+    N_pop = nrow(pop_init)
+  )
+}
+
+metarvm_read_mixing_matrices <- function(yaml_data, require_all = TRUE) {
+  # Maintainer Notes:
+  # Shared loader/validator for mixing matrices.
+  # We enforce row sums ~ 1 to represent contact-allocation proportions.
+  # Tolerance (0.01) is intentionally permissive enough for CSV rounding noise.
+  #
+  # If future disease models require different matrix semantics, add a disease-
+  # specific wrapper in the builder rather than weakening this shared invariant.
+  mm <- yaml_data$mixing_matrix
+  files <- list(
+    weekday_day = mm$weekday_day,
+    weekday_night = mm$weekday_night,
+    weekend_day = mm$weekend_day,
+    weekend_night = mm$weekend_night
+  )
+
+  if (isTRUE(require_all) && any(vapply(files, is.null, logical(1)))) {
+    stop("All four mixing matrices are required: weekday_day, weekday_night, weekend_day, weekend_night")
+  }
+
+  m_wd_d <- as.matrix(utils::read.csv(files$weekday_day, header = FALSE))
+  m_wd_n <- as.matrix(utils::read.csv(files$weekday_night, header = FALSE))
+  m_we_d <- as.matrix(utils::read.csv(files$weekend_day, header = FALSE))
+  m_we_n <- as.matrix(utils::read.csv(files$weekend_night, header = FALSE))
+
+  if(any(abs(rowSums(m_wd_d) - 1) > 0.01)) stop("Rows of weekday day mixing matrix do not sum to 1")
+  if(any(abs(rowSums(m_wd_n) - 1) > 0.01)) stop("Rows of weekday night mixing matrix do not sum to 1")
+  if(any(abs(rowSums(m_we_d) - 1) > 0.01)) stop("Rows of weekend day mixing matrix do not sum to 1")
+  if(any(abs(rowSums(m_we_n) - 1) > 0.01)) stop("Rows of weekend night mixing matrix do not sum to 1")
+
+  list(
+    m_wd_d = m_wd_d,
+    m_wd_n = m_wd_n,
+    m_we_d = m_we_d,
+    m_we_n = m_we_n
+  )
 }
 
 # next_rda <- function() {
@@ -648,6 +828,11 @@ parse_config <- function(config_file, return_object = FALSE){
 #' @returns A data.table
 #' @keywords internal
 process_vac_data <- function(vac_dt, sim_start_date, sim_length, delta_t) {
+  # Maintainer Notes:
+  # Vaccination schedules are expanded to full simulation timeline so engines can
+  # index by timestep directly without sparse-date checks.
+  # Missing dates are filled with zeros.
+  # We zero-out t==0 vaccination because simulation convention starts one day early.
 
   # Ensure the date column is of Date type
   vac_dt[[1]] <- as.Date(vac_dt[[1]], tryFormats = c("%m/%d/%Y"))
@@ -688,6 +873,13 @@ process_vac_data <- function(vac_dt, sim_start_date, sim_length, delta_t) {
 #' @returns A random sample drawn from the distribution specified by the dist component
 #' @keywords internal
 draw_sample <- function(config_list, N_pop, seed = NULL){
+  # Maintainer Notes:
+  # Supports both scalar literals and distribution-spec lists.
+  # Distribution specs are sampled once per simulation draw and replicated over
+  # N_pop by default; disease builders can layer additional subgroup overrides.
+  #
+  # If a new distribution is introduced, update here and keep interface backward
+  # compatible (`dist` + parameter names).
 
   if(methods::is(config_list, "list")){
 
@@ -710,4 +902,33 @@ draw_sample <- function(config_list, N_pop, seed = NULL){
 
     return(rep(x, N_pop))
   } else return(config_list)
+}
+
+metarvm_as_logical_flag <- function(x, option_name, default = FALSE) {
+  # Maintainer Notes:
+  # Robust logical coercion for YAML inputs (`true`, `yes`, `1`, etc.).
+  # Keep this strict (error on ambiguous values) to avoid silent misconfigurations.
+  if (is.null(x)) {
+    return(default)
+  }
+
+  if (is.logical(x)) {
+    return(isTRUE(x[[1]]))
+  }
+
+  if (is.numeric(x)) {
+    return(!is.na(x[[1]]) && x[[1]] != 0)
+  }
+
+  if (is.character(x)) {
+    val <- tolower(trimws(x[[1]]))
+    if (val %in% c("true", "t", "1", "yes", "y", "on")) {
+      return(TRUE)
+    }
+    if (val %in% c("false", "f", "0", "no", "n", "off")) {
+      return(FALSE)
+    }
+  }
+
+  stop(option_name, " must be logical-like (TRUE/FALSE, yes/no, 1/0)")
 }

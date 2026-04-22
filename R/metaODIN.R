@@ -635,6 +635,7 @@ meta_sim <- function(N_pop, ts,
         chk_file_name_instance <- chk_file_names[[i]]
         
         chk <- MetaRVMCheck$new(list(
+          disease = "rvm",
           chk_time_step = time_step,
           N_pop = N_pop,
           delta_t = delta_t,

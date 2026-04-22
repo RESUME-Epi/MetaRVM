@@ -1,0 +1,4 @@
+population_id,age_group,zone,N,S0,I1_U0
+1,child,urban,500,495,5
+2,adult,urban,700,700,0
+3,child,rural,400,398,2

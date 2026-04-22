@@ -35,6 +35,8 @@ Imports:
     yaml
 Suggests: 
     dde,
+    doParallel,
+    foreach,
     knitr,
     pkgdown,
     rmarkdown,

@@ -221,9 +221,16 @@ MetaRVMConfig <- R6::R6Class(
       if (!is.list(self$config_data)) {
         stop("Configuration data must be a list")
       }
-      
-      # Check for required fields (adjust based on your needs)
-      required_fields <- c("N_pop")
+
+      disease_id <- if ("disease" %in% names(self$config_data)) {
+        normalize_disease_name(self$config_data$disease)
+      } else {
+        "rvm"
+      }
+      self$config_data$disease <- disease_id
+
+      # Validate required fields from disease schema.
+      required_fields <- get_metarvm_required_config_fields(disease_id)
       missing_fields <- setdiff(required_fields, names(self$config_data))
       if (length(missing_fields) > 0) {
         stop(sprintf("Missing required configuration fields: %s", 
@@ -315,6 +322,24 @@ MetaRVMResults <- R6::R6Class(
       } else {
         stop("Either raw_results or formatted_results must be provided")
       }
+
+      disease_id <- if ("disease" %in% names(self$config$config_data)) {
+        self$config$config_data$disease
+      } else {
+        "rvm"
+      }
+      output_spec <- get_metarvm_output_spec(disease_id)
+      state_col <- output_spec$state_col
+      time_col <- output_spec$time_col
+      value_col <- output_spec$value_col
+      required_result_cols <- c(time_col, state_col, value_col, "instance")
+      missing_result_cols <- setdiff(required_result_cols, names(self$results))
+      if (length(missing_result_cols) > 0) {
+        stop(sprintf(
+          "Results are missing required columns: %s",
+          paste(missing_result_cols, collapse = ", ")
+        ))
+      }
       
       # # Set run_info
       # self$run_info <- run_info %||% list(
@@ -328,7 +353,7 @@ MetaRVMResults <- R6::R6Class(
         created_at = Sys.time(),
         n_instances = length(unique(self$results$instance)),
         n_populations = private$calculate_n_populations(self$results),
-        date_range = if(nrow(self$results) > 0) range(self$results$date, na.rm = TRUE) else c(NA, NA)
+        date_range = if(nrow(self$results) > 0) range(self$results[[time_col]], na.rm = TRUE) else c(NA, NA)
       )
       
       invisible(self)
@@ -354,8 +379,18 @@ MetaRVMResults <- R6::R6Class(
       if (!is.null(self$run_info$random_seed)) {
         cat("Random seed:", self$run_info$random_seed, "\n")
       }
+      disease_id <- if ("disease" %in% names(self$config$config_data)) {
+        self$config$config_data$disease
+      } else {
+        "rvm"
+      }
+      output_spec <- get_metarvm_output_spec(disease_id)
+      state_col <- output_spec$state_col
+
       cat("Total observations:", nrow(self$results), "\n")
-      cat("Disease states:", paste(unique(self$results$disease_state), collapse = ", "), "\n")
+      if (state_col %in% names(self$results)) {
+        cat("Disease states:", paste(unique(self$results[[state_col]]), collapse = ", "), "\n")
+      }
       invisible(self)
     },
 
@@ -403,8 +438,17 @@ MetaRVMResults <- R6::R6Class(
     subset_data = function(..., disease_states = NULL, date_range = NULL,
                           instances = NULL, exclude_p_columns = TRUE) {
 
+      disease_id <- if ("disease" %in% names(self$config$config_data)) {
+        self$config$config_data$disease
+      } else {
+        "rvm"
+      }
+      output_spec <- get_metarvm_output_spec(disease_id)
+      state_col <- output_spec$state_col
+      time_col <- output_spec$time_col
+
       # Start with copy of all results
-      subset_results <- copy(self$results)
+      subset_results <- data.table::copy(self$results)
 
       # Parse dynamic category filters from ...
       category_filters <- list(...)
@@ -445,11 +489,24 @@ MetaRVMResults <- R6::R6Class(
         }
       }
 
+      selected_states <- resolve_metarvm_state_selection(disease_id, disease_states)
+
       # Filter by disease states
+      if (!state_col %in% names(subset_results)) {
+        stop(sprintf("Results do not contain expected state column '%s'", state_col))
+      }
       if (!is.null(disease_states)) {
-        subset_results <- subset_results[disease_state %in% disease_states]
+        subset_results <- subset_results[get(state_col) %in% selected_states]
       } else if (exclude_p_columns) {
-        subset_results <- subset_results[!grepl("^p_", disease_state)]
+        exclude_patterns <- output_spec$default_exclude_patterns
+        if (length(exclude_patterns) > 0) {
+          state_vals <- as.character(subset_results[[state_col]])
+          keep <- rep(TRUE, length(state_vals))
+          for (pat in exclude_patterns) {
+            keep <- keep & !grepl(pat, state_vals)
+          }
+          subset_results <- subset_results[keep]
+        }
       }
 
       # Filter by date range
@@ -457,27 +514,41 @@ MetaRVMResults <- R6::R6Class(
         if (length(date_range) != 2) {
           stop("date_range must be a vector of two dates: c(start_date, end_date)")
         }
+        if (!time_col %in% names(subset_results)) {
+          stop(sprintf("Results do not contain expected time column '%s'", time_col))
+        }
         start_date <- as.Date(date_range[1], tryFormats = c("%m/%d/%Y"))
         end_date <- as.Date(date_range[2], tryFormats = c("%m/%d/%Y"))
-        subset_results <- subset_results[date >= start_date & date <= end_date]
+        subset_results <- subset_results[get(time_col) >= start_date & get(time_col) <= end_date]
       }
 
       # Filter by instance
       if (!is.null(instances)) {
+        if (!"instance" %in% names(subset_results)) {
+          stop("Results do not contain required column 'instance'")
+        }
         subset_results <- subset_results[instance %in% instances]
       }
 
       # Dynamic sorting based on available categories
-      sort_cols <- c("date", "instance")
+      sort_cols <- c(time_col, "instance")
       if (length(available_categories) > 0) {
         # Only include category columns that actually exist in the data
         existing_cats <- intersect(available_categories, names(subset_results))
         sort_cols <- c(sort_cols, existing_cats)
       }
-      sort_cols <- c(sort_cols, "disease_state")
+      sort_cols <- c(sort_cols, state_col)
       data.table::setorderv(subset_results, sort_cols)
 
       # Create new run_info to reflect the subset
+      instance_manifest_subset <- NULL
+      if (!is.null(self$run_info$instance_manifest)) {
+        instance_manifest_subset <- data.table::as.data.table(self$run_info$instance_manifest)
+        subset_instance_ids <- sort(unique(subset_results$instance))
+        if ("instance" %in% names(instance_manifest_subset)) {
+          instance_manifest_subset <- instance_manifest_subset[instance %in% subset_instance_ids]
+        }
+      }
       new_run_info <- list(
         created_at = Sys.time(),
         original_created_at = self$run_info$created_at,
@@ -490,9 +561,10 @@ MetaRVMResults <- R6::R6Class(
         checkpointing_enabled = self$run_info$checkpointing_enabled,
         n_instances = length(unique(subset_results$instance)),
         n_populations = private$calculate_n_populations(subset_results),
-        date_range = if(nrow(subset_results) > 0) range(subset_results$date, na.rm = TRUE) else c(NA, NA),
+        date_range = if(nrow(subset_results) > 0) range(subset_results[[time_col]], na.rm = TRUE) else c(NA, NA),
+        instance_manifest = instance_manifest_subset,
         subset_filters = c(category_filters, list(
-          disease_states = disease_states,
+          disease_states = selected_states,
           date_range = date_range,
           instances = instances,
           exclude_p_columns = exclude_p_columns
@@ -524,6 +596,23 @@ MetaRVMResults <- R6::R6Class(
       
       # Validate group_by parameters against available categories
       valid_groups <- self$config$get_category_names()
+      disease_id <- if ("disease" %in% names(self$config$config_data)) {
+        self$config$config_data$disease
+      } else {
+        "rvm"
+      }
+      output_spec <- get_metarvm_output_spec(disease_id)
+      state_col <- output_spec$state_col
+      time_col <- output_spec$time_col
+      value_col <- output_spec$value_col
+      required_result_cols <- c(time_col, state_col, value_col, "instance")
+      missing_result_cols <- setdiff(required_result_cols, names(self$results))
+      if (length(missing_result_cols) > 0) {
+        stop(sprintf(
+          "Results are missing required columns for summarize(): %s",
+          paste(missing_result_cols, collapse = ", ")
+        ))
+      }
 
       if (length(group_by) > 0) {
         invalid_groups <- setdiff(group_by, valid_groups)
@@ -550,9 +639,9 @@ MetaRVMResults <- R6::R6Class(
       )
       
       # Step 1: Sum by demographic categories, date, and disease_state (keeping instances separate)
-      group_vars <- c("date", group_by, "disease_state", "instance")
+      group_vars <- c(time_col, group_by, state_col, "instance")
       summed_data <- subset_data$results[, .(
-        value = sum(value, na.rm = TRUE)
+        value = sum(get(value_col), na.rm = TRUE)
       ), by = group_vars]
       
       # # Step 2: If stats is NULL, return all instances without summarizing
@@ -562,7 +651,7 @@ MetaRVMResults <- R6::R6Class(
       # }
       
       # Step 3: Calculate statistics across instances for each date/demographic/disease combination
-      final_group_vars <- c("date", group_by, "disease_state")
+      final_group_vars <- c(time_col, group_by, state_col)
       summary_result <- summed_data[, {
         out <- list()
 
@@ -597,14 +686,64 @@ MetaRVMResults <- R6::R6Class(
       # return(summary_result)
       # Return a chainable object
       if (is.null(stats)) {
-        setorder(summed_data, date, disease_state, instance)
+        data.table::setorderv(summed_data, c(time_col, state_col, "instance"))
         # Return summary object for chaining
         return(MetaRVMSummary$new(summed_data, self$config, type = "instances"))
       } else {
-        setorderv(summary_result, c("date", group_by, "disease_state"))
+        data.table::setorderv(summary_result, c(time_col, group_by, state_col))
         # Return summary object for chaining
         return(MetaRVMSummary$new(summary_result, self$config, type = "summary"))
       }
+    },
+
+    #' @description Get per-instance simulation manifest (parameter-set id, replicate id, seed, and settings)
+    #' @param instances Optional vector of instance ids to filter
+    #' @param include_sim_args Logical. If FALSE, omits the `sim_args` list-column for a lighter table
+    #' @return data.table with one row per simulation instance
+    get_instance_manifest = function(instances = NULL, include_sim_args = TRUE) {
+      if (!is.null(self$run_info$instance_manifest)) {
+        manifest <- data.table::copy(data.table::as.data.table(self$run_info$instance_manifest))
+      } else {
+        manifest <- data.table::data.table(instance = sort(unique(self$results$instance)))
+      }
+
+      if (!is.null(instances)) {
+        instances <- unique(as.integer(instances))
+        missing_instances <- setdiff(instances, manifest$instance)
+        if (length(missing_instances) > 0) {
+          stop(sprintf(
+            "Requested instances not found in manifest: %s",
+            paste(missing_instances, collapse = ", ")
+          ))
+        }
+        manifest <- manifest[instance %in% instances]
+      }
+
+      if (!isTRUE(include_sim_args) && "sim_args" %in% names(manifest)) {
+        manifest[, sim_args := NULL]
+      }
+
+      data.table::setorder(manifest, instance)
+      manifest
+    },
+
+    #' @description Get per-instance settings table with parameters list-column (`params`)
+    #' @param instances Optional vector of instance ids to filter
+    #' @return data.table with instance mapping and exact parameter values used in simulation
+    get_instance_params = function(instances = NULL) {
+      manifest <- self$get_instance_manifest(instances = instances, include_sim_args = TRUE)
+      if (!"sim_args" %in% names(manifest)) {
+        stop("Instance parameters are unavailable: no sim_args stored in run_info$instance_manifest")
+      }
+      manifest <- manifest[, .(
+        instance,
+        parameter_set = if ("parameter_set" %in% names(manifest)) parameter_set else NA_integer_,
+        replicate = if ("replicate" %in% names(manifest)) replicate else NA_integer_,
+        seed = if ("seed" %in% names(manifest)) seed else NA_integer_,
+        params = sim_args
+      )]
+      data.table::setorder(manifest, instance)
+      manifest
     }
   ),
 
@@ -736,6 +875,14 @@ MetaRVMSummary <- R6::R6Class(
       cat("======================\n")
       cat("Data type:", self$type, "\n")
       cat("Observations:", nrow(self$data), "\n")
+      disease_id <- if ("disease" %in% names(self$config$config_data)) {
+        self$config$config_data$disease
+      } else {
+        "rvm"
+      }
+      output_spec <- get_metarvm_output_spec(disease_id)
+      state_col <- output_spec$state_col
+      time_col <- output_spec$time_col
       
       # Show grouping variables
       columns <- names(self$data)
@@ -750,8 +897,8 @@ MetaRVMSummary <- R6::R6Class(
       }
       
       # Show available disease states
-      if ("disease_state" %in% columns) {
-        disease_states <- unique(self$data$disease_state)
+      if (state_col %in% columns) {
+        disease_states <- unique(self$data[[state_col]])
         if (length(disease_states) <= 5) {
           cat("Disease states:", paste(disease_states, collapse = ", "), "\n")
         } else {
@@ -760,8 +907,8 @@ MetaRVMSummary <- R6::R6Class(
       }
       
       # Show date range if available
-      if ("date" %in% columns) {
-        date_range <- range(self$data$date, na.rm = TRUE)
+      if (time_col %in% columns) {
+        date_range <- range(self$data[[time_col]], na.rm = TRUE)
         cat("Date range:", paste(date_range, collapse = " to "), "\n")
       }
       
@@ -804,6 +951,23 @@ MetaRVMSummary <- R6::R6Class(
     plot = function(ci_level = 0.95, theme = theme_minimal(), title = NULL) {
       
       columns <- names(self$data)
+      disease_id <- if ("disease" %in% names(self$config$config_data)) {
+        self$config$config_data$disease
+      } else {
+        "rvm"
+      }
+      output_spec <- get_metarvm_output_spec(disease_id)
+      state_col <- output_spec$state_col
+      value_col <- output_spec$value_col
+      time_col <- output_spec$time_col
+      required_plot_cols <- c(time_col, value_col)
+      missing_plot_cols <- setdiff(required_plot_cols, columns)
+      if (length(missing_plot_cols) > 0) {
+        stop(sprintf(
+          "Plot data are missing required columns: %s",
+          paste(missing_plot_cols, collapse = ", ")
+        ))
+      }
 
       # Detect grouping variables dynamically
       available_categories <- self$config$get_category_names()
@@ -815,9 +979,12 @@ MetaRVMSummary <- R6::R6Class(
 
       # Instance trajectory plotting mode
       if (identical(self$type, "instances")) {
-        color_var <- if ("disease_state" %in% columns) "disease_state" else "instance"
+        if (!"instance" %in% columns) {
+          stop("Instance trajectory plotting requires column 'instance'")
+        }
+        color_var <- if (state_col %in% columns) state_col else "instance"
 
-        p <- ggplot(self$data, aes(x = date, y = value,
+        p <- ggplot(self$data, aes(x = .data[[time_col]], y = .data[[value_col]],
                                    color = .data[[color_var]],
                                    group = interaction(.data[["instance"]], .data[[color_var]], drop = TRUE))) +
           geom_line(alpha = 0.45, linewidth = 0.5)
@@ -858,16 +1025,16 @@ MetaRVMSummary <- R6::R6Class(
       # Create faceting strategy based on number of grouping variables
       if (length(group_vars) == 0) {
         facet_formula <- NULL
-        color_var <- "disease_state"
+        color_var <- state_col
       } else if (length(group_vars) == 1) {
-        # Single grouping variable: facet by that variable, color by disease_state
+        # Single grouping variable: facet by that variable, color by state.
         facet_formula <- as.formula(paste("~", group_vars[1]))
-        color_var <- "disease_state"
+        color_var <- state_col
         
       } else if (length(group_vars) == 2) {
-        # Two grouping variables: facet by both, color by disease_state
+        # Two grouping variables: facet by both, color by state.
         facet_formula <- as.formula(paste(group_vars[1], "~", group_vars[2]))
-        color_var <- "disease_state"
+        color_var <- state_col
         
       } else if (length(group_vars) == 3) {
         # Three grouping variables: facet by first two, color by third
@@ -881,7 +1048,7 @@ MetaRVMSummary <- R6::R6Class(
       ci_upper_col <- quantile_cols[length(quantile_cols)]
       
       # Create the plot
-      p <- ggplot(self$data, aes(x = date, y = median_value, color = .data[[color_var]])) +
+      p <- ggplot(self$data, aes(x = .data[[time_col]], y = median_value, color = .data[[color_var]])) +
         geom_line(linewidth = 1) +
         geom_ribbon(aes(ymin = .data[[ci_lower_col]], ymax = .data[[ci_upper_col]],
                       fill = .data[[color_var]]), alpha = 0.2, color = NA) +
@@ -959,13 +1126,15 @@ MetaRVMCheck <- R6::R6Class(
   ),
   private = list(
     validate_config = function() {
-      # Basic validation for checkpoint data
-      required_fields <- c(
-        "N_pop", "delta_t", "m_weekday_day", "m_weekday_night", "m_weekend_day", 
-        "m_weekend_night", "ts", "ve", "dv", "de", "dp", "da", "ds", 
-        "dh", "dr", "pea", "psr", "phr", "S", 
-        "E", "Ia", "Ip", "Is", "H", "D", "P", "V", "R", "chk_time_step"
-      )
+      disease_id <- if ("disease" %in% names(self$check_data)) {
+        normalize_disease_name(self$check_data$disease)
+      } else {
+        "rvm"
+      }
+      self$check_data$disease <- disease_id
+      self$config_data$disease <- disease_id
+
+      required_fields <- get_metarvm_required_checkpoint_fields(disease_id)
       missing_fields <- setdiff(required_fields, names(self$check_data))
       if (length(missing_fields) > 0) {
         stop(sprintf("Missing required checkpoint fields: %s",

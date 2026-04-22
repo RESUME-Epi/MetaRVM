@@ -36,6 +36,14 @@
 #'     \item **Named list**: output from [parse_config()] with
 #'       `return_object = FALSE`.
 #'   }
+#' @param verbose Optional logical. If `TRUE`, prints meaningful run progress
+#'   messages. If `NULL` (default), uses `simulation_config$verbose` from the
+#'   parsed config when available; otherwise defaults to `FALSE`.
+#' @param suppress_odin_messages Optional logical. If `TRUE`, sets
+#'   `options(odin.verbose = FALSE)` for this run to suppress ODIN compilation
+#'   chatter. If `NULL` (default), uses
+#'   `simulation_config$suppress_odin_messages` from config when available;
+#'   otherwise defaults to `FALSE`.
 #'
 #' @return
 #' A [`MetaRVMResults`] R6 object with three key components:
@@ -97,7 +105,28 @@
 #' @author Arindam Fadikar, Charles Macal, Ignacio Martinez-Moyano, Jonathan Ozik
 #'
 #' @export
-metaRVM <- function(config_input) {
+metaRVM <- function(config_input, verbose = NULL, suppress_odin_messages = NULL) {
+  # =============================================================================
+  # Maintainer Notes: High-level orchestration philosophy
+  # -----------------------------------------------------------------------------
+  # `metaRVM()` is intentionally a thin orchestrator:
+  # - It should not know disease-specific parameter names.
+  # - It should not branch by disease in simulation logic.
+  # - It should rely on registry hooks for engine selection and arg mapping.
+  #
+  # Why:
+  # - Keeps one stable public run API for all diseases.
+  # - Makes adding diseases a registry + builder task, not a core refactor.
+  # - Reduces risk of regression in existing diseases when adding new ones.
+  #
+  # Data flow:
+  # config_input -> MetaRVMConfig -> registry resolve -> run loop ->
+  # engine output -> merged `out` -> MetaRVMResults.
+  # =============================================================================
+  disease <- resolve_disease_from_config_input(config_input)
+  disease_entry <- get_metarvm_disease_entry(disease)
+  sim_engine <- get_metarvm_engine_fn(disease)
+
   # Handle different input types
   if (is.character(config_input)) {
     # Input is a file path - create MetaRVMConfig object
@@ -111,8 +140,42 @@ metaRVM <- function(config_input) {
   } else {
     stop("config_input must be a file path, MetaRVMConfig object, or parsed config list")
   }
-  
-  # pass inputs to meta_sim
+
+  # Maintainer Note:
+  # Runtime verbosity controls are normalized here instead of in every engine.
+  # This keeps low-level engines pure (state transitions + output only) and keeps
+  # UI/log policy centralized at the orchestration layer.
+  verbose_run <- if (!is.null(verbose)) {
+    metarvm_as_logical_flag(verbose, "verbose", default = FALSE)
+  } else if ("verbose" %in% names(config_obj$config_data)) {
+    metarvm_as_logical_flag(config_obj$config_data$verbose, "config_data$verbose", default = FALSE)
+  } else {
+    FALSE
+  }
+  suppress_odin_run <- if (!is.null(suppress_odin_messages)) {
+    metarvm_as_logical_flag(suppress_odin_messages, "suppress_odin_messages", default = FALSE)
+  } else if ("suppress_odin_messages" %in% names(config_obj$config_data)) {
+    metarvm_as_logical_flag(config_obj$config_data$suppress_odin_messages,
+                            "config_data$suppress_odin_messages", default = FALSE)
+  } else {
+    FALSE
+  }
+  vmsg <- function(...) {
+    if (isTRUE(verbose_run)) {
+      message(...)
+    }
+  }
+  if (isTRUE(suppress_odin_run)) {
+    old_odin_verbose <- getOption("odin.verbose")
+    options(odin.verbose = FALSE)
+    on.exit(options(odin.verbose = old_odin_verbose), add = TRUE)
+  }
+
+  # Maintainer Note:
+  # nsim = number of parameter draws; nrep = stochastic replicates per draw.
+  # Total simulation instances = nsim * nrep.
+  # Keep this interpretation stable because summary/quantile workflows rely on it.
+  # pass inputs to disease-specific simulation engine
   nsim <- config_obj$config_data$nsim
   nrep <- if ("nrep" %in% names(config_obj$config_data)) {
     as.integer(config_obj$config_data$nrep)
@@ -122,12 +185,23 @@ metaRVM <- function(config_input) {
   if (is.na(nrep) || nrep < 1) {
     stop("nrep must be a positive integer")
   }
-  simulation_mode <- if ("simulation_mode" %in% names(config_obj$config_data)) {
+
+  simulation_mode <- if (isTRUE(disease_entry$always_stochastic)) {
+    "stochastic"
+  } else if ("simulation_mode" %in% names(config_obj$config_data)) {
     config_obj$config_data$simulation_mode
   } else {
     "deterministic"
   }
   is_stoch <- identical(tolower(as.character(simulation_mode)), "stochastic")
+  total_instances <- nsim * nrep
+  vmsg(sprintf(
+    "Starting MetaRVM run: disease=%s, mode=%s, nsim=%d, nrep=%d, total_instances=%d",
+    disease, simulation_mode, nsim, nrep, total_instances
+  ))
+  if (isTRUE(suppress_odin_run)) {
+    vmsg("ODIN messages suppressed via options(odin.verbose = FALSE) for this run.")
+  }
   run_seed_base <- NA_integer_
   if (is_stoch) {
     run_seed <- config_obj$config_data$random_seed
@@ -141,6 +215,7 @@ metaRVM <- function(config_input) {
     }
     config_obj$config_data$random_seed <- run_seed
     run_seed_base <- run_seed
+    vmsg(sprintf("Using stochastic seed base: %d", run_seed_base))
   }
   nsteps <- floor(config_obj$config_data$sim_length / config_obj$config_data$delta_t)
   day_name <- weekdays(config_obj$config_data$start_date)
@@ -155,53 +230,144 @@ metaRVM <- function(config_input) {
     TRUE ~ NA_integer_
   )
 
-  out <- data.table::data.table()
-  run_idx <- 0L
-  for (ii in 1:nsim){
-    for (rr in 1:nrep){
-      run_idx <- run_idx + 1L
-      if (is_stoch) {
-        set.seed(run_seed_base + run_idx - 1L)
+  task_grid <- data.table::CJ(ii = seq_len(nsim), rr = seq_len(nrep), sorted = TRUE)
+  task_grid[, run_idx := (ii - 1L) * nrep + rr]
+  config_data <- config_obj$config_data
+  sim_args_list <- lapply(seq_len(nrow(task_grid)), function(task_id) {
+    build_metarvm_sim_args(
+      disease = disease,
+      config_data = config_data,
+      ii = task_grid$ii[[task_id]],
+      run_idx = task_grid$run_idx[[task_id]],
+      nsteps = nsteps,
+      start_day = start_day,
+      is_stoch = is_stoch
+    )
+  })
+  instance_manifest <- data.table::copy(task_grid[, .(
+    instance = run_idx,
+    parameter_set = ii,
+    replicate = rr
+  )])
+  instance_manifest[, disease := disease]
+  instance_manifest[, simulation_mode := simulation_mode]
+  instance_manifest[, seed := if (is_stoch) (run_seed_base + instance - 1L) else NA_integer_]
+  instance_manifest[, sim_args := sim_args_list]
+
+  run_one_instance <- function(run_idx, sim_args) {
+    if (is_stoch) {
+      set.seed(run_seed_base + run_idx - 1L)
+    }
+
+    o <- do.call(sim_engine, sim_args)
+    o <- data.table::as.data.table(o)
+    o[, instance := run_idx]
+    o
+  }
+
+  parallel_enabled <- FALSE
+  parallel_backend <- "sequential"
+  parallel_workers <- 1L
+  parallel_reason <- "no registered foreach parallel backend found"
+  local_cluster <- NULL
+  if (requireNamespace("foreach", quietly = TRUE)) {
+    is_registered <- foreach::getDoParRegistered()
+    n_workers <- if (is_registered) foreach::getDoParWorkers() else 1L
+
+    if (isTRUE(is_registered) && as.integer(n_workers) > 1L) {
+      parallel_enabled <- TRUE
+      parallel_workers <- as.integer(n_workers)
+      parallel_backend <- foreach::getDoParName()
+      parallel_reason <- "using pre-registered foreach backend"
+    } else if (requireNamespace("doParallel", quietly = TRUE)) {
+      detected_cores <- suppressWarnings(as.integer(parallel::detectCores(logical = TRUE)))
+      if (is.na(detected_cores) || detected_cores < 1L) {
+        detected_cores <- 1L
       }
+      local_workers <- min(total_instances, max(1L, detected_cores - 1L))
+      if (local_workers > 1L) {
+        local_cluster <- parallel::makeCluster(local_workers)
+        doParallel::registerDoParallel(local_cluster)
+        on.exit({
+          parallel::stopCluster(local_cluster)
+          foreach::registerDoSEQ()
+        }, add = TRUE)
+        parallel_enabled <- TRUE
+        parallel_workers <- local_workers
+        parallel_backend <- foreach::getDoParName()
+        parallel_reason <- "auto-registered local doParallel backend"
+      } else {
+        parallel_reason <- "single core detected; parallel backend not started"
+      }
+    } else {
+      parallel_reason <- "foreach is installed but doParallel is not installed"
+    }
+  } else {
+    parallel_reason <- "foreach package is not installed"
+  }
 
-      o <- meta_sim(is.stoch = is_stoch,
-                    nsteps = nsteps,
-                    N_pop = config_obj$config_data$N_pop,
-                    S0 = config_obj$config_data$S_ini,
-                    I0 = config_obj$config_data$I_symp_ini,
-                    P0 = config_obj$config_data$P_ini,
-                    V0 = config_obj$config_data$V_ini,
-                    R0 = config_obj$config_data$R_ini,
-                    H0 = config_obj$config_data$H_ini,
-                    D0 = config_obj$config_data$D_ini,
-                    E0 = config_obj$config_data$E_ini,
-                    Ia0 = config_obj$config_data$I_asymp_ini,
-                    Ip0 = config_obj$config_data$I_presymp_ini,
-                    m_weekday_day = config_obj$config_data$m_wd_d,
-                    m_weekday_night = config_obj$config_data$m_wd_n,
-                    m_weekend_day = config_obj$config_data$m_we_d,
-                    m_weekend_night = config_obj$config_data$m_we_n,
-                    start_day = start_day,
-                    delta_t = config_obj$config_data$delta_t,
-                    vac_mat = config_obj$config_data$vac_mat,
-                    ts = config_obj$config_data$ts[ii, ],
-                    dv = config_obj$config_data$dv[ii, ],
-                    de = config_obj$config_data$de[ii, ],
-                    pea = config_obj$config_data$pea[ii, ],
-                    dp = config_obj$config_data$dp[ii, ],
-                    da = config_obj$config_data$da[ii, ],
-                    ds = config_obj$config_data$ds[ii, ],
-                    psr = config_obj$config_data$psr[ii, ],
-                    dh = config_obj$config_data$dh[ii, ],
-                    phr = config_obj$config_data$phr[ii, ],
-                    dr = config_obj$config_data$dr[ii, ],
-                    ve = config_obj$config_data$ve[ii, ],
-                    do_chk = config_obj$config_data$do_chk,
-                    chk_time_steps = config_obj$config_data$chk_time_steps,
-                    chk_file_names = config_obj$config_data$chk_file_names[run_idx, ])
+  if (isTRUE(parallel_enabled)) {
+    vmsg(sprintf(
+      "Execution mode: parallel foreach backend '%s' with %d workers (%s).",
+      parallel_backend, parallel_workers, parallel_reason
+    ))
+  } else {
+    vmsg(sprintf("Execution mode: sequential (%s).", parallel_reason))
+  }
 
-      o$instance <- run_idx
-      out <- rbind(out, o)
+  out <- data.table::data.table()
+  if (isTRUE(parallel_enabled)) {
+    dopar <- get("%dopar%", envir = asNamespace("foreach"))
+    foreach_result <- tryCatch(
+      dopar(
+        foreach::foreach(
+          task_id = seq_len(nrow(task_grid)),
+          .inorder = TRUE,
+          .errorhandling = "stop",
+          .packages = c("data.table", "dplyr", "tidyr", "odin")
+        ),
+        {
+          run_idx <- task_grid$run_idx[[task_id]]
+          sim_args <- sim_args_list[[task_id]]
+          run_one_instance(run_idx = run_idx, sim_args = sim_args)
+        }
+      ),
+      error = function(e) e
+    )
+
+    if (inherits(foreach_result, "error")) {
+      vmsg(
+        paste0(
+          "Parallel foreach execution failed (", conditionMessage(foreach_result),
+          "). Falling back to sequential execution."
+        )
+      )
+      parallel_enabled <- FALSE
+      parallel_backend <- "sequential_fallback"
+      parallel_workers <- 1L
+    } else {
+      out <- data.table::rbindlist(foreach_result, use.names = TRUE, fill = TRUE)
+    }
+  }
+
+  if (!isTRUE(parallel_enabled)) {
+    out <- data.table::data.table()
+    report_every <- max(1L, as.integer(total_instances %/% 10L))
+    for (task_id in seq_len(nrow(task_grid))) {
+      ii <- task_grid$ii[[task_id]]
+      rr <- task_grid$rr[[task_id]]
+      run_idx <- task_grid$run_idx[[task_id]]
+      sim_args <- sim_args_list[[task_id]]
+      o <- run_one_instance(run_idx = run_idx, sim_args = sim_args)
+      out <- rbind(out, o, fill = TRUE)
+      if (isTRUE(verbose_run)) {
+        if (run_idx == 1L || run_idx == total_instances || (run_idx %% report_every) == 0L) {
+          vmsg(sprintf(
+            "Completed instance %d/%d (parameter_set=%d, replicate=%d).",
+            run_idx, total_instances, ii, rr
+          ))
+        }
+      }
     }
   }
 
@@ -210,9 +376,15 @@ metaRVM <- function(config_input) {
     N_pop = config_obj$config_data$N_pop,
     nsim = nsim,
     nrep = nrep,
-    n_instances = nsim * nrep,
+    n_instances = total_instances,
     simulation_mode = simulation_mode,
+    execution_mode = if (isTRUE(parallel_enabled)) "parallel_foreach" else "sequential",
+    parallel_backend = parallel_backend,
+    parallel_workers = parallel_workers,
     random_seed = config_obj$config_data$random_seed,
+    instance_manifest = instance_manifest,
+    verbose = verbose_run,
+    suppress_odin_messages = suppress_odin_run,
     delta_t = config_obj$config_data$delta_t,
     date_range = if (nrow(out) > 0) {
       c(config_obj$config_data$start_date + 1,
@@ -220,11 +392,19 @@ metaRVM <- function(config_input) {
     } else {
       c(NA, NA)
     },
-    checkpointing_enabled = isTRUE(config_obj$config_data$do_chk)
+    checkpointing_enabled = if (isTRUE(disease_entry$checkpointing_from_config)) {
+      isTRUE(config_obj$config_data$do_chk)
+    } else {
+      FALSE
+    }
   )
+  # Maintainer Note:
+  # `run_info` intentionally stores both run controls and derived metadata so users
+  # can audit reproducibility later (e.g., seed, mode, date window, checkpointing).
 
   # Create and return MetaRVMResults object
   results_obj <- MetaRVMResults$new(out, config_obj, run_info = run_info)
+  vmsg(sprintf("Run complete. Generated %d rows across %d instances.", nrow(out), total_instances))
   return(results_obj)
   # return(out)
 }
