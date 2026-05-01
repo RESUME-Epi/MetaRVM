@@ -18,25 +18,23 @@ status](https://www.r-pkg.org/badges/version/MetaRVM)](https://CRAN.R-project.or
 downloads](https://cranlogs.r-pkg.org/badges/MetaRVM)](https://cran.r-project.org/package=MetaRVM)
 <!-- badges: end -->
 
-This is a compartmental model simulation code for generic respiratory
-virus diseases.
+Stochastic metapopulation compartmental modeling of respiratory
+infectious diseases.
 
 ## Model
 
-`MetaRVM` is an open-source R package for modeling the spread of
-infectious diseases in subpopulations, which can be flexibly defined by
-geography, demographics, or other stratifications. It is designed to
-support real-time public health decision-making. `MetaRVM` is a
-metapopulation model, which extends the classic
-Susceptible-Infected-Recovered (SIR) framework by propagating infection
-across interacting subpopulations (e.g., age groups, neighborhoods),
-whose interactions are governed by realistic mixing patterns.
+`MetaRVM` is an open-source R package for stochastic metapopulation
+modeling of respiratory infectious diseases. It supports multiple
+disease types and is designed for flexible stratification by geography,
+demographics, or any user-defined grouping. `MetaRVM` is built for
+real-time public health decision-making.
 
-The `MetaRVM` model builds upon the SEIR framework by introducing
-additional compartments to capture more detailed dynamics of disease
-progression, while allowing for heterogeneous mixing among different
-demographic stratum. These generalizations allow the model to account
-for factors such as vaccinations, hospitalizations, and fatalities.
+`MetaRVM` extends the classic SEIR framework with disease-specific
+compartments, time-varying contact patterns, and vaccination dynamics.
+Disease types currently supported: **flu** (influenza-like illness) and
+**measles**. Each disease has its own set of compartments, parameters,
+and initialization structure, all declared through a disease registry
+that keeps the core simulation engine disease-agnostic.
 
 <figure>
 <img src="man/figures/model.png" alt="Model schematics" />
@@ -63,7 +61,18 @@ The current CRAN release is **2.1.0**. Install it with:
 install.packages("MetaRVM")
 ```
 
+The development version (2.2.0, adds measles model and programmatic
+config builder) is available from GitHub:
+
+``` r
+# install.packages("remotes")
+remotes::install_github("RESUME-Epi/MetaRVM")
+```
+
 ### Running a simulation
+
+Configs can be supplied as a YAML file path or built programmatically
+with `build_config()`.
 
 ``` r
 library(MetaRVM)
@@ -76,6 +85,8 @@ cfg <- system.file("extdata", "example_config.yaml", package = "MetaRVM")
 The content of the yaml configuration file:
 
 ``` yaml
+model:
+  disease: flu
 run_id: ExampleRun
 population_data:
   initialization: population_init_n24.csv
@@ -103,7 +114,6 @@ simulation_config:
   length: 150
   nsim: 1
   nrep: 1
-  simulation_mode: deterministic
   random_seed: 42
 ```
 
@@ -125,93 +135,39 @@ ggplot(hosp_sum, aes(date, total)) +
 
 ## Model structure
 
-`MetaRVM` implements a stratified SEIR-type metapopulation model with
-vaccination, hospitalization, immunity waning, and reinfection. The core
-health states in each demographic stratum are:
-
-- **Susceptible** `S`
-- **Vaccinated** `V`
-- **Exposed** `E`
-- **Asymptomatic infectious** `I_asymp`
-- **Presymptomatic infectious** `I_presymp`
-- **Symptomatic infectious** `I_symp`
-- **Hospitalized** `H`
-- **Recovered** `R`
-- **Deceased** `D`
-
-At the start of a simulation, nearly all individuals are in `S`, with
-optional seeding of initial infections and/or vaccinated individuals in
-`V`. When susceptible or vaccinated individuals come into contact with
-infectious individuals, they become exposed (`E`) based on
-age/stratum-specific forces of infection and vaccine protection. Exposed
-individuals then progress through asymptomatic, presymptomatic, and
-symptomatic infectious states before either recovering, being
-hospitalized, or dying. Vaccinated and recovered immunity can wane over
-time, returning individuals to the susceptible pool, which allows
-`MetaRVM` to represent multiple respiratory pathogens with different
-natural histories.
+`MetaRVM` implements stratified metapopulation models where each
+demographic subgroup has its own set of compartments and disease
+progression. All simulations are stochastic.
 
 Transmission is stratified by user-defined demographic groups (e.g.,
 age, zone, race). Time-varying mixing matrices define how these strata
 interact (daytime vs. nighttime, weekday vs. weekend), and `MetaRVM`
-computes stratum-specific forces of infection for susceptible and
-vaccinated individuals. Hospitalized and deceased individuals are
-excluded from the “effective” mixing population. The same model can be
-run in deterministic or stochastic mode, and parameters are supplied
-through a YAML configuration.
+computes stratum-specific forces of infection. Parameters can be
+specified as fixed scalars or drawn from distributions (lognormal,
+gamma, uniform, beta, gaussian), enabling uncertainty quantification
+across simulation runs.
 
-For simulation control: - `nsim` is the number of parameter sets (rows
-in sampled parameter matrices when distributions are used) - `nrep` is
-the number of simulation replicates per parameter set - total runs =
-`nsim * nrep` - `simulation_mode` chooses `"deterministic"` or
-`"stochastic"` - `random_seed` ensures reproducibility for both
-parameter sampling and stochastic trajectories
-
-------------------------------------------------------------------------
-
-### Core disease progression parameters
-
-| Parameter | Description | Units / notes |
-|----|----|----|
-| `ve` | Vaccine efficacy parameter controlling how strongly vaccination reduces infection risk. | Dimensionless (0–1). |
-| `dv` | Average duration of vaccine-conferred immunity; vaccination wanes at rate `1/dv`. | Days. |
-| `de` | Average incubation period; duration in `E` before becoming infectious. | Days. |
-| `pea` | Proportion of exposed individuals who become asymptomatic infectious (`Ia`). | Probability (0–1). |
-| `da` | Average duration in asymptomatic infectious state `Ia`. | Days. |
-| `dp` | Average duration in presymptomatic infectious state `Ip`. | Days. |
-| `ds` | Average duration in symptomatic infectious state `Is` before recovery or hospitalization. | Days. |
-| `psr` | Fraction of symptomatic (`Is`) individuals who recover directly without hospitalization. | Probability (0–1). |
-| `dh` | Average length of stay in the hospitalized state `H`. | Days. |
-| `phd` | Proportion of hospitalized individuals who die (transition `H → D`); remaining recover. | Probability (0–1). |
-| `dr` | Average duration of post-infection immunity in `R` before waning; reinfection occurs at rate `1/dr`. | Days. |
-
-------------------------------------------------------------------------
-
-### Transmission and mixing parameters
-
-| Parameter | Description | Units / notes |
-|----|----|----|
-| `ts` | Transmission scaling factor for susceptible individuals; controls strength of `S`–`I` transmission. | Per-contact scaling factor. |
-| `M` | Mixing matrix of order `J × J`, where `m_ij` is the fraction of contacts that a member of stratum `i` has with stratum `j`. | Dimensionless; rows sum to 1. |
-
-These parameters drive the transitions from `S` and `V` to `E`, and
-determine how quickly individuals move through infectious, hospitalized,
-recovered, and deceased states.
+For simulation control: - `nsim` sets the number of parameter sets; when
+distributions are used, each draw is a row in sampled parameter
+matrices - `nrep` sets the number of stochastic replicates per parameter
+set - total runs = `nsim × nrep` - `random_seed` ensures reproducibility
+for both parameter sampling and stochastic trajectories
 
 ------------------------------------------------------------------------
 
 ### Required input data and configuration
 
-`MetaRVM` is configured through a YAML file and a small set of CSV
-inputs.
+`MetaRVM` is configured through a YAML file or the `build_config()`
+programmatic builder — both accept the same arguments. A small set of
+CSV inputs are required alongside the config.
 
 | Input | Required? | Description |
 |----|----|----|
-| Population initialization (`population_init.csv`) | Yes | Defines demographic strata with user-defined category columns (e.g., age, zone, race, income_level) and initial population states (N, S0, I0, R0, V0). Categories are automatically detected from column names. |
+| Population initialization (`population_init.csv`) | Yes | Defines demographic strata with user-defined category columns (e.g., age, zone, race, income_level) and initial population states. Categories are automatically detected from column names. |
 | Mixing matrices (`mixing_matrix_*.csv`) | Yes | Four contact matrices, consistent with the population strata. These typically represent weekday/weekend and day/night mixing patterns. |
-| Vaccination schedule (`vaccination.csv`) | Yes | Time-varying vaccination counts or rates by stratum, used to move individuals from `S` to `V`. |
-| Model parameters | Yes | High-level model specification: simulation dates, `dt`, parameter values (e.g., `ve`, `de`, `dv`, `pea`, `psr`, `βs`, `βv`), output controls, and checkpointing options. |
-| Checkpoint files | Optional | Internal model state snapshots used to resume or branch simulations (e.g., for phased calibration). |
+| Vaccination schedule (`vaccination.csv`) | Flu only | Time-varying vaccination counts or rates by stratum, used to move individuals from `S` to `V`. Not required for measles. |
+| Disease parameters | Yes | Scalar values or distribution specs (lognormal, gamma, etc.) for each disease-specific parameter. See the pkgdown reference for per-disease parameter lists. |
+| Checkpoint files | Optional (flu) | Internal model state snapshots used to resume or branch simulations (e.g., for phased calibration). |
 
 ### Model output structure
 
