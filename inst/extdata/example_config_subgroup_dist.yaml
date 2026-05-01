@@ -1,4 +1,6 @@
 run_id: ExampleRun_Subgroup_Dist
+model:
+  disease: flu
 population_data:
   initialization: population_init_n24.csv
   vaccination: vaccination_n24.csv
@@ -40,4 +42,3 @@ simulation_config:
   start_date: 01/01/2023 # m/d/Y
   length: 150
   nsim: 20
-  simulation_mode: deterministic

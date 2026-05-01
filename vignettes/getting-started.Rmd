@@ -79,7 +79,7 @@ simulation_config:
   length: 150
   nsim: 1
   nrep: 1
-  simulation_mode: deterministic
+
   random_seed: 42
 ```
 

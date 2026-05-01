@@ -108,12 +108,42 @@ test_that("subset_data reports valid values when category value is invalid", {
   )
 })
 
+test_that("subset_data accepts literal state names and named group aliases", {
+  cfg_path <- system.file("extdata", "example_config.yaml", package = "MetaRVM")
+  res <- metaRVM(cfg_path)
+
+  # Literal compartment name works
+  hosp <- res$subset_data(disease_states = "H")
+  expect_true(all(hosp$results$disease_state == "H"))
+
+  # Named group alias expands correctly
+  inc <- res$subset_data(disease_states = "incidence")
+  expect_true(all(inc$results$disease_state %in% c("n_SE", "n_VE")))
+
+  # Mix of literal and alias works
+  mixed <- res$subset_data(disease_states = c("incidence", "H"))
+  expect_true(all(mixed$results$disease_state %in% c("n_SE", "n_VE", "H")))
+
+  # Typo in literal state name gives informative error
+  expect_error(
+    res$subset_data(disease_states = "hospitalzations"),
+    regexp = "Unknown disease_states:.*Valid state names:.*Valid group aliases:"
+  )
+
+  # Typo in group alias also caught
+  expect_error(
+    res$subset_data(disease_states = "incidnce"),
+    regexp = "Unknown disease_states:.*Valid state names:.*Valid group aliases:"
+  )
+})
+
 test_that("metaRVM uses provided random_seed for stochastic runs", {
   ext <- function(x) system.file("extdata", x, package = "MetaRVM")
   cfg_path <- tempfile(fileext = ".yaml")
 
   cfg <- list(
     run_id = "StochasticSeedProvided",
+    model = list(disease = "flu"),
     population_data = list(
       initialization = ext("population_init_n24.csv"),
       vaccination = ext("vaccination_n24.csv")
@@ -132,7 +162,6 @@ test_that("metaRVM uses provided random_seed for stochastic runs", {
       start_date = "10/01/2023",
       length = 20,
       nsim = 1,
-      simulation_mode = "stochastic",
       random_seed = 12345
     )
   )
@@ -153,6 +182,7 @@ test_that("metaRVM generates and stores random_seed for stochastic runs when mis
 
   cfg <- list(
     run_id = "StochasticSeedGenerated",
+    model = list(disease = "flu"),
     population_data = list(
       initialization = ext("population_init_n24.csv"),
       vaccination = ext("vaccination_n24.csv")
@@ -170,8 +200,7 @@ test_that("metaRVM generates and stores random_seed for stochastic runs when mis
     simulation_config = list(
       start_date = "10/01/2023",
       length = 20,
-      nsim = 1,
-      simulation_mode = "stochastic"
+      nsim = 1
     )
   )
 
@@ -191,6 +220,7 @@ test_that("metaRVM runs nsim * nrep instances", {
 
   cfg <- list(
     run_id = "ReplicateCount",
+    model = list(disease = "flu"),
     population_data = list(
       initialization = ext("population_init_n24.csv"),
       vaccination = ext("vaccination_n24.csv")
@@ -209,8 +239,7 @@ test_that("metaRVM runs nsim * nrep instances", {
       start_date = "10/01/2023",
       length = 20,
       nsim = 2,
-      nrep = 3,
-      simulation_mode = "deterministic"
+      nrep = 3
     )
   )
 
@@ -226,6 +255,7 @@ test_that("stochastic integer row allocation conserves S and V row totals", {
 
   cfg <- list(
     run_id = "RowAllocationConservation",
+    model = list(disease = "flu"),
     population_data = list(
       initialization = ext("population_init_n24.csv"),
       vaccination = ext("vaccination_n24.csv")
@@ -244,7 +274,6 @@ test_that("stochastic integer row allocation conserves S and V row totals", {
       start_date = "10/01/2023",
       length = 10,
       nsim = 1,
-      simulation_mode = "stochastic",
       random_seed = 4242
     )
   )

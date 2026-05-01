@@ -15,7 +15,7 @@ test_that("parse_config returns expected list structure for example config", {
     "m_wd_d", "m_wd_n", "m_we_d", "m_we_n",
     "ts", "ve", "dv", "de", "dp", "da", "ds", "dh", "dr",
     "pea", "psr", "phr",
-    "start_date", "sim_length", "nsim", "nrep", "simulation_mode", "random_seed",
+    "start_date", "sim_length", "nsim", "nrep", "random_seed",
     "delta_t", "chk_file_names", "chk_time_steps", "do_chk"
   )
 
@@ -57,7 +57,6 @@ test_that("parse_config returns expected list structure for example config", {
   expect_true(is.numeric(cfg$delta_t))
   expect_equal(cfg$delta_t, 0.5)
   expect_equal(cfg$nrep, 1L)
-  expect_true(cfg$simulation_mode %in% c("deterministic", "stochastic"))
 })
 
 test_that("parse_config expands disease parameters with correct dimensions and ranges", {
@@ -127,6 +126,7 @@ test_that("parse_config reports valid category values when sub_disease_params va
 
   cfg <- list(
     run_id = "InvalidSubgroupValue",
+    model = list(disease = "flu"),
     population_data = list(
       initialization = ext("population_init_n24.csv"),
       vaccination = ext("vaccination_n24.csv")
@@ -161,15 +161,13 @@ test_that("parse_config reports valid category values when sub_disease_params va
   )
 })
 
-test_that("parse_config accepts simulation_mode and defaults to deterministic", {
+test_that("parse_config always produces a random_seed", {
   ext <- function(x) system.file("extdata", x, package = "MetaRVM")
+  cfg_path <- tempfile(fileext = ".yaml")
 
-  cfg_default_path <- tempfile(fileext = ".yaml")
-  cfg_stoch_path <- tempfile(fileext = ".yaml")
-  cfg_invalid_path <- tempfile(fileext = ".yaml")
-
-  base_cfg <- list(
+  cfg <- list(
     run_id = "SimulationMode",
+    model = list(disease = "flu"),
     population_data = list(
       initialization = ext("population_init_n24.csv"),
       vaccination = ext("vaccination_n24.csv")
@@ -191,21 +189,10 @@ test_that("parse_config accepts simulation_mode and defaults to deterministic", 
     )
   )
 
-  yaml::write_yaml(base_cfg, cfg_default_path)
-  expect_equal(parse_config(cfg_default_path)$simulation_mode, "deterministic")
-
-  stoch_cfg <- base_cfg
-  stoch_cfg$simulation_config$simulation_mode <- "stochastic"
-  yaml::write_yaml(stoch_cfg, cfg_stoch_path)
-  expect_equal(parse_config(cfg_stoch_path)$simulation_mode, "stochastic")
-
-  invalid_cfg <- base_cfg
-  invalid_cfg$simulation_config$simulation_mode <- "invalid_mode"
-  yaml::write_yaml(invalid_cfg, cfg_invalid_path)
-  expect_error(
-    parse_config(cfg_invalid_path),
-    regexp = "simulation_mode must be either 'deterministic' or 'stochastic'"
-  )
+  yaml::write_yaml(cfg, cfg_path)
+  parsed <- parse_config(cfg_path)
+  expect_false(is.null(parsed$random_seed))
+  expect_true(is.integer(parsed$random_seed))
 })
 
 test_that("parse_config accepts nrep and validates it", {
@@ -215,6 +202,7 @@ test_that("parse_config accepts nrep and validates it", {
 
   base_cfg <- list(
     run_id = "Replicates",
+    model = list(disease = "flu"),
     population_data = list(
       initialization = ext("population_init_n24.csv"),
       vaccination = ext("vaccination_n24.csv")
@@ -246,5 +234,124 @@ test_that("parse_config accepts nrep and validates it", {
   expect_error(
     parse_config(cfg_bad_path),
     regexp = "nrep must be a positive integer"
+  )
+})
+
+test_that("parse_config errors when model.disease is missing", {
+  ext <- function(x) system.file("extdata", x, package = "MetaRVM")
+  cfg_path <- tempfile(fileext = ".yaml")
+
+  cfg <- list(
+    run_id = "MissingDisease",
+    population_data = list(
+      initialization = ext("population_init_n24.csv"),
+      vaccination = ext("vaccination_n24.csv")
+    ),
+    mixing_matrix = list(
+      weekday_day = ext("m_weekday_day.csv"),
+      weekday_night = ext("m_weekday_night.csv"),
+      weekend_day = ext("m_weekend_day.csv"),
+      weekend_night = ext("m_weekend_night.csv")
+    ),
+    disease_params = list(
+      ts = 0.5, ve = 0.4, dv = 180, dp = 1, de = 3,
+      da = 5, ds = 6, dh = 8, dr = 180, pea = 0.3, psr = 0.95, phr = 0.97
+    ),
+    simulation_config = list(
+      start_date = "10/01/2023",
+      length = 10,
+      nsim = 1
+    )
+  )
+
+  yaml::write_yaml(cfg, cfg_path)
+  expect_error(
+    parse_config(cfg_path),
+    regexp = "'disease' field is required"
+  )
+})
+
+test_that("parse_config_measles applies sub_disease_params overrides to param_values columns", {
+  ext <- function(x) system.file("extdata", x, package = "MetaRVM")
+  cfg_path <- tempfile(fileext = ".yaml")
+
+  cfg <- list(
+    run_id = "MeaslesSubDisease",
+    model = list(disease = "measles"),
+    population_data = list(
+      initialization = ext("population_init_measles_min.csv")
+    ),
+    mixing_matrix = list(
+      weekday_day = ext("m_weekday_day_measles_min.csv"),
+      weekday_night = ext("m_weekday_night_measles_min.csv"),
+      weekend_day = ext("m_weekend_day_measles_min.csv"),
+      weekend_night = ext("m_weekend_night_measles_min.csv")
+    ),
+    disease_params = list(
+      beta = 0.65, de1 = 3, de2 = 3, di1 = 2, di2 = 3,
+      prop_I1_Q = 0.2, prop_I2_Q = 0.5, V1_eff = 0.93, V2_eff = 0.97
+    ),
+    sub_disease_params = list(
+      age_group = list(
+        child = list(beta = 0.8)
+      )
+    ),
+    simulation_config = list(
+      start_date = "10/01/2023",
+      length = 10,
+      nsim = 2
+    )
+  )
+
+  yaml::write_yaml(cfg, cfg_path)
+  parsed <- parse_config(cfg_path)
+
+  # population_init_measles_min.csv: pop 1 = child/urban, pop 2 = adult/urban, pop 3 = child/rural
+  # child columns: 1 and 3; adult column: 2
+  expect_true(is.matrix(parsed$beta))
+  expect_equal(dim(parsed$beta), c(2L, 3L))
+
+  # child subpopulations (cols 1 and 3) should have overridden beta = 0.8
+  expect_true(all(parsed$beta[, c(1, 3)] == 0.8))
+  # adult subpopulation (col 2) should retain base beta = 0.65
+  expect_true(all(parsed$beta[, 2] == 0.65))
+})
+
+test_that("parse_config_measles errors on invalid sub_disease_params category value", {
+  ext <- function(x) system.file("extdata", x, package = "MetaRVM")
+  cfg_path <- tempfile(fileext = ".yaml")
+
+  cfg <- list(
+    run_id = "MeaslesInvalidSubVal",
+    model = list(disease = "measles"),
+    population_data = list(
+      initialization = ext("population_init_measles_min.csv")
+    ),
+    mixing_matrix = list(
+      weekday_day = ext("m_weekday_day_measles_min.csv"),
+      weekday_night = ext("m_weekday_night_measles_min.csv"),
+      weekend_day = ext("m_weekend_day_measles_min.csv"),
+      weekend_night = ext("m_weekend_night_measles_min.csv")
+    ),
+    disease_params = list(
+      beta = 0.65, de1 = 3, de2 = 3, di1 = 2, di2 = 3,
+      prop_I1_Q = 0.2, prop_I2_Q = 0.5, V1_eff = 0.93, V2_eff = 0.97
+    ),
+    sub_disease_params = list(
+      age_group = list(
+        INVALID_GROUP = list(beta = 0.9)
+      )
+    ),
+    simulation_config = list(
+      start_date = "10/01/2023",
+      length = 10,
+      nsim = 1
+    )
+  )
+
+  yaml::write_yaml(cfg, cfg_path)
+  expect_error(
+    parse_config(cfg_path),
+    regexp = "Invalid values for category 'age_group' in sub_disease_params: INVALID_GROUP\\. Valid values are:"
   )
 })

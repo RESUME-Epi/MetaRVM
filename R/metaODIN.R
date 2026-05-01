@@ -69,8 +69,8 @@
 #' @param ve Numeric vector or scalar. Vaccine effectiveness (proportion)
 #'   , values between 0 and 1. If scalar, applied to all subpopulations
 #' @param nsteps Integer. Total number of discrete time evolution steps in simulation
-#' @param is.stoch Logical. Whether to run stochastic simulation (TRUE) or
-#'   deterministic simulation (FALSE). Default: FALSE
+#' @param is.stoch Logical. Whether to run the simulation stochastically. Should
+#'   always be `TRUE`; present for interface compatibility.
 #' @param seed Integer or NULL. Random seed for reproducibility. Only used when
 #'   is.stoch = TRUE. Default: NULL
 #' @param do_chk Logical. Whether to save model checkpoint at simulation end.
@@ -126,11 +126,8 @@
 #'   \item Vaccine effectiveness for breakthrough infections
 #' }
 #'
-#' \strong{Stochastic vs. Deterministic Mode:}
-#' \itemize{
-#'   \item \strong{Deterministic}: Uses exact differential equations
-#'   \item \strong{Stochastic}: Adds demographic stochasticity via binomial draws
-#' }
+#' \strong{Stochastic Mode:}
+#' Demographic stochasticity is added via binomial draws at each transition.
 #'
 #' \strong{Vaccination Implementation:}
 #' Vaccination is implemented as time-varying input with:
@@ -175,7 +172,7 @@
 #' @examples
 #' \donttest{
 #' options(odin.verbose = FALSE)
-#' # Basic deterministic simulation
+#' # Basic simulation
 #' N_pop <- 2
 #' nsteps <- 400
 #' 
@@ -262,7 +259,7 @@ meta_sim <- function(N_pop, ts,
 
   metaODIN <- odin::odin({
 
-    stoch <- user(0) # whether the model is run deterministically or not
+    stoch <- user(0) # 1 = stochastic binomial draws; 0 = exact (unused in production)
     dt <- user(1)
     initial(time) <- 0
     update(time) <- (step + 1) * dt
@@ -307,7 +304,6 @@ meta_sim <- function(N_pop, ts,
     dim(tt)     <- user()
     dim(vac)    <- user()
 
-    # n_SV_eff[] <- n_SV[i] * vac_eff[i]
     n_SV_eff[] <- if(n_SV[i] < 0) 0 else (if(n_SV[i] > S[i]) S[i] else n_SV[i])   # bounded by available S
 
     ## =================================================
@@ -443,7 +439,6 @@ meta_sim <- function(N_pop, ts,
     D_ini[]         <- user()
 
     beta_i[]         <- user()
-    # beta_v[]         <- user()
     pretoIsymp[]     <- user()
     IasymptoR[]      <- user()
     IsymptoRH[]      <- user()
@@ -485,7 +480,6 @@ meta_sim <- function(N_pop, ts,
     dim(mob_pop)    <- N_pop
 
     dim(beta_i)         <- N_pop
-    # dim(beta_v)         <- N_pop
     dim(EtoIpresymp)    <- N_pop
     dim(pretoIsymp)     <- N_pop
     dim(IasymptoR)      <- N_pop
@@ -557,10 +551,8 @@ meta_sim <- function(N_pop, ts,
 
   ## If disease parameters are scalars, create the vector inputs
   if(length(ts) == 1) ts <- rep(ts, N_pop)
-  # if(length(tv) == 1) tv <- rep(tv, N_pop)
   if(length(ve) == 1) ve <- rep(ve, N_pop)
   if(length(dv) == 1) dv <- rep(dv, N_pop)
-  if(length(de) == 1) de <- rep(de, N_pop)
   if(length(de) == 1) de <- rep(de, N_pop)
   if(length(dp) == 1) dp <- rep(dp, N_pop)
   if(length(da) == 1) da <- rep(da, N_pop)
@@ -571,20 +563,22 @@ meta_sim <- function(N_pop, ts,
   if(length(psr) == 1) psr <- rep(psr, N_pop)
   if(length(phr) == 1) phr <- rep(phr, N_pop)
 
-  ## prepare vaccination input
-
+  # Split the combined vaccination matrix: first column is the time index (tt),
+  # remaining columns are the per-population counts used as an interpolation table.
   tvac <- vac_mat[, 1]
   vac_mat <- vac_mat[, -1]
 
   if(!is.matrix(vac_mat)) vac_mat <- matrix(vac_mat, ncol = 1)
 
+  # Absorb the first-row (t=0) vaccination counts into the initial V state so
+  # the engine sees the correct starting compartment sizes.
   V0 <- vac_mat[1, ] + V0
 
 
+  # ODIN requires a numeric 0/1 for user() scalars; coerce the logical flag.
   model <- metaODIN$new(stoch = as.numeric(is.stoch),
                         N_pop = N_pop,
                         beta_i = ts,
-                        # beta_v = tv,
                         S_ini = S0,
                         E_ini = E0,
                         I_asymp_ini = Ia0,
@@ -618,12 +612,14 @@ meta_sim <- function(N_pop, ts,
   out <- model$run(step = 0:nsteps)
   out_df <- data.frame(out)
 
+  # ODIN names array outputs as "state.pop_id." (e.g. "S.1.", "S.2.").
+  # The regex captures compartment name and population_id into separate columns.
   long_out <- out_df %>%
     tidyr::pivot_longer(
-      cols = -c("step", "time"),               # Exclude 'time' from being pivoted
-      names_to = c("disease_state", "population_id"),  # Create new columns for disease state and subpopulation
-      names_pattern = "([A-Za-z_]+)\\.(\\d+)\\.",  # Regex to extract the disease state and subpopulation ID
-      values_to = "value")          # Column to store the actual values
+      cols = -c("step", "time"),
+      names_to = c("disease_state", "population_id"),
+      names_pattern = "([A-Za-z_]+)\\.(\\d+)\\.",
+      values_to = "value")
 
   long_out <- data.table::data.table(long_out)
 
@@ -635,7 +631,7 @@ meta_sim <- function(N_pop, ts,
         chk_file_name_instance <- chk_file_names[[i]]
         
         chk <- MetaRVMCheck$new(list(
-          disease = "rvm",
+          disease = "flu",
           chk_time_step = time_step,
           N_pop = N_pop,
           delta_t = delta_t,
@@ -677,5 +673,4 @@ meta_sim <- function(N_pop, ts,
 
 
   return(long_out)
-  # return(out_df)
 }

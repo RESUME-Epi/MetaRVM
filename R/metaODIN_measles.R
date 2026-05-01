@@ -313,9 +313,8 @@ meta_measles_sim <- function(N_pop = 1,
 
   })
 
-  ## If disease parameters are constant across simulations, 
-  ## replicate them into matrices with one row
-
+  # Scalar parameters (shared across all subpopulations) are expanded to length
+  # N_pop so the ODIN engine can always index into a per-population array.
   if(length(beta) == 1) beta <- rep(beta, N_pop)
   if(length(de1) == 1) de1 <- rep(de1, N_pop)
   if(length(de2) == 1) de2 <- rep(de2, N_pop)
@@ -348,6 +347,8 @@ meta_measles_sim <- function(N_pop = 1,
   out <- model$run(step = 0:nsteps)
   out_df <- data.frame(out)
 
+  # Same pivot as in meta_sim: ODIN array outputs are named "state.pop_id.",
+  # split here into separate disease_state and population_id columns.
   long_out <- out_df %>%
   tidyr::pivot_longer(
     cols = -c(step, time),

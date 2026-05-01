@@ -136,8 +136,8 @@ recovered state. If scalar, applied to all subpopulations}
 
 \item{nsteps}{Integer. Total number of discrete time evolution steps in simulation}
 
-\item{is.stoch}{Logical. Whether to run stochastic simulation (TRUE) or
-deterministic simulation (FALSE). Default: FALSE}
+\item{is.stoch}{Logical. Whether to run the simulation stochastically. Should
+always be \code{TRUE}; present for interface compatibility.}
 
 \item{seed}{Integer or NULL. Random seed for reproducibility. Only used when
 is.stoch = TRUE. Default: NULL}
@@ -222,11 +222,8 @@ all infectious compartments (I_presymp + I_asymp + I_symp), modified by:
 \item Vaccine effectiveness for breakthrough infections
 }
 
-\strong{Stochastic vs. Deterministic Mode:}
-\itemize{
-\item \strong{Deterministic}: Uses exact differential equations
-\item \strong{Stochastic}: Adds demographic stochasticity via binomial draws
-}
+\strong{Stochastic Mode:}
+Demographic stochasticity is added via binomial draws at each transition.
 
 \strong{Vaccination Implementation:}
 Vaccination is implemented as time-varying input with:
@@ -257,7 +254,7 @@ When do_chk = TRUE, the function saves a checkpoint file containing:
 \examples{
 \donttest{
 options(odin.verbose = FALSE)
-# Basic deterministic simulation
+# Basic simulation
 N_pop <- 2
 nsteps <- 400
 

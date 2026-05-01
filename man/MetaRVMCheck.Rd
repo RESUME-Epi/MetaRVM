@@ -4,14 +4,35 @@
 \alias{MetaRVMCheck}
 \title{MetaRVM Checkpoint Class}
 \description{
-R6 class to handle MetaRVM checkpoint data. This class is a simplified
-version of \link{MetaRVMConfig} tailored for storing and accessing simulation
-checkpoints.
+R6 class that stores a saved simulation state produced by \code{\link[=meta_sim]{meta_sim()}}.
+Used to resume or branch a simulation from an intermediate time point.
 }
 \details{
-The \code{MetaRVMCheck} class is designed to hold the state of a simulation at a
-specific time point, allowing for continuation or analysis. It stores all
-necessary parameters and population states.
+Checkpoint objects are written automatically during a simulation run when
+\code{do_chk = TRUE} is set in the simulation config. Each checkpoint captures
+the full compartment state (S, E, I, H, R, D, V, …) and all disease
+parameters at the saved time step, enabling a resumed run to pick up exactly
+where it left off.
+
+\code{MetaRVMCheck} extends \code{\link{MetaRVMConfig}}: all \verb{$get()}, \verb{$get_category_names()},
+and related accessor methods are inherited and work identically. Required
+checkpoint fields are disease-specific and validated against the disease
+registry at construction time.
+}
+\examples{
+\dontrun{
+# Checkpoints are created automatically when do_chk = TRUE in the config.
+# To inspect a saved checkpoint:
+chk_data <- readRDS("my_checkpoint.rds")
+chk <- MetaRVMCheck$new(chk_data)
+chk$get("chk_time_step")
+chk$get("N_pop")
+}
+
+}
+\seealso{
+\code{\link[=metaRVM]{metaRVM()}} for enabling checkpointing via the \code{simulation_config}
+section; \code{\link{MetaRVMConfig}} for the parent class and its accessor methods.
 }
 \author{
 Arindam Fadikar

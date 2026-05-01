@@ -1,19 +1,45 @@
-#' Format MetaRVM simulation output
-#' 
-#' This function formats raw MetaRVM simulation output by:
-#' 1. Converting time steps to calendar dates
-#' 2. Adding user-defined demographic attributes from the initialization-derived population metadata
-#' 3. Handling different disease states appropriately:
-#'    - Regular states (S, E, I, etc.): Keep values at integer time points
-#'    - New count states (n_ prefix): Sum pairs to get daily counts
+#' Format raw MetaRVM simulation output
 #'
-#' @param sim_output data.table containing raw simulation output from \code{\link{meta_sim}}
-#' @param config MetaRVMConfig object or config list containing parameters
-#' @return data.table with formatted output including calendar dates and demographics
-#' 
-#' @section Note: 
-#' This function is used for formatting the \code{\link{meta_sim}} output when \code{\link{MetaRVM}}
-#' function is called.
+#' @description
+#' Converts raw step-indexed output from [meta_sim()] or [meta_measles_sim()]
+#' into a tidy long-format `data.table` with calendar dates and user-defined
+#' demographic attributes.
+#'
+#' The transformation differs by state type:
+#' - **Compartment states** (S, E, I, H, R, D, V, …): only integer time-step
+#'   values are retained.
+#' - **Flow states** (`n_` prefix): within-day pairs are summed to daily
+#'   counts.
+#'
+#' @param sim_output `data.table` of raw simulation output from [meta_sim()] or
+#'   [meta_measles_sim()]. Must contain columns `time`, `disease_state`,
+#'   `population_id`, `value`, and `instance`.
+#' @param config A [`MetaRVMConfig`] object or a named list. Must supply
+#'   `start_date`, `pop_map` (with a `population_id` column), and
+#'   `category_names`.
+#'
+#' @return A `data.table` in long format with one row per (date, demographic
+#'   combination, disease state, simulation instance). Columns:
+#'   \describe{
+#'     \item{`date`}{`Date`. Calendar date derived from `start_date + time`.}
+#'     \item{User category columns}{One column per demographic category
+#'       detected in the population CSV (e.g., `age`, `zone`, `race`).}
+#'     \item{`disease_state`}{`character`. Compartment or flow-count state label.}
+#'     \item{`value`}{`numeric`. Compartment count or summed daily flow count.}
+#'     \item{`instance`}{`integer`. Simulation instance index.}
+#'   }
+#'
+#' @seealso [metaRVM()], [meta_sim()], [`MetaRVMResults`]
+#'
+#' @examples
+#' \dontrun{
+#' # Typically called internally by metaRVM(); exposed for custom pipelines.
+#' cfg <- system.file("extdata", "example_config.yaml", package = "MetaRVM")
+#' config <- parse_config(cfg)
+#' raw <- meta_sim(...)  # low-level engine output
+#' formatted <- format_metarvm_output(raw, config)
+#' }
+#'
 #' @export
 format_metarvm_output <- function(sim_output, config) {
   
@@ -54,19 +80,21 @@ format_metarvm_output <- function(sim_output, config) {
   pop_map <- data.table::copy(pop_map)
   pop_map[, population_id := as.character(population_id)]
   
-  # Join with population mapping to get demographics
-  # Keep all simulation rows and append user-defined category columns
+  # Right-join: pop_map[formatted_results, on = ...] keeps every row from
+  # formatted_results and appends matching category columns from pop_map.
+  # This is data.table's equivalent of dplyr::left_join(formatted_results, pop_map).
   formatted_results <- pop_map[formatted_results, on = .(population_id)]
-  
-  # Handle different disease states
-  # For regular states (S, E, I, etc.) - keep only integer time points
+
+  # Compartment states (S, E, I, ...) are recorded at every half-step; only
+  # integer time steps represent end-of-day snapshots we want to report.
   regular_states <- formatted_results[!grepl("^n_", disease_state) & time %% 1 == 0]
-  
-  # For n_ states (new counts) - sum pairs of time points to get daily counts
+
+  # Flow states (n_ prefix) capture events within each half-step.  Summing both
+  # half-steps (e.g., t=0.5 and t=1) gives the full-day count.
+  # ceiling(time) maps 0.5→1, 1→1, 1.5→2, 2→2, etc., grouping each pair.
   n_states <- formatted_results[grepl("^n_", disease_state)]
-  
+
   if (nrow(n_states) > 0) {
-    # Create day groupings: 0.5,1 -> day 1; 1.5,2 -> day 2, etc.
     n_states[, day := ceiling(time)]
 
     # Sum values within each day for n_ states
@@ -96,12 +124,11 @@ format_metarvm_output <- function(sim_output, config) {
     combined_results <- regular_states[, select_cols, with = FALSE]
   }
   
-  # Convert time to calendar date
-  # time 0 = start_date, time 1 = start_date + 1 day, etc.
+  # start_date is already one day before the user's requested start (the -1
+  # offset in parse_config), so adding integer time aligns to the correct dates.
   combined_results[, date := start_date + time]
-  
-  # only keep time > 0
-  # Select and reorder final columns dynamically
+
+  # Exclude time == 0 (the synthetic "day before" initial state) from output.
   final_cols <- c("date", category_cols, "disease_state", "value", "instance")
   final_results <- combined_results[time > 0, final_cols, with = FALSE]
 

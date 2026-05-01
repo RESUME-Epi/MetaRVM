@@ -4,7 +4,7 @@
 \alias{metaRVM}
 \title{Run a MetaRVM epidemic simulation}
 \usage{
-metaRVM(config_input)
+metaRVM(config_input, verbose = NULL, suppress_odin_messages = NULL)
 }
 \arguments{
 \item{config_input}{Configuration specification in one of three forms:
@@ -14,6 +14,16 @@ metaRVM(config_input)
 \item \strong{Named list}: output from \code{\link[=parse_config]{parse_config()}} with
 \code{return_object = FALSE}.
 }}
+
+\item{verbose}{Optional logical. If \code{TRUE}, prints meaningful run progress
+messages. If \code{NULL} (default), uses \code{simulation_config$verbose} from the
+parsed config when available; otherwise defaults to \code{FALSE}.}
+
+\item{suppress_odin_messages}{Optional logical. If \code{TRUE}, sets
+\code{options(odin.verbose = FALSE)} for this run to suppress ODIN compilation
+chatter. If \code{NULL} (default), uses
+\code{simulation_config$suppress_odin_messages} from config when available;
+otherwise defaults to \code{FALSE}.}
 }
 \value{
 A \code{\link{MetaRVMResults}} R6 object with three key components:
@@ -39,10 +49,9 @@ in the initialization file)
 \description{
 \code{metaRVM()} is the high-level entry point for running a MetaRVM
 metapopulation respiratory virus simulation. It parses the configuration,
-runs one or more simulation instances (deterministic or stochastic),
-formats the ODIN/MetaRVM output into a tidy long table with calendar
-dates and demographic attributes, and returns a \code{\link{MetaRVMResults}}
-object for downstream analysis and plotting.
+runs one or more stochastic simulation instances, formats the ODIN/MetaRVM
+output into a tidy long table with calendar dates and demographic attributes,
+and returns a \code{\link{MetaRVMResults}} object for downstream analysis and plotting.
 }
 \details{
 The configuration input controls:
@@ -53,7 +62,7 @@ The configuration input controls:
 \item \strong{Mixing matrices} (weekday/weekend, day/night contact patterns)
 \item \strong{Vaccination schedule} and immunity waning
 \item \strong{Simulation settings} (start date, length, number of instances,
-stochastic vs. deterministic mode, checkpointing)
+checkpointing)
 }
 
 Internally, \code{metaRVM()}:

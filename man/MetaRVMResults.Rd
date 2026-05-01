@@ -61,6 +61,8 @@ Arindam Fadikar
 \item \href{#method-MetaRVMResults-plot}{\code{MetaRVMResults$plot()}}
 \item \href{#method-MetaRVMResults-subset_data}{\code{MetaRVMResults$subset_data()}}
 \item \href{#method-MetaRVMResults-summarize}{\code{MetaRVMResults$summarize()}}
+\item \href{#method-MetaRVMResults-get_instance_manifest}{\code{MetaRVMResults$get_instance_manifest()}}
+\item \href{#method-MetaRVMResults-get_instance_params}{\code{MetaRVMResults$get_instance_params()}}
 \item \href{#method-MetaRVMResults-clone}{\code{MetaRVMResults$clone()}}
 }
 }
@@ -228,6 +230,48 @@ Use config$get_category_names() to see available categories.}
 }
 \subsection{Returns}{
 data.table with summarized time series data or all instances if stats = NULL
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-MetaRVMResults-get_instance_manifest"></a>}}
+\if{latex}{\out{\hypertarget{method-MetaRVMResults-get_instance_manifest}{}}}
+\subsection{Method \code{get_instance_manifest()}}{
+Get per-instance simulation manifest (parameter-set id, replicate id, seed, and settings)
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{MetaRVMResults$get_instance_manifest(instances = NULL, include_sim_args = TRUE)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{instances}}{Optional vector of instance ids to filter}
+
+\item{\code{include_sim_args}}{Logical. If FALSE, omits the \code{sim_args} list-column for a lighter table}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+data.table with one row per simulation instance
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-MetaRVMResults-get_instance_params"></a>}}
+\if{latex}{\out{\hypertarget{method-MetaRVMResults-get_instance_params}{}}}
+\subsection{Method \code{get_instance_params()}}{
+Get per-instance settings table with parameters list-column (\code{params})
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{MetaRVMResults$get_instance_params(instances = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{instances}}{Optional vector of instance ids to filter}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+data.table with instance mapping and exact parameter values used in simulation
 }
 }
 \if{html}{\out{<hr>}}

@@ -222,11 +222,9 @@ MetaRVMConfig <- R6::R6Class(
         stop("Configuration data must be a list")
       }
 
-      disease_id <- if ("disease" %in% names(self$config_data)) {
-        normalize_disease_name(self$config_data$disease)
-      } else {
-        "rvm"
-      }
+      # Normalize and write back so all downstream accessors see the canonical
+      # form (lowercase, trimmed) rather than whatever string the user typed.
+      disease_id <- normalize_disease_name(self$config_data[["disease"]])
       self$config_data$disease <- disease_id
 
       # Validate required fields from disease schema.
@@ -305,16 +303,17 @@ MetaRVMResults <- R6::R6Class(
       }
       
       self$config <- config
-      
-      # Handle different initialization scenarios
+
+      # Two initialization paths:
+      # - formatted_results: bypasses format_metarvm_output (used by subset_data
+      #   to return a new MetaRVMResults without re-processing already-formatted data)
+      # - raw_results: full pipeline from engine output → tidy long table
       if (!is.null(formatted_results)) {
-        # Use pre-formatted data (from subset_data)
         if (!data.table::is.data.table(formatted_results)) {
           stop("formatted_results must be a data.table")
         }
         self$results <- formatted_results
       } else if (!is.null(raw_results)) {
-        # Format raw data (from metaRVM simulation)
         if (!data.table::is.data.table(raw_results)) {
           stop("raw_results must be a data.table")
         }
@@ -323,11 +322,7 @@ MetaRVMResults <- R6::R6Class(
         stop("Either raw_results or formatted_results must be provided")
       }
 
-      disease_id <- if ("disease" %in% names(self$config$config_data)) {
-        self$config$config_data$disease
-      } else {
-        "rvm"
-      }
+      disease_id <- private$resolve_disease_id()
       output_spec <- get_metarvm_output_spec(disease_id)
       state_col <- output_spec$state_col
       time_col <- output_spec$time_col
@@ -373,17 +368,10 @@ MetaRVMResults <- R6::R6Class(
       if (!is.null(self$run_info$nrep)) {
         cat("Replicates per set (nrep):", self$run_info$nrep, "\n")
       }
-      if (!is.null(self$run_info$simulation_mode)) {
-        cat("Simulation mode:", self$run_info$simulation_mode, "\n")
-      }
       if (!is.null(self$run_info$random_seed)) {
         cat("Random seed:", self$run_info$random_seed, "\n")
       }
-      disease_id <- if ("disease" %in% names(self$config$config_data)) {
-        self$config$config_data$disease
-      } else {
-        "rvm"
-      }
+      disease_id <- private$resolve_disease_id()
       output_spec <- get_metarvm_output_spec(disease_id)
       state_col <- output_spec$state_col
 
@@ -438,11 +426,7 @@ MetaRVMResults <- R6::R6Class(
     subset_data = function(..., disease_states = NULL, date_range = NULL,
                           instances = NULL, exclude_p_columns = TRUE) {
 
-      disease_id <- if ("disease" %in% names(self$config$config_data)) {
-        self$config$config_data$disease
-      } else {
-        "rvm"
-      }
+      disease_id <- private$resolve_disease_id()
       output_spec <- get_metarvm_output_spec(disease_id)
       state_col <- output_spec$state_col
       time_col <- output_spec$time_col
@@ -484,6 +468,9 @@ MetaRVMResults <- R6::R6Class(
               ))
             }
 
+            # as.character() coercion ensures the filter works even when category
+            # columns are read as numeric (e.g., zone IDs) from the population CSV.
+            # get() is data.table's way to reference a column by a runtime variable.
             subset_results <- subset_results[as.character(get(cat_name)) %in% filter_values_chr]
           }
         }
@@ -496,6 +483,21 @@ MetaRVMResults <- R6::R6Class(
         stop(sprintf("Results do not contain expected state column '%s'", state_col))
       }
       if (!is.null(disease_states)) {
+        available_states <- unique(as.character(subset_results[[state_col]]))
+        bad_states <- setdiff(selected_states, available_states)
+        if (length(bad_states) > 0) {
+          state_groups <- get_metarvm_output_spec(disease_id)$state_groups
+          bad_inputs <- disease_states[sapply(disease_states, function(x) {
+            resolved <- if (!is.null(state_groups[[x]])) state_groups[[x]] else x
+            any(resolved %in% bad_states)
+          })]
+          stop(sprintf(
+            "Unknown disease_states: %s. Valid state names: %s. Valid group aliases: %s",
+            paste(bad_inputs, collapse = ", "),
+            paste(sort(available_states), collapse = ", "),
+            if (length(state_groups) > 0) paste(names(state_groups), collapse = ", ") else "none"
+          ))
+        }
         subset_results <- subset_results[get(state_col) %in% selected_states]
       } else if (exclude_p_columns) {
         exclude_patterns <- output_spec$default_exclude_patterns
@@ -555,7 +557,6 @@ MetaRVMResults <- R6::R6Class(
         N_pop = self$run_info$N_pop,
         nsim = self$run_info$nsim,
         nrep = self$run_info$nrep,
-        simulation_mode = self$run_info$simulation_mode,
         random_seed = self$run_info$random_seed,
         delta_t = self$run_info$delta_t,
         checkpointing_enabled = self$run_info$checkpointing_enabled,
@@ -596,11 +597,7 @@ MetaRVMResults <- R6::R6Class(
       
       # Validate group_by parameters against available categories
       valid_groups <- self$config$get_category_names()
-      disease_id <- if ("disease" %in% names(self$config$config_data)) {
-        self$config$config_data$disease
-      } else {
-        "rvm"
-      }
+      disease_id <- private$resolve_disease_id()
       output_spec <- get_metarvm_output_spec(disease_id)
       state_col <- output_spec$state_col
       time_col <- output_spec$time_col
@@ -638,7 +635,10 @@ MetaRVMResults <- R6::R6Class(
         exclude_p_columns = exclude_p_columns
       )
       
-      # Step 1: Sum by demographic categories, date, and disease_state (keeping instances separate)
+      # Two-step aggregation:
+      # Step 1: Sum value across all sub-populations that share the requested
+      #         group_by categories, per instance.  This collapses the N_pop
+      #         dimension while keeping simulation instances separate.
       group_vars <- c(time_col, group_by, state_col, "instance")
       summed_data <- subset_data$results[, .(
         value = sum(get(value_col), na.rm = TRUE)
@@ -650,7 +650,8 @@ MetaRVMResults <- R6::R6Class(
       #   return(summed_data)
       # }
       
-      # Step 3: Calculate statistics across instances for each date/demographic/disease combination
+      # Step 2 (stats path): Reduce across simulation instances to produce
+      #         summary statistics for each (date, group_by, disease_state) cell.
       final_group_vars <- c(time_col, group_by, state_col)
       summary_result <- summed_data[, {
         out <- list()
@@ -749,6 +750,10 @@ MetaRVMResults <- R6::R6Class(
 
 
   private = list(
+    resolve_disease_id = function() {
+      normalize_disease_name(self$config$config_data[["disease"]])
+    },
+
     calculate_n_populations = function(data) {
       if (nrow(data) == 0) return(0)
 
@@ -761,13 +766,12 @@ MetaRVMResults <- R6::R6Class(
       }
 
       if (length(demographic_cols) == 0) {
-        # No demographic columns - assume single population
         return(1)
       } else if (length(demographic_cols) == 1) {
-        # Single demographic - count unique values
         return(length(unique(data[[demographic_cols[1]]])))
       } else {
-        # Multiple demographics - count unique combinations
+        # `..demographic_cols` is data.table's "dot-dot" notation for selecting
+        # columns whose names are stored in a variable (as opposed to a literal).
         unique_combinations <- data[, ..demographic_cols]
         unique_combinations <- unique(unique_combinations)
         return(nrow(unique_combinations))
@@ -875,11 +879,7 @@ MetaRVMSummary <- R6::R6Class(
       cat("======================\n")
       cat("Data type:", self$type, "\n")
       cat("Observations:", nrow(self$data), "\n")
-      disease_id <- if ("disease" %in% names(self$config$config_data)) {
-        self$config$config_data$disease
-      } else {
-        "rvm"
-      }
+      disease_id <- private$resolve_disease_id()
       output_spec <- get_metarvm_output_spec(disease_id)
       state_col <- output_spec$state_col
       time_col <- output_spec$time_col
@@ -949,13 +949,9 @@ MetaRVMSummary <- R6::R6Class(
     #'   \item Instance data must contain 'instance' column for individual trajectory grouping
     #' }
     plot = function(ci_level = 0.95, theme = theme_minimal(), title = NULL) {
-      
+
       columns <- names(self$data)
-      disease_id <- if ("disease" %in% names(self$config$config_data)) {
-        self$config$config_data$disease
-      } else {
-        "rvm"
-      }
+      disease_id <- private$resolve_disease_id()
       output_spec <- get_metarvm_output_spec(disease_id)
       state_col <- output_spec$state_col
       value_col <- output_spec$value_col
@@ -1065,8 +1061,14 @@ MetaRVMSummary <- R6::R6Class(
       if (!is.null(facet_formula)) {
         p <- p + facet_grid(facet_formula, scales = "free_y")
       }
-      
+
       return(p)
+    }
+  ),
+
+  private = list(
+    resolve_disease_id = function() {
+      normalize_disease_name(self$config$config_data[["disease"]])
     }
   )
 )
@@ -1092,14 +1094,33 @@ MetaRVMSummary <- R6::R6Class(
 
 #' @title MetaRVM Checkpoint Class
 #' @description
-#' R6 class to handle MetaRVM checkpoint data. This class is a simplified
-#' version of [MetaRVMConfig] tailored for storing and accessing simulation
-#' checkpoints.
+#' R6 class that stores a saved simulation state produced by [meta_sim()].
+#' Used to resume or branch a simulation from an intermediate time point.
 #'
 #' @details
-#' The `MetaRVMCheck` class is designed to hold the state of a simulation at a
-#' specific time point, allowing for continuation or analysis. It stores all
-#' necessary parameters and population states.
+#' Checkpoint objects are written automatically during a simulation run when
+#' `do_chk = TRUE` is set in the simulation config. Each checkpoint captures
+#' the full compartment state (S, E, I, H, R, D, V, …) and all disease
+#' parameters at the saved time step, enabling a resumed run to pick up exactly
+#' where it left off.
+#'
+#' `MetaRVMCheck` extends [`MetaRVMConfig`]: all `$get()`, `$get_category_names()`,
+#' and related accessor methods are inherited and work identically. Required
+#' checkpoint fields are disease-specific and validated against the disease
+#' registry at construction time.
+#'
+#' @seealso [metaRVM()] for enabling checkpointing via the `simulation_config`
+#'   section; [`MetaRVMConfig`] for the parent class and its accessor methods.
+#'
+#' @examples
+#' \dontrun{
+#' # Checkpoints are created automatically when do_chk = TRUE in the config.
+#' # To inspect a saved checkpoint:
+#' chk_data <- readRDS("my_checkpoint.rds")
+#' chk <- MetaRVMCheck$new(chk_data)
+#' chk$get("chk_time_step")
+#' chk$get("N_pop")
+#' }
 #'
 #' @import R6
 #' @author Arindam Fadikar
@@ -1126,11 +1147,7 @@ MetaRVMCheck <- R6::R6Class(
   ),
   private = list(
     validate_config = function() {
-      disease_id <- if ("disease" %in% names(self$check_data)) {
-        normalize_disease_name(self$check_data$disease)
-      } else {
-        "rvm"
-      }
+      disease_id <- normalize_disease_name(self$check_data[["disease"]])
       self$check_data$disease <- disease_id
       self$config_data$disease <- disease_id
 

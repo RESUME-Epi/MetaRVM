@@ -1,4 +1,6 @@
 run_id: 1A
+model:
+  disease: flu
 population_data:
   mapping: /home/fadikar/work/projects/git/MetaRVM/tests/testthat/testdata/demographic_mapping_n24.csv
   initialization: /home/fadikar/work/projects/git/MetaRVM/tests/testthat/testdata/population_init_n24.csv

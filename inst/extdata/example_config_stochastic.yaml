@@ -1,4 +1,6 @@
 run_id: ExampleRun_Stochastic_Static
+model:
+  disease: flu
 population_data:
   initialization: population_init_n24.csv
   vaccination: vaccination_n24.csv
@@ -25,5 +27,4 @@ simulation_config:
   length: 150
   nsim: 1
   nrep: 5
-  simulation_mode: stochastic
   random_seed: 42

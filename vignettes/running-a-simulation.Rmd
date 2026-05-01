@@ -58,7 +58,7 @@ simulation_config:
   length: 150
   nsim: 1
   nrep: 1
-  simulation_mode: deterministic
+
   random_seed: 42
 ```
 
@@ -225,7 +225,7 @@ simulation_config:
   length: 150
   nsim: 20 # Increased nsim for meaningful summary statistics
   nrep: 1
-  simulation_mode: deterministic
+
   random_seed: 42
 ```
 
@@ -259,9 +259,9 @@ hospital_summary_dist$plot() + ggtitle("Daily Hospitalizations by Age Group (wit
 
 # Running a Stochastic Simulation with Static Parameters
 
-A stochastic simulation can also be run by setting `simulation_mode: stochastic`.
+All MetaRVM simulations run in stochastic mode. Use `nrep` to control the number of stochastic replicates per parameter set.
 
-An example YAML file with parameter distributions is included in the package, `example_config_stochastic.yaml`. Here is its content:
+An example YAML file is included in the package, `example_config_stochastic.yaml`. Here is its content:
 
 ```{r}
 # Locate the example YAML configuration file with distributions
@@ -296,7 +296,6 @@ simulation_config:
   length: 150
   nsim: 1
   nrep: 5
-  simulation_mode: stochastic
   random_seed: 42
 ```
 
@@ -357,7 +356,7 @@ simulation_config:
   length: 150
   nsim: 20
   nrep: 1
-  simulation_mode: deterministic
+
   random_seed: 42
 ```
 

@@ -1,4 +1,6 @@
 run_id: CheckpointRun
+model:
+  disease: flu
 population_data:
   initialization: population_init_n24.csv
   vaccination: vaccination_n24.csv
@@ -24,5 +26,4 @@ simulation_config:
   start_date: 10/01/2024 # m/d/Y
   length: 90
   nsim: 1
-  simulation_mode: deterministic
   # The checkpoint_dir will be set dynamically in the vignette

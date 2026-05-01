@@ -1,7 +1,7 @@
 test_that("meta_sim conserves population (no death) and produces no negative values", {
   # skip_on_cran()   # odin compilation can slow down CRAN
 
-  # ---- Minimal 1-pop deterministic model with no deaths ----
+  # ---- Minimal 1-pop stochastic model with no deaths ----
   N_pop   <- 1
   nsteps  <- 20
   delta_t <- 0.5
@@ -25,7 +25,7 @@ test_that("meta_sim conserves population (no death) and produces no negative val
   vac_mat <- matrix(0, nrow = nsteps + 1, ncol = 1 + N_pop)
   vac_mat[, 1] <- 0:nsteps   # required time index column
 
-  # Run model (deterministic)
+  # Run model
   res <- meta_sim(
     N_pop = N_pop,
 
@@ -50,7 +50,7 @@ test_that("meta_sim conserves population (no death) and produces no negative val
     delta_t = delta_t,
     vac_mat = vac_mat,
 
-    # disease parameters (deterministic)
+    # disease parameters
     dv  = 365,
     de  = 3,
     pea = 0.3,

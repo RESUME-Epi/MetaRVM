@@ -3,10 +3,9 @@
 #' @description
 #' `metaRVM()` is the high-level entry point for running a MetaRVM
 #' metapopulation respiratory virus simulation. It parses the configuration,
-#' runs one or more simulation instances (deterministic or stochastic),
-#' formats the ODIN/MetaRVM output into a tidy long table with calendar
-#' dates and demographic attributes, and returns a [`MetaRVMResults`]
-#' object for downstream analysis and plotting.
+#' runs one or more stochastic simulation instances, formats the ODIN/MetaRVM
+#' output into a tidy long table with calendar dates and demographic attributes,
+#' and returns a [`MetaRVMResults`] object for downstream analysis and plotting.
 #'
 #' @details
 #' The configuration input controls:
@@ -17,7 +16,7 @@
 #' - **Mixing matrices** (weekday/weekend, day/night contact patterns)
 #' - **Vaccination schedule** and immunity waning
 #' - **Simulation settings** (start date, length, number of instances,
-#'   stochastic vs. deterministic mode, checkpointing)
+#'   checkpointing)
 #'
 #' Internally, `metaRVM()`:
 #'
@@ -186,18 +185,11 @@ metaRVM <- function(config_input, verbose = NULL, suppress_odin_messages = NULL)
     stop("nrep must be a positive integer")
   }
 
-  simulation_mode <- if (isTRUE(disease_entry$always_stochastic)) {
-    "stochastic"
-  } else if ("simulation_mode" %in% names(config_obj$config_data)) {
-    config_obj$config_data$simulation_mode
-  } else {
-    "deterministic"
-  }
-  is_stoch <- identical(tolower(as.character(simulation_mode)), "stochastic")
+  is_stoch <- TRUE
   total_instances <- nsim * nrep
   vmsg(sprintf(
-    "Starting MetaRVM run: disease=%s, mode=%s, nsim=%d, nrep=%d, total_instances=%d",
-    disease, simulation_mode, nsim, nrep, total_instances
+    "Starting MetaRVM run: disease=%s, nsim=%d, nrep=%d, total_instances=%d",
+    disease, nsim, nrep, total_instances
   ))
   if (isTRUE(suppress_odin_run)) {
     vmsg("ODIN messages suppressed via options(odin.verbose = FALSE) for this run.")
@@ -230,6 +222,9 @@ metaRVM <- function(config_input, verbose = NULL, suppress_odin_messages = NULL)
     TRUE ~ NA_integer_
   )
 
+  # Cartesian join gives one row per (parameter-set, replicate) combination.
+  # run_idx = (ii - 1) * nrep + rr maps the 2D grid to a 1-D instance index
+  # that is contiguous (1..nsim*nrep) and stable regardless of execution order.
   task_grid <- data.table::CJ(ii = seq_len(nsim), rr = seq_len(nrep), sorted = TRUE)
   task_grid[, run_idx := (ii - 1L) * nrep + rr]
   config_data <- config_obj$config_data
@@ -250,8 +245,7 @@ metaRVM <- function(config_input, verbose = NULL, suppress_odin_messages = NULL)
     replicate = rr
   )])
   instance_manifest[, disease := disease]
-  instance_manifest[, simulation_mode := simulation_mode]
-  instance_manifest[, seed := if (is_stoch) (run_seed_base + instance - 1L) else NA_integer_]
+  instance_manifest[, seed := run_seed_base + instance - 1L]
   instance_manifest[, sim_args := sim_args_list]
 
   run_one_instance <- function(run_idx, sim_args) {
@@ -317,6 +311,8 @@ metaRVM <- function(config_input, verbose = NULL, suppress_odin_messages = NULL)
 
   out <- data.table::data.table()
   if (isTRUE(parallel_enabled)) {
+    # `%dopar%` is a non-exported infix from foreach.  get() retrieves it from
+    # the package namespace at runtime to avoid a hard import dependency.
     dopar <- get("%dopar%", envir = asNamespace("foreach"))
     foreach_result <- tryCatch(
       dopar(
@@ -352,6 +348,7 @@ metaRVM <- function(config_input, verbose = NULL, suppress_odin_messages = NULL)
 
   if (!isTRUE(parallel_enabled)) {
     out <- data.table::data.table()
+    # Print a progress line roughly every 10% of total instances.
     report_every <- max(1L, as.integer(total_instances %/% 10L))
     for (task_id in seq_len(nrow(task_grid))) {
       ii <- task_grid$ii[[task_id]]
@@ -377,7 +374,6 @@ metaRVM <- function(config_input, verbose = NULL, suppress_odin_messages = NULL)
     nsim = nsim,
     nrep = nrep,
     n_instances = total_instances,
-    simulation_mode = simulation_mode,
     execution_mode = if (isTRUE(parallel_enabled)) "parallel_foreach" else "sequential",
     parallel_backend = parallel_backend,
     parallel_workers = parallel_workers,

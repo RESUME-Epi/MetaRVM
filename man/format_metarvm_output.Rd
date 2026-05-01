@@ -2,33 +2,54 @@
 % Please edit documentation in R/format_output.R
 \name{format_metarvm_output}
 \alias{format_metarvm_output}
-\title{Format MetaRVM simulation output}
+\title{Format raw MetaRVM simulation output}
 \usage{
 format_metarvm_output(sim_output, config)
 }
 \arguments{
-\item{sim_output}{data.table containing raw simulation output from \code{\link{meta_sim}}}
+\item{sim_output}{\code{data.table} of raw simulation output from \code{\link[=meta_sim]{meta_sim()}} or
+\code{\link[=meta_measles_sim]{meta_measles_sim()}}. Must contain columns \code{time}, \code{disease_state},
+\code{population_id}, \code{value}, and \code{instance}.}
 
-\item{config}{MetaRVMConfig object or config list containing parameters}
+\item{config}{A \code{\link{MetaRVMConfig}} object or a named list. Must supply
+\code{start_date}, \code{pop_map} (with a \code{population_id} column), and
+\code{category_names}.}
 }
 \value{
-data.table with formatted output including calendar dates and demographics
+A \code{data.table} in long format with one row per (date, demographic
+combination, disease state, simulation instance). Columns:
+\describe{
+\item{\code{date}}{\code{Date}. Calendar date derived from \code{start_date + time}.}
+\item{User category columns}{One column per demographic category
+detected in the population CSV (e.g., \code{age}, \code{zone}, \code{race}).}
+\item{\code{disease_state}}{\code{character}. Compartment or flow-count state label.}
+\item{\code{value}}{\code{numeric}. Compartment count or summed daily flow count.}
+\item{\code{instance}}{\code{integer}. Simulation instance index.}
+}
 }
 \description{
-This function formats raw MetaRVM simulation output by:
-\enumerate{
-\item Converting time steps to calendar dates
-\item Adding user-defined demographic attributes from the initialization-derived population metadata
-\item Handling different disease states appropriately:
+Converts raw step-indexed output from \code{\link[=meta_sim]{meta_sim()}} or \code{\link[=meta_measles_sim]{meta_measles_sim()}}
+into a tidy long-format \code{data.table} with calendar dates and user-defined
+demographic attributes.
+
+The transformation differs by state type:
 \itemize{
-\item Regular states (S, E, I, etc.): Keep values at integer time points
-\item New count states (n_ prefix): Sum pairs to get daily counts
+\item \strong{Compartment states} (S, E, I, H, R, D, V, …): only integer time-step
+values are retained.
+\item \strong{Flow states} (\code{n_} prefix): within-day pairs are summed to daily
+counts.
 }
 }
+\examples{
+\dontrun{
+# Typically called internally by metaRVM(); exposed for custom pipelines.
+cfg <- system.file("extdata", "example_config.yaml", package = "MetaRVM")
+config <- parse_config(cfg)
+raw <- meta_sim(...)  # low-level engine output
+formatted <- format_metarvm_output(raw, config)
 }
-\section{Note}{
 
-This function is used for formatting the \code{\link{meta_sim}} output when \code{\link{MetaRVM}}
-function is called.
 }
-
+\seealso{
+\code{\link[=metaRVM]{metaRVM()}}, \code{\link[=meta_sim]{meta_sim()}}, \code{\link{MetaRVMResults}}
+}

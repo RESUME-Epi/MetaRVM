@@ -50,7 +50,7 @@ simulation_config:
   length: 90
   nsim: 1
   nrep: 1
-  simulation_mode: deterministic
+
   random_seed: 42
 ```
 
@@ -208,9 +208,8 @@ In this configuration, individuals in the "0-4" age group will have a `dh` (dura
 
 ## Stochastic Simulation with Distributional Parameters
 
-When both parameter uncertainty and stochastic disease transitions are represented,
-set `simulation_mode: stochastic` and define one or more disease
-parameters as distributions.
+All simulations run stochastically. To combine parameter uncertainty with
+stochastic replicates, define one or more disease parameters as distributions.
 
 -   `nsim`: number of sampled parameter sets
 -   `nrep`: number of stochastic replicates per parameter set
@@ -258,7 +257,6 @@ simulation_config:
   length: 90
   nsim: 20
   nrep: 5
-  simulation_mode: stochastic
   random_seed: 42
 ```
 
@@ -285,7 +283,7 @@ simulation_config:
   length: 90
   nsim: 10
   nrep: 1
-  simulation_mode: deterministic
+
   random_seed: 42
   checkpoint_dir: "path/to/checkpoints"
   checkpoint_dates: ["01/15/2025", "01/30/2025"]
@@ -301,7 +299,7 @@ simulation_config:
   length: 60 # Remaining simulation length
   nsim: 10
   nrep: 1
-  simulation_mode: deterministic
+
   random_seed: 42
   restore_from: "path/to/checkpoints/checkpoint_2025-01-30_instance_1.Rda"
 ```
