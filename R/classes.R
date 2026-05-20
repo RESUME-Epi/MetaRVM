@@ -212,6 +212,79 @@ MetaRVMConfig <- R6::R6Class(
       })
       names(result) <- category_names
       return(result)
+    },
+
+    #' @description Set the number of stochastic replicates per parameter draw
+    #' @param n Positive integer.
+    #' @return Self (invisible) for method chaining
+    set_nrep = function(n) {
+      n <- as.integer(n)
+      if (is.na(n) || n <= 0L) stop("nrep must be a positive integer")
+      self$config_data$nrep <- n
+      invisible(self)
+    },
+
+    #' @description Set the random seed
+    #' @param seed Integer.
+    #' @return Self (invisible) for method chaining
+    set_random_seed = function(seed) {
+      seed <- as.integer(seed)
+      if (is.na(seed)) stop("random_seed must be an integer")
+      self$config_data$random_seed <- seed
+      invisible(self)
+    },
+
+    #' @description Set the simulation start date
+    #' @param date A [Date] object or character string in `"MM/DD/YYYY"` format.
+    #' @return Self (invisible) for method chaining
+    set_start_date = function(date) {
+      if (inherits(date, "Date")) {
+        self$config_data$start_date <- date
+      } else {
+        parsed <- tryCatch(as.Date(as.character(date), format = "%m/%d/%Y"),
+                           error = function(e) NA_real_)
+        if (is.na(parsed)) stop("start_date must be a Date or a 'MM/DD/YYYY' string")
+        self$config_data$start_date <- parsed
+      }
+      invisible(self)
+    },
+
+    #' @description Set the simulation length in days
+    #' @param n Positive integer.
+    #' @return Self (invisible) for method chaining
+    set_sim_length = function(n) {
+      n <- as.integer(n)
+      if (is.na(n) || n <= 0L) stop("sim_length must be a positive integer")
+      self$config_data$sim_length <- n
+      invisible(self)
+    },
+
+    #' @description Set the time-step size
+    #' @param dt Positive numeric (days). Typically `0.5`.
+    #' @return Self (invisible) for method chaining
+    set_delta_t = function(dt) {
+      dt <- as.numeric(dt)
+      if (is.na(dt) || dt <= 0) stop("delta_t must be a positive number")
+      self$config_data$delta_t <- dt
+      invisible(self)
+    },
+
+    #' @description Set the run identifier
+    #' @param id Character string.
+    #' @return Self (invisible) for method chaining
+    set_run_id = function(id) {
+      if (!is.character(id) || length(id) != 1L) stop("run_id must be a single character string")
+      self$config_data$run_id <- id
+      invisible(self)
+    },
+
+    #' @description Set whether parallel execution is allowed
+    #' @param flag Logical.
+    #' @return Self (invisible) for method chaining
+    set_parallel = function(flag) {
+      if (!is.logical(flag) || length(flag) != 1L) stop("parallel must be TRUE or FALSE")
+      self$config_data$parallel <- flag
+      invisible(self)
     }
   ),
   
@@ -423,6 +496,9 @@ MetaRVMResults <- R6::R6Class(
     #' @param instances Vector of instance numbers to include (default: all)
     #' @param exclude_p_columns Logical, whether to exclude p_ columns (default: TRUE)
     #' @return MetaRVMResults object with subset of results
+    #' 
+    # TODO: the category filter names are needed to be supplied with quote, remove this restriction
+    # e.g sim$subset_data("age"="0-4"), it should be sim$subset_data(age = "0-4")
     subset_data = function(..., disease_states = NULL, date_range = NULL,
                           instances = NULL, exclude_p_columns = TRUE) {
 

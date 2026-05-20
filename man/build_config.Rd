@@ -18,6 +18,7 @@ build_config(
   sub_disease_params = NULL,
   random_seed = NULL,
   delta_t = NULL,
+  parallel = FALSE,
   checkpoint_dir = NULL,
   checkpoint_dates = NULL,
   restore_from = NULL,
@@ -64,6 +65,11 @@ overrides. Structure mirrors the \verb{sub_disease_params:} YAML section, e.g.
 when \code{NULL}.}
 
 \item{delta_t}{Numeric time-step in days. Defaults to \code{0.5} when \code{NULL}.}
+
+\item{parallel}{Logical. Whether \code{metaRVM()} may use a parallel foreach
+backend. Default \code{FALSE}. Set to \code{TRUE} only at the top-level call; leave
+\code{FALSE} when the config will be used inside a parallel worker to prevent
+nested-parallel conflicts.}
 
 \item{checkpoint_dir}{Optional character. Directory for checkpoint files
 (flu only).}

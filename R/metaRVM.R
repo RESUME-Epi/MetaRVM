@@ -262,9 +262,10 @@ metaRVM <- function(config_input, verbose = NULL, suppress_odin_messages = NULL)
   parallel_enabled <- FALSE
   parallel_backend <- "sequential"
   parallel_workers <- 1L
-  parallel_reason <- "no registered foreach parallel backend found"
+  parallel_reason <- "parallel disabled by config (parallel = FALSE)"
   local_cluster <- NULL
-  if (requireNamespace("foreach", quietly = TRUE)) {
+  if (isTRUE(config_obj$config_data$parallel) && requireNamespace("foreach", quietly = TRUE)) {
+    parallel_reason <- "no registered foreach parallel backend found"
     is_registered <- foreach::getDoParRegistered()
     n_workers <- if (is_registered) foreach::getDoParWorkers() else 1L
 
@@ -296,6 +297,8 @@ metaRVM <- function(config_input, verbose = NULL, suppress_odin_messages = NULL)
     } else {
       parallel_reason <- "foreach is installed but doParallel is not installed"
     }
+  } else if (!isTRUE(config_obj$config_data$parallel)) {
+    parallel_reason <- "parallel disabled by config (parallel = FALSE)"
   } else {
     parallel_reason <- "foreach package is not installed"
   }

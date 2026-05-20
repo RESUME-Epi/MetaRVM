@@ -244,7 +244,7 @@ metarvm_disease_registry <- function() {
       ),
       init_reserved_cols = c(
         "population_id", "N", "S0", "E10", "E20",
-        "I1_Q0", "I1_U0", "I2_Q0", "I2_U0", "R0"
+        "I1_Q0", "I1_U0", "I2_Q0", "I2_U0", "R0", "V10", "V20"
       ),
       init_required_cols = c("population_id", "N", "S0"),
       init_require_any_of = c("I1_U0", "I2_U0"),

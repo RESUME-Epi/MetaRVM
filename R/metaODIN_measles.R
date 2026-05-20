@@ -207,6 +207,7 @@ meta_measles_sim <- function(N_pop = 1,
     output(I1_all) <- TRUE
     output(I2_all) <- TRUE
     output(n_E2I1) <- TRUE
+    output(S0_eff) <- TRUE
 
     ## User-defined inputs
 

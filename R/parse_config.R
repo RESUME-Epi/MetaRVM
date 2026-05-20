@@ -215,6 +215,7 @@ parse_config_measles_internal <- function(yaml_data, config_file, disease,
   nsim <- sim_cfg$nsim
   nrep <- sim_cfg$nrep
   random_seed <- sim_cfg$random_seed
+  parallel <- sim_cfg$parallel
 
   if (is.null(yaml_data$population_data$initialization)) {
     stop("population_data$initialization is required")
@@ -288,6 +289,7 @@ parse_config_measles_internal <- function(yaml_data, config_file, disease,
     nsim = nsim,
     nrep = nrep,
     random_seed = random_seed,
+    parallel = parallel,
     verbose = verbose,
     suppress_odin_messages = suppress_odin_messages,
     delta_t = delta_t,
@@ -334,6 +336,7 @@ parse_config_flu_internal <- function(yaml_data, config_file, disease,
   nsim <- sim_cfg$nsim
   nrep <- sim_cfg$nrep
   random_seed <- sim_cfg$random_seed
+  parallel <- sim_cfg$parallel
 
   vac_time_id <- NULL
   vac_counts <- NULL
@@ -522,6 +525,7 @@ parse_config_flu_internal <- function(yaml_data, config_file, disease,
     nsim = nsim,
     nrep = nrep,
     random_seed = random_seed,
+    parallel = parallel,
     verbose = verbose,
     suppress_odin_messages = suppress_odin_messages,
     delta_t = delta_t,
@@ -585,13 +589,16 @@ metarvm_parse_simulation_config <- function(yaml_data,
     set.seed(random_seed)
   }
 
+  parallel <- isTRUE(sim_cfg$parallel)
+
   list(
     delta_t = delta_t,
     start_date = start_date,
     sim_length = sim_length,
     nsim = nsim,
     nrep = nrep,
-    random_seed = random_seed
+    random_seed = random_seed,
+    parallel = parallel
   )
 }
 

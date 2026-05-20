@@ -29,6 +29,10 @@
 #' @param random_seed Optional integer seed for reproducibility. Auto-generated
 #'   when `NULL`.
 #' @param delta_t Numeric time-step in days. Defaults to `0.5` when `NULL`.
+#' @param parallel Logical. Whether `metaRVM()` may use a parallel foreach
+#'   backend. Default `FALSE`. Set to `TRUE` only at the top-level call; leave
+#'   `FALSE` when the config will be used inside a parallel worker to prevent
+#'   nested-parallel conflicts.
 #' @param checkpoint_dir Optional character. Directory for checkpoint files
 #'   (flu only).
 #' @param checkpoint_dates Optional character vector of dates
@@ -113,6 +117,7 @@ build_config <- function(
     sub_disease_params     = NULL,
     random_seed            = NULL,
     delta_t                = NULL,
+    parallel               = FALSE,
     checkpoint_dir         = NULL,
     checkpoint_dates       = NULL,
     restore_from           = NULL,
@@ -185,6 +190,7 @@ build_config <- function(
   )
   if (!is.null(random_seed))      simulation_config$random_seed           <- as.integer(random_seed)
   if (!is.null(delta_t))          simulation_config$delta_t               <- delta_t
+  simulation_config$parallel <- isTRUE(parallel)
   if (!is.null(checkpoint_dir))   simulation_config$checkpoint_dir        <- checkpoint_dir
   if (!is.null(checkpoint_dates)) simulation_config$checkpoint_dates      <- as.list(checkpoint_dates)
   if (!is.null(restore_from))     simulation_config$restore_from          <- restore_from

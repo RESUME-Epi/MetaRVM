@@ -88,6 +88,13 @@ Arindam Fadikar
 \item \href{#method-MetaRVMConfig-get_category_names}{\code{MetaRVMConfig$get_category_names()}}
 \item \href{#method-MetaRVMConfig-get_category_values}{\code{MetaRVMConfig$get_category_values()}}
 \item \href{#method-MetaRVMConfig-get_all_categories}{\code{MetaRVMConfig$get_all_categories()}}
+\item \href{#method-MetaRVMConfig-set_nrep}{\code{MetaRVMConfig$set_nrep()}}
+\item \href{#method-MetaRVMConfig-set_random_seed}{\code{MetaRVMConfig$set_random_seed()}}
+\item \href{#method-MetaRVMConfig-set_start_date}{\code{MetaRVMConfig$set_start_date()}}
+\item \href{#method-MetaRVMConfig-set_sim_length}{\code{MetaRVMConfig$set_sim_length()}}
+\item \href{#method-MetaRVMConfig-set_delta_t}{\code{MetaRVMConfig$set_delta_t()}}
+\item \href{#method-MetaRVMConfig-set_run_id}{\code{MetaRVMConfig$set_run_id()}}
+\item \href{#method-MetaRVMConfig-set_parallel}{\code{MetaRVMConfig$set_parallel()}}
 \item \href{#method-MetaRVMConfig-clone}{\code{MetaRVMConfig$clone()}}
 }
 }
@@ -305,6 +312,146 @@ all_cats <- config$get_all_categories()
 
 }
 
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-MetaRVMConfig-set_nrep"></a>}}
+\if{latex}{\out{\hypertarget{method-MetaRVMConfig-set_nrep}{}}}
+\subsection{Method \code{set_nrep()}}{
+Set the number of stochastic replicates per parameter draw
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{MetaRVMConfig$set_nrep(n)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{n}}{Positive integer.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+Self (invisible) for method chaining
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-MetaRVMConfig-set_random_seed"></a>}}
+\if{latex}{\out{\hypertarget{method-MetaRVMConfig-set_random_seed}{}}}
+\subsection{Method \code{set_random_seed()}}{
+Set the random seed
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{MetaRVMConfig$set_random_seed(seed)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{seed}}{Integer.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+Self (invisible) for method chaining
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-MetaRVMConfig-set_start_date"></a>}}
+\if{latex}{\out{\hypertarget{method-MetaRVMConfig-set_start_date}{}}}
+\subsection{Method \code{set_start_date()}}{
+Set the simulation start date
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{MetaRVMConfig$set_start_date(date)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{date}}{A \link{Date} object or character string in \code{"MM/DD/YYYY"} format.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+Self (invisible) for method chaining
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-MetaRVMConfig-set_sim_length"></a>}}
+\if{latex}{\out{\hypertarget{method-MetaRVMConfig-set_sim_length}{}}}
+\subsection{Method \code{set_sim_length()}}{
+Set the simulation length in days
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{MetaRVMConfig$set_sim_length(n)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{n}}{Positive integer.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+Self (invisible) for method chaining
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-MetaRVMConfig-set_delta_t"></a>}}
+\if{latex}{\out{\hypertarget{method-MetaRVMConfig-set_delta_t}{}}}
+\subsection{Method \code{set_delta_t()}}{
+Set the time-step size
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{MetaRVMConfig$set_delta_t(dt)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{dt}}{Positive numeric (days). Typically \code{0.5}.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+Self (invisible) for method chaining
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-MetaRVMConfig-set_run_id"></a>}}
+\if{latex}{\out{\hypertarget{method-MetaRVMConfig-set_run_id}{}}}
+\subsection{Method \code{set_run_id()}}{
+Set the run identifier
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{MetaRVMConfig$set_run_id(id)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{id}}{Character string.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+Self (invisible) for method chaining
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-MetaRVMConfig-set_parallel"></a>}}
+\if{latex}{\out{\hypertarget{method-MetaRVMConfig-set_parallel}{}}}
+\subsection{Method \code{set_parallel()}}{
+Set whether parallel execution is allowed
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{MetaRVMConfig$set_parallel(flag)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{flag}}{Logical.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+Self (invisible) for method chaining
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-MetaRVMConfig-clone"></a>}}

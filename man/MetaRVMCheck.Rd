@@ -67,6 +67,13 @@ Arindam Fadikar
 <li><span class="pkg-link" data-pkg="MetaRVM" data-topic="MetaRVMConfig" data-id="parameter_summary"><a href='../../MetaRVM/html/MetaRVMConfig.html#method-MetaRVMConfig-parameter_summary'><code>MetaRVM::MetaRVMConfig$parameter_summary()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="MetaRVM" data-topic="MetaRVMConfig" data-id="print"><a href='../../MetaRVM/html/MetaRVMConfig.html#method-MetaRVMConfig-print'><code>MetaRVM::MetaRVMConfig$print()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="MetaRVM" data-topic="MetaRVMConfig" data-id="set"><a href='../../MetaRVM/html/MetaRVMConfig.html#method-MetaRVMConfig-set'><code>MetaRVM::MetaRVMConfig$set()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="MetaRVM" data-topic="MetaRVMConfig" data-id="set_delta_t"><a href='../../MetaRVM/html/MetaRVMConfig.html#method-MetaRVMConfig-set_delta_t'><code>MetaRVM::MetaRVMConfig$set_delta_t()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="MetaRVM" data-topic="MetaRVMConfig" data-id="set_nrep"><a href='../../MetaRVM/html/MetaRVMConfig.html#method-MetaRVMConfig-set_nrep'><code>MetaRVM::MetaRVMConfig$set_nrep()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="MetaRVM" data-topic="MetaRVMConfig" data-id="set_parallel"><a href='../../MetaRVM/html/MetaRVMConfig.html#method-MetaRVMConfig-set_parallel'><code>MetaRVM::MetaRVMConfig$set_parallel()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="MetaRVM" data-topic="MetaRVMConfig" data-id="set_random_seed"><a href='../../MetaRVM/html/MetaRVMConfig.html#method-MetaRVMConfig-set_random_seed'><code>MetaRVM::MetaRVMConfig$set_random_seed()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="MetaRVM" data-topic="MetaRVMConfig" data-id="set_run_id"><a href='../../MetaRVM/html/MetaRVMConfig.html#method-MetaRVMConfig-set_run_id'><code>MetaRVM::MetaRVMConfig$set_run_id()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="MetaRVM" data-topic="MetaRVMConfig" data-id="set_sim_length"><a href='../../MetaRVM/html/MetaRVMConfig.html#method-MetaRVMConfig-set_sim_length'><code>MetaRVM::MetaRVMConfig$set_sim_length()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="MetaRVM" data-topic="MetaRVMConfig" data-id="set_start_date"><a href='../../MetaRVM/html/MetaRVMConfig.html#method-MetaRVMConfig-set_start_date'><code>MetaRVM::MetaRVMConfig$set_start_date()</code></a></span></li>
 </ul>
 </details>
 }}

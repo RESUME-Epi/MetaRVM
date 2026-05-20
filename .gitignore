@@ -7,3 +7,6 @@
 inst/doc
 /doc/
 /Meta/
+CLAUDE.md
+/measles/
+.gitignore
