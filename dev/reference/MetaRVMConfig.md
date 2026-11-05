@@ -54,6 +54,20 @@ Arindam Fadikar
 
 - [`MetaRVMConfig$get_all_categories()`](#method-MetaRVMConfig-get_all_categories)
 
+- [`MetaRVMConfig$set_nrep()`](#method-MetaRVMConfig-set_nrep)
+
+- [`MetaRVMConfig$set_random_seed()`](#method-MetaRVMConfig-set_random_seed)
+
+- [`MetaRVMConfig$set_start_date()`](#method-MetaRVMConfig-set_start_date)
+
+- [`MetaRVMConfig$set_sim_length()`](#method-MetaRVMConfig-set_sim_length)
+
+- [`MetaRVMConfig$set_delta_t()`](#method-MetaRVMConfig-set_delta_t)
+
+- [`MetaRVMConfig$set_run_id()`](#method-MetaRVMConfig-set_run_id)
+
+- [`MetaRVMConfig$set_parallel()`](#method-MetaRVMConfig-set_parallel)
+
 - [`MetaRVMConfig$clone()`](#method-MetaRVMConfig-clone)
 
 ------------------------------------------------------------------------
@@ -270,6 +284,147 @@ of unique values for each category. Returns empty list if no categories.
     all_cats <- config$get_all_categories()
     # Returns: list(age = c("0-17", "18-64", "65+"), risk_group = c("low", "high"), ...)
     }
+
+------------------------------------------------------------------------
+
+### Method `set_nrep()`
+
+Set the number of stochastic replicates per parameter draw
+
+#### Usage
+
+    MetaRVMConfig$set_nrep(n)
+
+#### Arguments
+
+- `n`:
+
+  Positive integer.
+
+#### Returns
+
+Self (invisible) for method chaining
+
+------------------------------------------------------------------------
+
+### Method `set_random_seed()`
+
+Set the random seed
+
+#### Usage
+
+    MetaRVMConfig$set_random_seed(seed)
+
+#### Arguments
+
+- `seed`:
+
+  Integer.
+
+#### Returns
+
+Self (invisible) for method chaining
+
+------------------------------------------------------------------------
+
+### Method `set_start_date()`
+
+Set the simulation start date
+
+#### Usage
+
+    MetaRVMConfig$set_start_date(date)
+
+#### Arguments
+
+- `date`:
+
+  A [Date](https://rdrr.io/r/base/Dates.html) object or character string
+  in `"MM/DD/YYYY"` format.
+
+#### Returns
+
+Self (invisible) for method chaining
+
+------------------------------------------------------------------------
+
+### Method `set_sim_length()`
+
+Set the simulation length in days
+
+#### Usage
+
+    MetaRVMConfig$set_sim_length(n)
+
+#### Arguments
+
+- `n`:
+
+  Positive integer.
+
+#### Returns
+
+Self (invisible) for method chaining
+
+------------------------------------------------------------------------
+
+### Method `set_delta_t()`
+
+Set the time-step size
+
+#### Usage
+
+    MetaRVMConfig$set_delta_t(dt)
+
+#### Arguments
+
+- `dt`:
+
+  Positive numeric (days). Typically `0.5`.
+
+#### Returns
+
+Self (invisible) for method chaining
+
+------------------------------------------------------------------------
+
+### Method `set_run_id()`
+
+Set the run identifier
+
+#### Usage
+
+    MetaRVMConfig$set_run_id(id)
+
+#### Arguments
+
+- `id`:
+
+  Character string.
+
+#### Returns
+
+Self (invisible) for method chaining
+
+------------------------------------------------------------------------
+
+### Method `set_parallel()`
+
+Set whether parallel execution is allowed
+
+#### Usage
+
+    MetaRVMConfig$set_parallel(flag)
+
+#### Arguments
+
+- `flag`:
+
+  Logical.
+
+#### Returns
+
+Self (invisible) for method chaining
 
 ------------------------------------------------------------------------
 

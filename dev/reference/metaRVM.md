@@ -2,16 +2,16 @@
 
 `metaRVM()` is the high-level entry point for running a MetaRVM
 metapopulation respiratory virus simulation. It parses the
-configuration, runs one or more simulation instances (deterministic or
-stochastic), formats the ODIN/MetaRVM output into a tidy long table with
-calendar dates and demographic attributes, and returns a
-[`MetaRVMResults`](https://RESUME-Epi.github.io/MetaRVM/reference/MetaRVMResults.md)
+configuration, runs one or more stochastic simulation instances, formats
+the ODIN/MetaRVM output into a tidy long table with calendar dates and
+demographic attributes, and returns a
+[`MetaRVMResults`](https://RESUME-Epi.github.io/MetaRVM/dev/reference/MetaRVMResults.md)
 object for downstream analysis and plotting.
 
 ## Usage
 
 ``` r
-metaRVM(config_input)
+metaRVM(config_input, verbose = NULL, suppress_odin_messages = NULL)
 ```
 
 ## Arguments
@@ -22,17 +22,30 @@ metaRVM(config_input)
 
   - **Character string**: path to a YAML configuration file.
 
-  - **[`MetaRVMConfig`](https://RESUME-Epi.github.io/MetaRVM/reference/MetaRVMConfig.md)
+  - **[`MetaRVMConfig`](https://RESUME-Epi.github.io/MetaRVM/dev/reference/MetaRVMConfig.md)
     object**: pre-initialized configuration.
 
   - **Named list**: output from
-    [`parse_config()`](https://RESUME-Epi.github.io/MetaRVM/reference/parse_config.md)
+    [`parse_config()`](https://RESUME-Epi.github.io/MetaRVM/dev/reference/parse_config.md)
     with `return_object = FALSE`.
+
+- verbose:
+
+  Optional logical. If `TRUE`, prints meaningful run progress messages.
+  If `NULL` (default), uses `simulation_config$verbose` from the parsed
+  config when available; otherwise defaults to `FALSE`.
+
+- suppress_odin_messages:
+
+  Optional logical. If `TRUE`, sets `options(odin.verbose = FALSE)` for
+  this run to suppress ODIN compilation chatter. If `NULL` (default),
+  uses `simulation_config$suppress_odin_messages` from config when
+  available; otherwise defaults to `FALSE`.
 
 ## Value
 
 A
-[`MetaRVMResults`](https://RESUME-Epi.github.io/MetaRVM/reference/MetaRVMResults.md)
+[`MetaRVMResults`](https://RESUME-Epi.github.io/MetaRVM/dev/reference/MetaRVMResults.md)
 R6 object with three key components:
 
 - \$results:
@@ -55,7 +68,7 @@ R6 object with three key components:
 - \$config:
 
   The
-  [`MetaRVMConfig`](https://RESUME-Epi.github.io/MetaRVM/reference/MetaRVMConfig.md)
+  [`MetaRVMConfig`](https://RESUME-Epi.github.io/MetaRVM/dev/reference/MetaRVMConfig.md)
   object used for the run.
 
 - \$run_info:
@@ -70,31 +83,33 @@ The configuration input controls:
 - **Population structure** (user-defined categories and the initial
   compartment counts from the initialization file)
 
-- **Disease parameters** (`ts`, `ve`, `de`, `dp`, `da`, `ds`, `dh`,
-  `dr`, `pea`, `psr`, `phr`, `dv`, etc.)
+- **Disease parameters** (disease-specific; see
+  [`?parse_config`](https://RESUME-Epi.github.io/MetaRVM/dev/reference/parse_config.md)
+  and the disease registry for per-disease parameter lists)
 
 - **Mixing matrices** (weekday/weekend, day/night contact patterns)
 
-- **Vaccination schedule** and immunity waning
+- **Vaccination** (time-varying schedule for flu; initial compartment
+  counts for measles)
 
 - **Simulation settings** (start date, length, number of instances,
-  stochastic vs. deterministic mode, checkpointing)
+  checkpointing)
 
 Internally, `metaRVM()`:
 
 1.  Parses the YAML configuration via
-    [`parse_config()`](https://RESUME-Epi.github.io/MetaRVM/reference/parse_config.md).
+    [`parse_config()`](https://RESUME-Epi.github.io/MetaRVM/dev/reference/parse_config.md).
 
 2.  Calls the ODIN-based simulation engine
-    [`meta_sim()`](https://RESUME-Epi.github.io/MetaRVM/reference/meta_sim.md)
+    [`meta_sim()`](https://RESUME-Epi.github.io/MetaRVM/dev/reference/meta_sim.md)
     for each instance.
 
 3.  Uses
-    [`format_metarvm_output()`](https://RESUME-Epi.github.io/MetaRVM/reference/format_metarvm_output.md)
+    [`format_metarvm_output()`](https://RESUME-Epi.github.io/MetaRVM/dev/reference/format_metarvm_output.md)
     to convert time steps to dates and attach demographic attributes.
 
 4.  Wraps the formatted output and metadata in a
-    [`MetaRVMResults`](https://RESUME-Epi.github.io/MetaRVM/reference/MetaRVMResults.md)
+    [`MetaRVMResults`](https://RESUME-Epi.github.io/MetaRVM/dev/reference/MetaRVMResults.md)
     object that supports method chaining for subsetting, summarizing,
     and plotting.
 
@@ -106,13 +121,13 @@ health outcomes"
 
 ## See also
 
-[`parse_config()`](https://RESUME-Epi.github.io/MetaRVM/reference/parse_config.md)
+[`parse_config()`](https://RESUME-Epi.github.io/MetaRVM/dev/reference/parse_config.md)
 for reading YAML configurations,
-[MetaRVMConfig](https://RESUME-Epi.github.io/MetaRVM/reference/MetaRVMConfig.md)
+[MetaRVMConfig](https://RESUME-Epi.github.io/MetaRVM/dev/reference/MetaRVMConfig.md)
 for configuration management,
-[MetaRVMResults](https://RESUME-Epi.github.io/MetaRVM/reference/MetaRVMResults.md)
+[MetaRVMResults](https://RESUME-Epi.github.io/MetaRVM/dev/reference/MetaRVMResults.md)
 for analysis and plotting,
-[`meta_sim()`](https://RESUME-Epi.github.io/MetaRVM/reference/meta_sim.md)
+[`meta_sim()`](https://RESUME-Epi.github.io/MetaRVM/dev/reference/meta_sim.md)
 for the low-level simulation engine.
 
 ## Author
@@ -135,21 +150,24 @@ results
 #> MetaRVM Results Object
 #> =====================
 #> Instances: 1 
-#> Populations: 24 
+#> Populations: 
 #> Date range: 2023-10-01 to 2024-02-27 
-#> Total observations: 111600 
-#> Disease states: D, E, H, I_all, I_asymp, I_eff, I_presymp, I_symp, P, R, S, V, cum_V, mob_pop, n_EI, n_EIpresymp, n_HD, n_HR, n_HRD, n_IasympR, n_IsympH, n_IsympR, n_IsympRH, n_SE, n_SV, n_VE, n_VS, n_preIsymp, p_HRD, p_SE, p_VE 
+#> Parameter sets (nsim): 1 
+#> Replicates per set (nrep): 1 
+#> Random seed: 564569281 
+#> Total observations: 388800 
+#> Disease states: D, E, H, I_all, I_asymp, I_eff, I_presymp, I_symp, P, R, S, S_alloc, S_eff_prod, S_src_int, V, V_alloc, V_src_int, cum_V, mob_pop, n_EI, n_EIpresymp, n_HD, n_HR, n_HRD, n_IasympR, n_IsympH, n_IsympR, n_IsympRH, n_RS, n_SE, n_SE_eff, n_SV, n_VE, n_VS, n_preIsymp, p_HRD, p_RS, p_SE, p_VE 
 
 # Access the tidy results table
 head(results$results)
-#>          date    age   race  zone disease_state        value instance
-#>        <Date> <char> <char> <int>        <char>        <num>    <int>
-#> 1: 2023-10-01   0-17      A    11             D 2.252583e-04        1
-#> 2: 2023-10-01   0-17      A    11             E 1.305178e+01        1
-#> 3: 2023-10-01   0-17      A    11             H 2.304447e-01        1
-#> 4: 2023-10-01   0-17      A    11         I_all 2.731688e+01        1
-#> 5: 2023-10-01   0-17      A    11       I_asymp 3.227854e-01        1
-#> 6: 2023-10-01   0-17      A    11         I_eff 2.476245e+01        1
+#>          date    age   race  zone disease_state    value instance
+#>        <Date> <char> <char> <int>        <char>    <num>    <int>
+#> 1: 2023-10-01   0-17      A    11             D  0.00000        1
+#> 2: 2023-10-01   0-17      A    11             E 20.00000        1
+#> 3: 2023-10-01   0-17      A    11             H  0.00000        1
+#> 4: 2023-10-01   0-17      A    11         I_all 26.00000        1
+#> 5: 2023-10-01   0-17      A    11       I_asymp  0.00000        1
+#> 6: 2023-10-01   0-17      A    11         I_eff 23.77197        1
 
 # Summarize and plot hospitalizations and deaths by user-defined categories
 results$summarize(

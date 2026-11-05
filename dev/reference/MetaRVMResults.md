@@ -39,9 +39,15 @@ Arindam Fadikar
 
 - [`MetaRVMResults$print()`](#method-MetaRVMResults-print)
 
+- [`MetaRVMResults$plot()`](#method-MetaRVMResults-plot)
+
 - [`MetaRVMResults$subset_data()`](#method-MetaRVMResults-subset_data)
 
 - [`MetaRVMResults$summarize()`](#method-MetaRVMResults-summarize)
+
+- [`MetaRVMResults$get_instance_manifest()`](#method-MetaRVMResults-get_instance_manifest)
+
+- [`MetaRVMResults$get_instance_params()`](#method-MetaRVMResults-get_instance_params)
 
 - [`MetaRVMResults$clone()`](#method-MetaRVMResults-clone)
 
@@ -95,6 +101,73 @@ Print summary of results
 #### Returns
 
 Self (invisible)
+
+------------------------------------------------------------------------
+
+### Method [`plot()`](https://rdrr.io/r/graphics/plot.default.html)
+
+Plot simulation trajectories directly from results
+
+#### Usage
+
+    MetaRVMResults$plot(
+      group_by = character(0),
+      disease_states = NULL,
+      date_range = NULL,
+      instances = NULL,
+      stats = NULL,
+      quantiles = c(0.25, 0.75),
+      exclude_p_columns = TRUE,
+      ci_level = 0.95,
+      theme = theme_minimal(),
+      title = NULL
+    )
+
+#### Arguments
+
+- `group_by`:
+
+  Vector of demographic category names to group/facet by
+
+- `disease_states`:
+
+  Optional disease states to include
+
+- `date_range`:
+
+  Optional date range for filtering
+
+- `instances`:
+
+  Optional instance IDs to include
+
+- `stats`:
+
+  Statistics for summary plotting. If NULL, plots raw trajectories.
+
+- `quantiles`:
+
+  Quantiles for uncertainty bands when summary plotting
+
+- `exclude_p_columns`:
+
+  Logical, whether to exclude p\_ columns (default: TRUE)
+
+- `ci_level`:
+
+  Confidence level label used in summary plot title
+
+- `theme`:
+
+  ggplot2 theme function (default: theme_minimal())
+
+- `title`:
+
+  Optional custom title
+
+#### Returns
+
+ggplot object
 
 ------------------------------------------------------------------------
 
@@ -197,6 +270,53 @@ NULL
 
 ------------------------------------------------------------------------
 
+### Method `get_instance_manifest()`
+
+Get per-instance simulation manifest (parameter-set id, replicate id,
+seed, and settings)
+
+#### Usage
+
+    MetaRVMResults$get_instance_manifest(instances = NULL, include_sim_args = TRUE)
+
+#### Arguments
+
+- `instances`:
+
+  Optional vector of instance ids to filter
+
+- `include_sim_args`:
+
+  Logical. If FALSE, omits the `sim_args` list-column for a lighter
+  table
+
+#### Returns
+
+data.table with one row per simulation instance
+
+------------------------------------------------------------------------
+
+### Method `get_instance_params()`
+
+Get per-instance settings table with parameters list-column (`params`)
+
+#### Usage
+
+    MetaRVMResults$get_instance_params(instances = NULL)
+
+#### Arguments
+
+- `instances`:
+
+  Optional vector of instance ids to filter
+
+#### Returns
+
+data.table with instance mapping and exact parameter values used in
+simulation
+
+------------------------------------------------------------------------
+
 ### Method `clone()`
 
 The objects of this class are cloneable with this method.
@@ -222,14 +342,14 @@ results_obj <- metaRVM(example_config)
 #> Loading required namespace: pkgbuild
 # Access formatted results
 head(results_obj$results)
-#>          date    age   race  zone disease_state        value instance
-#>        <Date> <char> <char> <int>        <char>        <num>    <int>
-#> 1: 2023-10-01   0-17      A    11             D 2.252583e-04        1
-#> 2: 2023-10-01   0-17      A    11             E 1.305178e+01        1
-#> 3: 2023-10-01   0-17      A    11             H 2.304447e-01        1
-#> 4: 2023-10-01   0-17      A    11         I_all 2.731688e+01        1
-#> 5: 2023-10-01   0-17      A    11       I_asymp 3.227854e-01        1
-#> 6: 2023-10-01   0-17      A    11         I_eff 2.476245e+01        1
+#>          date    age   race  zone disease_state    value instance
+#>        <Date> <char> <char> <int>        <char>    <num>    <int>
+#> 1: 2023-10-01   0-17      A    11             D  0.00000        1
+#> 2: 2023-10-01   0-17      A    11             E 19.00000        1
+#> 3: 2023-10-01   0-17      A    11             H  1.00000        1
+#> 4: 2023-10-01   0-17      A    11         I_all 24.00000        1
+#> 5: 2023-10-01   0-17      A    11       I_asymp  1.00000        1
+#> 6: 2023-10-01   0-17      A    11         I_eff 22.50998        1
 
 # Subset data with multiple filters
 subset_data <- results_obj$subset_data(

@@ -2,7 +2,7 @@
 
 This function takes the vaccination schedule given by a data.table and
 prepares it according to the required structure needed in
-[`meta_sim()`](https://RESUME-Epi.github.io/MetaRVM/reference/meta_sim.md)
+[`meta_sim()`](https://RESUME-Epi.github.io/MetaRVM/dev/reference/meta_sim.md)
 function
 
 ## Usage

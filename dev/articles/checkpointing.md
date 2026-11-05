@@ -43,6 +43,7 @@ configuration file based on a template.
 ### Set Up
 
 ``` r
+
 library(MetaRVM)
 options(odin.verbose = FALSE)
 
@@ -53,7 +54,7 @@ example_config <- system.file("extdata", "example_config_checkpoint.yaml",
 # Create a temporary directory for checkpoints
 checkpoint_dir <- tempdir()
 cat("Checkpoint directory:", checkpoint_dir, "\n")
-#> Checkpoint directory: /tmp/RtmpwQdGR9
+#> Checkpoint directory: /tmp/RtmpdtpnKS
 ```
 
 ### Create a Configuration with Checkpointing
@@ -61,6 +62,7 @@ cat("Checkpoint directory:", checkpoint_dir, "\n")
 Now copy the example configuration and modify it to add checkpointing:
 
 ``` r
+
 # Read the example configuration
 yml <- yaml::read_yaml(example_config)
 yml_tmp <- data.table::copy(yml)
@@ -77,6 +79,7 @@ temp_config <- normalizePath(temp_config)
 ### Run Simulation with Checkpoints
 
 ``` r
+
 
 # Run the simulation
 results <- metaRVM(temp_config)
@@ -99,6 +102,7 @@ if (length(checkpoint_files) > 0) {
 ### Examine the Results
 
 ``` r
+
 cat("Number of instances:", results$run_info$n_instances, "\n")
 #> Number of instances: 1
 cat("Date range:", format(results$run_info$date_range[1]), "to", 
@@ -110,12 +114,12 @@ print(head(results$results, 10))
 #>           date    age   race  zone disease_state        value instance
 #>         <Date> <char> <char> <int>        <char>        <num>    <int>
 #>  1: 2024-10-01   0-17      A    11             D 2.252583e-04        1
-#>  2: 2024-10-01   0-17      A    11             E 1.346375e+01        1
+#>  2: 2024-10-01   0-17      A    11             E 1.366242e+01        1
 #>  3: 2024-10-01   0-17      A    11             H 2.304447e-01        1
-#>  4: 2024-10-01   0-17      A    11         I_all 2.739162e+01        1
-#>  5: 2024-10-01   0-17      A    11       I_asymp 3.452058e-01        1
-#>  6: 2024-10-01   0-17      A    11         I_eff 2.653406e+01        1
-#>  7: 2024-10-01   0-17      A    11     I_presymp 8.054801e-01        1
+#>  4: 2024-10-01   0-17      A    11         I_all 2.742766e+01        1
+#>  5: 2024-10-01   0-17      A    11       I_asymp 3.560183e-01        1
+#>  6: 2024-10-01   0-17      A    11         I_eff 2.656285e+01        1
+#>  7: 2024-10-01   0-17      A    11     I_presymp 8.307093e-01        1
 #>  8: 2024-10-01   0-17      A    11        I_symp 2.624093e+01        1
 #>  9: 2024-10-01   0-17      A    11             P 3.074200e+04        1
 #> 10: 2024-10-01   0-17      A    11             R 1.148308e+01        1
@@ -128,6 +132,7 @@ need to provide the checkpoint file name, and a start date which should
 be the next day of the end date in the previous run.
 
 ``` r
+
 # Get the first checkpoint file
 checkpoint_files_full <- list.files(checkpoint_dir, 
                                     pattern = "^chk_.*\\.Rda$",
@@ -159,7 +164,7 @@ if (length(checkpoint_files_full) > 0) {
 } else {
   cat("No checkpoint files found to resume from.\n")
 }
-#> /tmp/RtmpwQdGR9/chk_2024-12-29_1.Rda 
+#> /tmp/RtmpdtpnKS/chk_2024-12-29_1.Rda 
 #> 
 #> Number of instances: 1 
 #> Date range: 2024-12-30 to 2025-03-29
@@ -168,6 +173,7 @@ if (length(checkpoint_files_full) > 0) {
 ### Plot
 
 ``` r
+
 run1_hosp_sum <- results$results[disease_state == "H", .(total = sum(value)), by = "date"]
 run2_hosp_sum <- results_resumed$results[disease_state == "H", .(total = sum(value)), by = "date"]
 
@@ -178,9 +184,47 @@ ggplot(rbind(run1_hosp_sum, run2_hosp_sum), aes(date, total)) +
   labs(y = "Hospitalizations", x = "Date") + theme_bw()
 ```
 
-![plot of chunk plot](plot-1.png)
+![](plot-1.png)
 
 plot of chunk plot
+
+## Checkpointing with Other Diseases (e.g., Measles)
+
+The checkpointing mechanism above works the same way for any disease —
+only the example configuration and population file change. The package
+ships `example_config_measles_checkpoint.yaml` as the measles equivalent
+of `example_config_checkpoint.yaml` used above. The setup is analogous
+(not run here):
+
+``` r
+
+measles_config <- system.file("extdata", "example_config_measles_checkpoint.yaml",
+                              package = "MetaRVM")
+
+yml <- yaml::read_yaml(measles_config)
+yml_tmp <- data.table::copy(yml)
+yml_tmp$simulation_config$checkpoint_dir <- tempdir()
+
+temp_config <- tempfile(tmpdir = dirname(measles_config), fileext = ".yaml")
+yaml::write_yaml(yml_tmp, temp_config)
+
+results <- metaRVM(normalizePath(temp_config))
+```
+
+A few differences from the flu example to keep in mind:
+
+- Measles has no separate vaccination schedule file, so there is no
+  `population_data$vaccination` entry to carry over when copying the
+  config.
+- When restoring, the population initialization file for the resumed run
+  must supply measles-specific columns (`S0` and at least one of
+  `I1_U0`/`I2_U0`), not the flu columns (`S0`, `I0`, `V0`, `R0`) used
+  above.
+- `disease_state == "H"` has no measles equivalent — summarize or plot
+  measles results using the `"incidence"` group alias (or the literal
+  flow names, e.g. `"n_SE1"`) instead. See the [YAML
+  Configuration](https://RESUME-Epi.github.io/MetaRVM/dev/articles/yaml-configuration.md)
+  vignette for the full list of state aliases per disease.
 
 ## Understanding Checkpoint Files
 
@@ -193,5 +237,5 @@ Where: - `YYYY-MM-DD` is the checkpoint date - `N` is the simulation
 instance number (1 to nsim)
 
 For more information on configuring MetaRVM simulations, see the [YAML
-Configuration](https://RESUME-Epi.github.io/MetaRVM/articles/yaml-configuration.md)
+Configuration](https://RESUME-Epi.github.io/MetaRVM/dev/articles/yaml-configuration.md)
 vignette.

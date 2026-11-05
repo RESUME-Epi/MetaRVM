@@ -213,8 +213,8 @@ meta_sim(
 
 - is.stoch:
 
-  Logical. Whether to run stochastic simulation (TRUE) or deterministic
-  simulation (FALSE). Default: FALSE
+  Logical. Whether to run the simulation stochastically. Should always
+  be `TRUE`; present for interface compatibility.
 
 - seed:
 
@@ -338,11 +338,8 @@ susceptible/vaccinated individuals and all infectious compartments
 
 - Vaccine effectiveness for breakthrough infections
 
-**Stochastic vs. Deterministic Mode:**
-
-- **Deterministic**: Uses exact differential equations
-
-- **Stochastic**: Adds demographic stochasticity via binomial draws
+**Stochastic Mode:** Demographic stochasticity is added via binomial
+draws at each transition.
 
 **Vaccination Implementation:** Vaccination is implemented as
 time-varying input with:
@@ -382,11 +379,11 @@ When do_chk = TRUE, the function saves a checkpoint file containing:
 
 ## See also
 
-[`metaRVM`](https://RESUME-Epi.github.io/MetaRVM/reference/metaRVM.md)
+[`metaRVM`](https://RESUME-Epi.github.io/MetaRVM/dev/reference/metaRVM.md)
 for high-level simulation interface with configuration files
-[`parse_config`](https://RESUME-Epi.github.io/MetaRVM/reference/parse_config.md)
+[`parse_config`](https://RESUME-Epi.github.io/MetaRVM/dev/reference/parse_config.md)
 for configuration file processing
-[`format_metarvm_output`](https://RESUME-Epi.github.io/MetaRVM/reference/format_metarvm_output.md)
+[`format_metarvm_output`](https://RESUME-Epi.github.io/MetaRVM/dev/reference/format_metarvm_output.md)
 for output formatting with demographics
 
 ## Author
@@ -398,7 +395,7 @@ Arindam Fadikar, Charles Macal, Ignacio Martinez-Moyano, Jonathan Ozik
 ``` r
 # \donttest{
 options(odin.verbose = FALSE)
-# Basic deterministic simulation
+# Basic simulation
 N_pop <- 2
 nsteps <- 400
 
