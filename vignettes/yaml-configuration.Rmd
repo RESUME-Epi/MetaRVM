@@ -16,14 +16,43 @@ knitr::opts_chunk$set(
 
 ## Introduction
 
-The `metaRVM` package uses a YAML file to configure the model parameters. This vignette describes the structure of the YAML configuration file, starting with a simple example and progressively introducing more advanced features.
+The `metaRVM` package uses a YAML file to configure the model parameters. This vignette describes the structure of the YAML configuration file, starting with a simple example and progressively introducing more advanced features. Configurations can also be built programmatically with `build_config()` — see `?build_config` for details.
+
+## Model Selection
+
+The `model:` section specifies which disease to simulate and is **required** in every configuration file.
+
+```yaml
+model:
+  disease: flu  # supported values: "flu", "measles"
+```
+
+MetaRVM currently supports two diseases:
+
+| Disease | Compartments | Disease parameters | Vaccination |
+|---------|-------------|-------------------|-------------|
+| `flu` | S, E, Ip, Ia, Is, H, R, D, V | `ts`, `ve`, `dv`, `de`, `dp`, `da`, `ds`, `dh`, `dr`, `pea`, `psr`, `phr` | Time-varying schedule from a separate CSV file |
+| `measles` | S, V1, V2, E1, E2, I1\_Q, I1\_U, I2\_Q, I2\_U, R (plus V1/V2 breakthrough chains) | `beta`, `de1`, `de2`, `di1`, `di2`, `prop_I1_Q`, `prop_I2_Q`, `V1_eff`, `V2_eff` | Initial compartment counts (`V10`, `V20`) in the population CSV — no separate vaccination file |
+
+The disease choice determines the required parameters, the population CSV column schema, and whether a vaccination schedule file is needed.
+
+The disease choice also determines which `disease_states` group aliases are available when calling `subset_data()` or `summarize()` on the results (see `vignette("running-a-simulation")`):
+
+| Disease | Available group aliases |
+|---------|-------------------------|
+| `flu` | `incidence`, `hospitalizations`, `deaths`, `recoveries` |
+| `measles` | `incidence` |
+
+Passing a flu-only alias such as `"hospitalizations"` to a measles results object (or vice versa) raises an error listing the valid state names and aliases for that disease — literal compartment/flow names (e.g. `"H"`, `"n_SE1"`) remain disease-specific as well.
 
 ## Basic Configuration
 
-A minimal configuration file specifies the data sources, simulation settings, and disease parameters with fixed scalar values.
+A minimal configuration file specifies the disease, data sources, simulation settings, and disease parameters with fixed scalar values.
 
 ```yaml
 run_id: SimpleRun
+model:
+  disease: flu
 population_data:
   initialization: data/population_init.csv
   vaccination: data/vaccination.csv
@@ -50,16 +79,16 @@ simulation_config:
   length: 90
   nsim: 1
   nrep: 1
-
   random_seed: 42
 ```
 
 ### Configuration Sections
 
+-   **`model`**: Specifies the disease to simulate (`disease: flu` or `disease: measles`). Required.
 -   **`run_id`**: A unique name for the simulation.
--   **`population_data`**: Paths to CSV files for population demographics, initial state, and vaccination schedules.
+-   **`population_data`**: Paths to CSV files for population demographics, initial state, and (for flu) vaccination schedules.
 -   **`mixing_matrix`**: Paths to CSV files defining contact patterns for different times of the week.
--   **`disease_params`**: Disease characteristics. In this example, all parameters are single, fixed values.
+-   **`disease_params`**: Disease-specific parameters. See the parameter tables below for per-disease lists.
 -   **`simulation_config`**: Settings for the simulation run, such as start date, duration, and number of simulations.
 
 ### Input File Structures
@@ -68,21 +97,29 @@ The `metaRVM` package requires several CSV files to be structured in a specific 
 
 #### Population Data Files
 
--   **`initialization`**: This file specifies both the demographic structure and initial state of the population for the simulation. It must contain the following **required columns**:
-    -   `population_id`: A unique identifier for each subpopulation (sequential natural numbers: 1, 2, 3, ...)
-    -   `N`: The total number of individuals in each subpopulation
-    -   `S0`: The initial number of susceptible individuals
-    -   `I0`: The initial number of symptomatic infected individuals
-    -   `V0`: The initial number of vaccinated individuals
-    -   `R0`: The initial number of recovered individuals
+The required columns in the population initialization file differ by disease.
 
-    **User-defined demographic category columns**: Any additional columns beyond the required ones are automatically detected as demographic categories. These can be used for stratification and in `sub_disease_params` for category-specific parameters. Common examples include:
-    -   `age`: Age groups (e.g., "0-17", "18-64", "65+")
-    -   `race`: Race or ethnicity categories
-    -   `zone`: Healthcare zones or geographic regions
-    -   Or any custom categories like `income_level`, `occupation`, `risk_group`, etc.
+**Flu** (`model: disease: flu`) requires:
+-   `population_id`: A unique identifier for each subpopulation (sequential natural numbers: 1, 2, 3, ...)
+-   `N`: The total number of individuals in each subpopulation
+-   `S0`: Initial susceptibles
+-   `I0`: Initial symptomatic infected
+-   `V0`: Initial vaccinated (those already immune at simulation start)
+-   `R0`: Initial recovered
 
-**Example of a population initialization file:**
+Optional flu columns (default 0 when absent): `E0`, `Ia0`, `Ip0`, `H0`, `D0`.
+
+**Measles** (`model: disease: measles`) requires:
+-   `population_id`, `N`, `S0` (as above)
+-   At least one of `I1_U0` or `I2_U0` to seed infection
+
+Optional measles columns (default 0 when absent): `E10`, `E20`, `I1_Q0`, `I1_U0`, `I2_Q0`, `I2_U0`, `R0`, `V10` (one-dose vaccinated), `V20` (two-dose vaccinated), and all breakthrough compartment initials (`V1E10`, `V1E2_0`, etc.).
+
+Note: measles does **not** use a separate vaccination schedule file. Vaccination state is entirely encoded in `V10` and `V20` columns in the population CSV.
+
+**User-defined demographic category columns**: Any additional columns beyond the required ones are automatically detected as demographic categories (e.g., `age`, `race`, `zone`). These can be used for stratification and in `sub_disease_params` for category-specific parameters.
+
+**Example of a flu population initialization file:**
 
 ```{r init_example, echo=FALSE}
 init_file <- system.file("extdata", "population_init_n24.csv", package = "MetaRVM")
@@ -92,7 +129,22 @@ print(head(init_data, 10))
 cat("\n... (", nrow(init_data), " total rows)\n", sep = "")
 ```
 
--   **`vaccination`**: The vaccination schedule file contains the number of vaccinations administered over time. The first column must be `date` in `MM/DD/YYYY` format, followed by columns for each subpopulation in the same order as `population_id` in the initialization file.
+**Example of a measles population initialization file:**
+
+```{r measles_init_example, echo=FALSE}
+measles_init_file <- system.file("extdata", "population_init_measles_min.csv", package = "MetaRVM")
+if (file.exists(measles_init_file)) {
+  measles_init_data <- read.csv(measles_init_file)
+  cat("population_init_measles_min.csv:\n\n")
+  print(measles_init_data)
+}
+```
+
+#### Vaccination Schedule (flu only)
+
+The vaccination schedule file contains the number of vaccinations administered over time. The first column must be `date` in `MM/DD/YYYY` format, followed by columns for each subpopulation in the same order as `population_id` in the initialization file.
+
+**This file is required for flu and must not be specified for measles.** For measles, vaccination state is captured in the `V10`/`V20` columns of the population CSV.
 
 **Example of a vaccination schedule file:**
 
@@ -124,26 +176,83 @@ print(head(row_sums, 10))
 
 ### Disease Parameter Descriptions
 
-Below is a list of the disease parameters used in `metaRVM`:
+Parameters differ by disease. Use the appropriate set for your chosen `model: disease:`.
 
--   `ts`: Transmission rate for symptomatic individuals in the susceptible population.
+#### Flu parameters
+
+-   `ts`: Transmission probability per contact for symptomatic individuals.
 -   `ve`: Vaccine effectiveness (proportion, range: [0, 1]).
--   `dv`: Mean duration (in days) in the vaccinated state before immunity wanes.
--   `dp`: Mean duration (in days) in the presymptomatic infectious state.
--   `de`: Mean duration (in days) in the exposed state.
--   `da`: Mean duration (in days) in the asymptomatic infectious state.
--   `ds`: Mean duration (in days) in the symptomatic infectious state.
--   `dh`: Mean duration (in days) in the hospitalized state.
--   `dr`: Mean duration (in days) of immunity in the recovered state.
--   `pea`: Proportion of exposed individuals who become asymptomatic (vs. presymptomatic) (range: 0-1).
--   `psr`: Proportion of symptomatic individuals who recover directly (vs. requiring hospitalization) (range: 0-1).
--   `phr`: Proportion of hospitalized individuals who recover (vs. die) (range: 0-1).
+-   `dv`: Mean duration (days) in the vaccinated state before immunity wanes.
+-   `de`: Mean duration (days) in the exposed (E) state.
+-   `dp`: Mean duration (days) in the presymptomatic infectious (Ip) state.
+-   `da`: Mean duration (days) in the asymptomatic infectious (Ia) state.
+-   `ds`: Mean duration (days) in the symptomatic infectious (Is) state.
+-   `dh`: Mean duration (days) in the hospitalized (H) state.
+-   `dr`: Mean duration (days) of immunity in the recovered (R) state before returning to susceptible.
+-   `pea`: Proportion of exposed who become asymptomatic (vs. presymptomatic), range [0, 1].
+-   `psr`: Proportion of symptomatic who recover directly (vs. hospitalisation), range [0, 1].
+-   `phr`: Proportion of hospitalised who recover (vs. die), range [0, 1].
+
+#### Measles parameters
+
+-   `beta`: Per-contact transmission rate (force-of-infection scaling).
+-   `de1`: Mean duration (days) in the first exposed stage (E1).
+-   `de2`: Mean duration (days) in the second exposed stage (E2).
+-   `di1`: Mean duration (days) in the first infectious stage (I1).
+-   `di2`: Mean duration (days) in the second infectious stage (I2).
+-   `prop_I1_Q`: Proportion of E2→I1 transitions entering the quarantined compartment (I1\_Q), range [0, 1].
+-   `prop_I2_Q`: Proportion of I1\_U→I2 transitions entering quarantine (I2\_Q), range [0, 1].
+-   `V1_eff`: Efficacy of one-dose vaccine — fractional reduction in susceptibility for V1 individuals, range [0, 1].
+-   `V2_eff`: Efficacy of two-dose vaccine — fractional reduction in susceptibility for V2 individuals, range [0, 1].
+
+## Measles Example Configuration
+
+A minimal measles configuration requires no vaccination file. Vaccinated individuals are seeded via `V10`/`V20` columns in the population CSV.
+
+```yaml
+run_id: MeaslesRun
+model:
+  disease: measles
+population_data:
+  initialization: data/population_init_measles.csv  # must contain S0; optionally V10, V20, I1_U0, etc.
+mixing_matrix:
+  weekday_day: data/m_weekday_day.csv
+  weekday_night: data/m_weekday_night.csv
+  weekend_day: data/m_weekend_day.csv
+  weekend_night: data/m_weekend_night.csv
+disease_params:
+  beta: 0.65
+  de1: 3
+  de2: 3
+  di1: 2
+  di2: 3
+  prop_I1_Q: 0.2
+  prop_I2_Q: 0.5
+  V1_eff: 0.93
+  V2_eff: 0.97
+simulation_config:
+  start_date: 01/01/2025 # m/d/Y
+  length: 90
+  nsim: 1
+  nrep: 1
+  random_seed: 42
+```
+
+The packaged example can be run with:
+
+```{r measles_example, eval=FALSE}
+library(MetaRVM)
+options(odin.verbose = FALSE)
+measles_cfg <- system.file("extdata", "example_config_measles_min.yaml", package = "MetaRVM")
+measles_out <- metaRVM(measles_cfg)
+head(measles_out$results)
+```
 
 ## Defining Parameters with Distributions
 
-Instead of fixed values, disease parameters can be defined using statistical distributions. This is useful for capturing uncertainty in the parameters. `metaRVM` supports `uniform` and `lognormal` distributions.
+Instead of fixed values, disease parameters can be defined using statistical distributions. This is useful for capturing uncertainty in the parameters. `metaRVM` supports `lognormal`, `gamma`, `uniform`, `beta`, and `gaussian` distributions. Any disease parameter can be specified this way.
 
-Here is an example of defining `ve`, `da`, `ds`, and `dh` with distributions:
+Here is an example of defining flu parameters with distributions:
 
 ```yaml
 disease_params:
@@ -175,14 +284,17 @@ disease_params:
 
 -   For a `uniform` distribution, `min` and `max` values must be specified.
 -   For a `lognormal` distribution, `mu` and `sd` (mean and standard deviation on the log scale) must be specified.
+-   For a `gamma` distribution, `shape` and `rate` must be specified.
+-   For a `beta` distribution, `shape1` and `shape2` must be specified.
+-   For a `gaussian` distribution, `mean` and `sd` must be specified.
 
 ## Specifying Subgroup Parameters
 
-`metaRVM` allows different disease parameters to be specified for demographic subgroups using the `sub_disease_params` section. These subgroup-specific parameters override the global parameters defined in `disease_params`.
+`metaRVM` allows different disease parameters to be specified for demographic subgroups using the `sub_disease_params` section. These subgroup-specific parameters override the global parameters defined in `disease_params`. This works for any disease.
 
-The demographic categories used in this section must match the user-defined category column names in the initialization CSV file specified under `population_data`. For example, if the initialization file has columns named `age`, `income_level`, and `occupation`, any of these categories can be used in `sub_disease_params`. The specific values (e.g., `"0-4"`, `"low"`, `"healthcare"`) must exactly match the values in those columns.
+The demographic categories used in this section must match the user-defined category column names in the initialization CSV file. The specific values (e.g., `"0-4"`, `"low"`, `"healthcare"`) must exactly match the values in those columns.
 
-The following example defines different parameters for different age groups:
+The following example defines different parameters for different age groups (flu):
 
 ```yaml
 sub_disease_params:
@@ -204,7 +316,7 @@ sub_disease_params:
         phr: 0.9227
 ```
 
-In this configuration, individuals in the "0-4" age group will have a `dh` (duration of hospitalization) of 4, overriding any global `dh` value. Similarly, the transmission rate `ts` for the "18-49" group is set to 0.01.
+For measles, the same structure applies using measles parameter names (e.g., `beta`, `prop_I1_Q`).
 
 ## Stochastic Simulation with Distributional Parameters
 
@@ -219,6 +331,8 @@ Example:
 
 ```yaml
 run_id: StochasticDistRun
+model:
+  disease: flu
 population_data:
   initialization: data/population_init.csv
   vaccination: data/vaccination.csv
@@ -266,7 +380,7 @@ replicates.
 
 ## Checkpointing and Restoring Simulations
 
-For long-running simulations, it is useful to save the state of the model at intermediate points. This is known as checkpointing. `metaRVM` allows checkpoints to be saved and simulations to be restored from a saved state.
+Checkpointing is supported for all diseases (flu and measles). For long-running simulations, it is useful to save the state of the model at intermediate points so that runs can be resumed or branched.
 
 ### Enabling Checkpointing
 
@@ -283,15 +397,16 @@ simulation_config:
   length: 90
   nsim: 10
   nrep: 1
-
   random_seed: 42
   checkpoint_dir: "path/to/checkpoints"
   checkpoint_dates: ["01/15/2025", "01/30/2025"]
 ```
 
+The checkpoint stores the full compartment state and disease parameters at each requested date. One file is written per simulation instance per checkpoint date, so that each instance can be restored independently.
+
 ### Restoring from a Checkpoint
 
-To restore a simulation from a checkpoint file, the `restore_from` parameter is used in the `simulation_config` section. The model is initialized with the state saved in the specified checkpoint file.
+To restore a simulation from a checkpoint file, the `restore_from` parameter is used in the `simulation_config` section. The model is initialized with the compartment state saved in the specified checkpoint file.
 
 ```yaml
 simulation_config:
@@ -299,9 +414,10 @@ simulation_config:
   length: 60 # Remaining simulation length
   nsim: 10
   nrep: 1
-
   random_seed: 42
   restore_from: "path/to/checkpoints/checkpoint_2025-01-30_instance_1.Rda"
 ```
 
 When restoring, the `start_date` should correspond to the next date of the checkpoint, and the `length` should be the remaining duration of the simulation. Note that each instance of a simulation must be restored individually.
+
+For measles, the restored checkpoint carries the full vaccinated and breakthrough compartment state (V1, V2, V1E1, V2E1, etc.), so no additional vaccination inputs are needed on restore.

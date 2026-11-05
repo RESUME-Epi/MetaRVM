@@ -15,13 +15,21 @@
 #' The function processes a YAML configuration file with the following
 #' main sections:
 #'
+#' \strong{Model Selection:}
+#' \itemize{
+#'   \item \code{model.disease}: Required. Selects the disease to simulate;
+#'     supported values are \code{"flu"} and \code{"measles"}. The disease
+#'     choice determines which disease parameters are expected, the
+#'     population initialization CSV column schema, and whether a
+#'     vaccination schedule file is used (flu only; see below).
+#' }
+#'
 #' \strong{Simulation Configuration:}
 #' \itemize{
 #'   \item \code{random_seed}: Optional random seed for reproducibility in case of stochastic simulations or stochastic parameters
 #'   \item \code{nsim}: Number of simulation instances (default: 1)
 #'   \item \code{nrep}: Number of stochastic replicates per parameter set (default: 1)
-#'   \item \code{simulation_mode}: Ignored. All simulations run in stochastic mode.
-#'   \item \code{start_date}: Simulation start date in MM/DD/YYYY format
+#' #'   \item \code{start_date}: Simulation start date in MM/DD/YYYY format
 #'   \item \code{length}: Simulation length in days
 #'   \item \code{checkpoint_dir}: Optional checkpoint directory for saving intermediate results
 #'   \item \code{checkpoint_dates}: Optional list of dates to save checkpoints.
@@ -29,14 +37,23 @@
 #' }
 #'
 #' \strong{Population Data:}
+#' The required \code{initialization} CSV columns are disease-specific; any
+#' additional columns are treated as demographic categories.
 #' \itemize{
-#'   \item \code{initialization}: CSV file with initial population states and optional
-#'                        user-defined category columns. The file must contain columns
-#'                        \code{population_id}, \code{N}, \code{S0}, \code{I0}, \code{V0}, \code{R0}.
-#'                        Any additional columns are treated as demographic categories.
-#'   \item \code{vaccination}: CSV file with vaccination schedule over time. The first column must be dates 
-#'                          in MM/DD/YYYY format. The rest of the columns must corresponds to respective
-#'                          subpopulations in the numeric order of population_id.
+#'   \item \strong{Flu}: \code{population_id}, \code{N}, \code{S0}, \code{I0}, \code{V0}, \code{R0}
+#'     (optional: \code{E0}, \code{Ia0}, \code{Ip0}, \code{H0}, \code{D0}, defaulted to 0 when absent).
+#'   \item \strong{Measles}: \code{population_id}, \code{N}, \code{S0}, and at least one of
+#'     \code{I1_U0}, \code{I2_U0} (optional: \code{E10}, \code{E20}, \code{I1_Q0}, \code{I2_Q0},
+#'     \code{R0}, \code{V10}, \code{V20}, and the vaccinated-breakthrough compartment columns,
+#'     all defaulted to 0 when absent). Measles has no \code{I0} column.
+#' }
+#' \itemize{
+#'   \item \code{vaccination}: CSV file with a time-varying vaccination schedule. \strong{Flu only} —
+#'                          the first column must be dates in MM/DD/YYYY format, and the rest of the
+#'                          columns must correspond to respective subpopulations in the numeric order
+#'                          of population_id. Measles vaccination is specified instead via the initial
+#'                          \code{V10}/\code{V20} compartment counts in the initialization file; no
+#'                          separate vaccination file is used.
 #' }
 #'
 #' \strong{Mixing Matrices:}
@@ -48,12 +65,13 @@
 #' }
 #'
 #' \strong{Disease Parameters:}
-#' Epidemiological parameters (can be scalars or distributions):
+#' Epidemiological parameters (can be scalars or distributions). The exact
+#' parameter names are disease-specific:
 #' \itemize{
-#'   \item \code{ts}: Transmission rate for symptomatic individuals
-#'   \item \code{ve}: Vaccine effectiveness
-#'   \item \code{de, dp, da, ds, dh, dr}: Duration parameters for different disease states
-#'   \item \code{pea, psr, phr}: Probability parameters for disease transitions
+#'   \item \strong{Flu}: \code{ts}, \code{ve}, \code{dv}, \code{de}, \code{dp},
+#'     \code{da}, \code{ds}, \code{dh}, \code{dr}, \code{pea}, \code{psr}, \code{phr}
+#'   \item \strong{Measles}: \code{beta}, \code{de1}, \code{de2}, \code{di1},
+#'     \code{di2}, \code{prop_I1_Q}, \code{prop_I2_Q}, \code{V1_eff}, \code{V2_eff}
 #' }
 #'
 #' \strong{Sub-population Parameters:}
@@ -63,14 +81,24 @@
 #' The function supports stochastic parameters through distribution specifications
 #' with \code{dist}, \code{mu}, \code{sd}, \code{shape}, \code{rate}, etc.
 #'
-#' @return If \code{return_object = FALSE} (default), returns a named list containing:
+#' @return If \code{return_object = FALSE} (default), returns a named list containing
+#' entries common to both diseases plus disease-specific initial compartments and
+#' parameter matrices:
 #' \describe{
+#'   \item{disease}{The resolved disease name (\code{"flu"} or \code{"measles"})}
 #'   \item{N_pop}{Number of population groups}
 #'   \item{pop_map}{Data.table with \code{population_id} and user-defined demographic categories}
-#'   \item{S_ini, E_ini, I_asymp_ini, I_presymp_ini, I_symp_ini, H_ini, D_ini, P_ini, V_ini, R_ini}{Initial compartment populations}
-#'   \item{vac_time_id, vac_counts, vac_mat}{Vaccination schedule data}
+#'   \item{Initial compartments}{For flu: \code{S_ini, E_ini, I_asymp_ini, I_presymp_ini,
+#'     I_symp_ini, H_ini, D_ini, V_ini, R_ini}. For measles: \code{S_ini, E1_ini, E2_ini,
+#'     I1_Q_ini, I1_U_ini, I2_Q_ini, I2_U_ini, R_ini, V1_ini, V2_ini} plus the
+#'     vaccinated-breakthrough compartment initials.}
+#'   \item{vac_time_id, vac_counts, vac_mat}{Vaccination schedule data (flu only;
+#'     not present for measles, which instead folds vaccination into the initial
+#'     \code{V1_ini}/\code{V2_ini} compartments)}
 #'   \item{m_wd_d, m_wd_n, m_we_d, m_we_n}{Contact mixing matrices}
-#'   \item{ts, ve, dv, de, dp, da, ds, dh, dr, pea, psr, phr}{Disease parameter matrices (nsim × N_pop)}
+#'   \item{Disease parameter matrices (nsim × N_pop)}{For flu: \code{ts, ve, dv, de, dp,
+#'     da, ds, dh, dr, pea, psr, phr}. For measles: \code{beta, de1, de2, di1, di2,
+#'     prop_I1_Q, prop_I2_Q, V1_eff, V2_eff}.}
 #'   \item{start_date}{Simulation start date as Date object}
 #'   \item{sim_length}{Simulation length in days}
 #'   \item{nsim}{Number of simulation instances}
@@ -94,17 +122,20 @@
 #' }
 #'
 #' @section File Requirements:
-#' \strong{Population initialization file} must contain columns:
+#' \strong{Population initialization file} must contain columns (see Population Data
+#' above for the full disease-specific list):
 #' \itemize{
 #'   \item \code{population_id}: Unique identifier for each population group, natural numbers
 #'   \item \code{N}: Total population size of the subpopulation
-#'   \item \code{S0}, \code{I0}, \code{V0}, \code{R0}: Initial compartment counts
+#'   \item \strong{Flu}: \code{S0}, \code{I0}, \code{V0}, \code{R0}
+#'   \item \strong{Measles}: \code{S0}, and at least one of \code{I1_U0}, \code{I2_U0}
 #'   \item Optional user-defined category columns (e.g., \code{age}, \code{race},
 #'         \code{zone}, \code{income_level}, \code{occupation})
 #' }
 #'
-#' \strong{Vaccination file} must contain:
-#' \code{date} (MM/DD/YYYY format) and vaccination counts for each population group
+#' \strong{Vaccination file (flu only)} must contain:
+#' \code{date} (MM/DD/YYYY format) and vaccination counts for each population group.
+#' Not used for measles.
 #'
 #' @examples
 #' \donttest{
@@ -188,98 +219,199 @@ parse_config_measles_internal <- function(yaml_data, config_file, disease,
   # - initialization schema for measles compartments,
   # - required measles disease parameters,
   # - per-parameter expansion/sampling to nsim x N_pop matrices,
-  # - sub_disease_params category overrides (same semantics as flu parser).
+  # - sub_disease_params category overrides (same semantics as flu parser),
+  # - checkpoint saving (checkpoint_dir / checkpoint_dates → chk_* fields),
+  # - checkpoint restore (restore_from → read compartment state + params from file).
   #
-  # It still reuses shared helpers for:
-  # - simulation config parsing
-  # - population table validation
-  # - mixing matrix loading/validation
-  #
-  # Expected output:
-  # A canonical config list consumed by `metaRVM()` and
-  # `build_metarvm_sim_args("measles", ...)`.
+  # On restore, mixing matrices are always re-read from the YAML config (same as
+  # flu) so the user can intentionally change them between segments; compartment
+  # initial conditions and disease params come from the checkpoint file.
   disease_entry <- get_metarvm_disease_entry(disease)
+  param_names   <- disease_entry$disease_param_required
+  raw_params    <- NULL  # set from checkpoint (restore) or YAML (normal path)
 
   yaml_file_path <- dirname(config_file)
   old_wd <- getwd()
   setwd(yaml_file_path)
   on.exit(setwd(old_wd), add = TRUE)
 
+  is_restore <- !is.null(yaml_data$simulation_config$restore_from)
+
   sim_cfg <- metarvm_parse_simulation_config(
     yaml_data = yaml_data,
     default_delta_t = 0.5
   )
-  delta_t <- sim_cfg$delta_t
+  delta_t    <- sim_cfg$delta_t
   start_date <- sim_cfg$start_date
   sim_length <- sim_cfg$sim_length
-  nsim <- sim_cfg$nsim
-  nrep <- sim_cfg$nrep
+  nsim       <- sim_cfg$nsim
+  nrep       <- sim_cfg$nrep
   random_seed <- sim_cfg$random_seed
-  parallel <- sim_cfg$parallel
+  parallel   <- sim_cfg$parallel
 
-  if (is.null(yaml_data$population_data$initialization)) {
+  # ---------------------------------------------------------------------------
+  # Checkpoint saving configuration
+  # ---------------------------------------------------------------------------
+  chk_time_steps <- NULL
+  chk_file_names <- NULL
+  do_chk         <- FALSE
+
+  if (!is.null(yaml_data$simulation_config$checkpoint_dir)) {
+    checkpoint_dir <- normalizePath(yaml_data$simulation_config$checkpoint_dir, mustWork = FALSE)
+    if (!dir.exists(checkpoint_dir)) dir.create(checkpoint_dir, recursive = TRUE)
+    do_chk <- TRUE
+
+    if (!is.null(yaml_data$simulation_config$checkpoint_dates)) {
+      chk_dates      <- as.Date(yaml_data$simulation_config$checkpoint_dates,
+                                tryFormats = c("%m/%d/%Y"))
+      chk_time_steps <- as.integer((chk_dates - start_date) / delta_t)
+      chk_file_names <- sapply(chk_dates, function(date) {
+        date_str <- format(date, "%Y-%m-%d")
+        paste0(checkpoint_dir, "/checkpoint_", date_str, "_instance_", 1:(nsim * nrep), ".Rda")
+      })
+      if (is.vector(chk_file_names)) {
+        chk_file_names <- matrix(chk_file_names, ncol = 1)
+      }
+    } else {
+      end_date       <- start_date + sim_length
+      date_str       <- format(end_date, "%Y-%m-%d")
+      chk_time_steps <- as.integer(sim_length / delta_t)
+      chk_file_names <- matrix(paste0(checkpoint_dir, "/chk_", date_str, "_", 1:(nsim * nrep), ".Rda"), ncol = 1)
+    }
+  }
+
+  # ---------------------------------------------------------------------------
+  # Checkpoint restore: read compartment state and disease params from file
+  # ---------------------------------------------------------------------------
+  if (is_restore) {
+    chk_obj <- readRDS(yaml_data$simulation_config$restore_from)
+    if (!methods::is(chk_obj, "MetaRVMCheck")) {
+      stop("The restore_from file does not contain a valid MetaRVMCheck object")
+    }
+
+    N_pop   <- chk_obj$get("N_pop")
+    delta_t <- chk_obj$get("delta_t")
+
+    raw_params <- lapply(param_names, function(p) chk_obj$get(p))
+    names(raw_params) <- param_names
+
+    S0    <- chk_obj$get("S")$value
+    V10   <- chk_obj$get("V1")$value
+    V20   <- chk_obj$get("V2")$value
+    E10   <- chk_obj$get("E1")$value
+    E20   <- chk_obj$get("E2")$value
+    I1_Q0 <- chk_obj$get("I1_Q")$value
+    I1_U0 <- chk_obj$get("I1_U")$value
+    I2_Q0 <- chk_obj$get("I2_Q")$value
+    I2_U0 <- chk_obj$get("I2_U")$value
+    R0    <- chk_obj$get("R")$value
+    V1E10   <- chk_obj$get("V1E1")$value
+    V1E20   <- chk_obj$get("V1E2")$value
+    V1I1_Q0 <- chk_obj$get("V1I1_Q")$value
+    V1I1_U0 <- chk_obj$get("V1I1_U")$value
+    V1I2_Q0 <- chk_obj$get("V1I2_Q")$value
+    V1I2_U0 <- chk_obj$get("V1I2_U")$value
+    V1R0    <- chk_obj$get("V1R")$value
+    V2E10   <- chk_obj$get("V2E1")$value
+    V2E20   <- chk_obj$get("V2E2")$value
+    V2I1_Q0 <- chk_obj$get("V2I1_Q")$value
+    V2I1_U0 <- chk_obj$get("V2I1_U")$value
+    V2I2_Q0 <- chk_obj$get("V2I2_Q")$value
+    V2I2_U0 <- chk_obj$get("V2I2_U")$value
+    V2R0    <- chk_obj$get("V2R")$value
+  }
+
+  # ---------------------------------------------------------------------------
+  # Population initialization file
+  # ---------------------------------------------------------------------------
+  if (!is.null(yaml_data$population_data$initialization)) {
+    pop_init_file <- yaml_data$population_data$initialization
+
+    if (is_restore) {
+      pop_map_raw <- data.table::fread(pop_init_file)
+      pop_meta <- metarvm_validate_population_table(
+        pop_init = pop_map_raw,
+        reserved_cols = disease_entry$init_reserved_cols,
+        required_cols = "population_id",
+        require_population_id = TRUE
+      )
+      pop_map        <- pop_meta$pop_map
+      category_names <- pop_meta$category_names
+      if (pop_meta$N_pop != N_pop) {
+        stop("When restoring from checkpoint, initialization rows must match checkpoint N_pop")
+      }
+    } else {
+      pop_init <- data.table::fread(pop_init_file)
+      pop_meta <- metarvm_validate_population_table(
+        pop_init = pop_init,
+        reserved_cols = disease_entry$init_reserved_cols,
+        required_cols = disease_entry$init_required_cols,
+        require_any_of = disease_entry$init_require_any_of,
+        require_population_id = TRUE
+      )
+      pop_init       <- pop_meta$pop_init
+      pop_map        <- pop_meta$pop_map
+      category_names <- pop_meta$category_names
+      N_pop          <- pop_meta$N_pop
+      S0             <- pop_init[, S0]
+
+      # All optional-default compartment initials are propagated generically so
+      # adding a new compartment only requires a registry entry in init_optional_defaults.
+      init_defaults <- disease_entry$init_optional_defaults
+      init_values <- lapply(names(init_defaults), function(col) {
+        if (col %in% names(pop_init)) pop_init[[col]] else rep(init_defaults[[col]], N_pop)
+      })
+      names(init_values) <- names(init_defaults)
+    }
+  } else if (!is_restore) {
     stop("population_data$initialization is required")
   }
-  pop_init <- data.table::fread(yaml_data$population_data$initialization)
 
-  pop_meta <- metarvm_validate_population_table(
-    pop_init = pop_init,
-    reserved_cols = disease_entry$init_reserved_cols,
-    required_cols = disease_entry$init_required_cols,
-    require_any_of = disease_entry$init_require_any_of,
-    require_population_id = TRUE
-  )
-  pop_init <- pop_meta$pop_init
-  pop_map <- pop_meta$pop_map
-  category_names <- pop_meta$category_names
-  N_pop <- pop_meta$N_pop
-  S0 <- pop_init[, S0]
+  if (is_restore && (!exists("pop_map") || is.null(pop_map))) {
+    pop_map        <- data.table::data.table(population_id = 1:N_pop)
+    category_names <- character(0)
+  }
 
-  init_defaults <- disease_entry$init_optional_defaults
-  init_values <- lapply(names(init_defaults), function(col) {
-    if (col %in% names(pop_init)) pop_init[[col]] else rep(init_defaults[[col]], N_pop)
-  })
-  names(init_values) <- names(init_defaults)
-
-  E10 <- init_values$E10
-  E20 <- init_values$E20
-  I1_Q0 <- init_values$I1_Q0
-  I1_U0 <- init_values$I1_U0
-  I2_Q0 <- init_values$I2_Q0
-  I2_U0 <- init_values$I2_U0
-  R0 <- init_values$R0
-
+  # ---------------------------------------------------------------------------
+  # Mixing matrices (always from YAML — intentionally overrides checkpoint)
+  # ---------------------------------------------------------------------------
   mixing <- metarvm_read_mixing_matrices(yaml_data, require_all = TRUE)
   m_wd_d <- mixing$m_wd_d
   m_wd_n <- mixing$m_wd_n
   m_we_d <- mixing$m_we_d
   m_we_n <- mixing$m_we_n
 
-  if (is.null(yaml_data$disease_params)) {
-    stop("disease_params section is required")
+  # ---------------------------------------------------------------------------
+  # Disease parameters
+  # ---------------------------------------------------------------------------
+  if (!is_restore) {
+    if (is.null(yaml_data$disease_params)) {
+      stop("disease_params section is required")
+    }
+    raw_params <- yaml_data$disease_params
   }
-  param_names   <- disease_entry$disease_param_required
-  param_values  <- metarvm_expand_disease_params(yaml_data$disease_params, param_names, N_pop, nsim)
+  param_values <- metarvm_expand_disease_params(raw_params, param_names, N_pop, nsim)
 
   if (!is.null(yaml_data$sub_disease_params)) {
+    if (!exists("category_names") || !exists("pop_map")) {
+      stop("sub_disease_params requires population_data$initialization to be specified in the config file")
+    }
     param_values <- metarvm_apply_sub_disease_params(
       param_values, yaml_data$sub_disease_params, pop_map, category_names
     )
   }
 
+  if (!exists("category_names")) category_names <- character(0)
+
+  # ---------------------------------------------------------------------------
+  # Build config list
+  # ---------------------------------------------------------------------------
   config_list <- list(
     N_pop = N_pop,
     disease = disease,
     pop_map = pop_map,
     category_names = category_names,
     S0 = S0,
-    E10 = E10,
-    E20 = E20,
-    I1_Q0 = I1_Q0,
-    I1_U0 = I1_U0,
-    I2_Q0 = I2_Q0,
-    I2_U0 = I2_U0,
-    R0 = R0,
     m_wd_d = m_wd_d,
     m_wd_n = m_wd_n,
     m_we_d = m_we_d,
@@ -293,13 +425,26 @@ parse_config_measles_internal <- function(yaml_data, config_file, disease,
     verbose = verbose,
     suppress_odin_messages = suppress_odin_messages,
     delta_t = delta_t,
-    chk_file_names = NULL,
-    chk_time_steps = NULL,
-    do_chk = FALSE
+    chk_file_names = chk_file_names,
+    chk_time_steps = chk_time_steps,
+    do_chk = do_chk
   )
-  for (pnm in names(param_values)) {
-    config_list[[pnm]] <- param_values[[pnm]]
+
+  if (is_restore) {
+    restore_vals <- list(
+      E10 = E10, E20 = E20,
+      I1_Q0 = I1_Q0, I1_U0 = I1_U0, I2_Q0 = I2_Q0, I2_U0 = I2_U0, R0 = R0,
+      V10 = V10, V20 = V20,
+      V1E10 = V1E10, V1E20 = V1E20,
+      V1I1_Q0 = V1I1_Q0, V1I1_U0 = V1I1_U0, V1I2_Q0 = V1I2_Q0, V1I2_U0 = V1I2_U0, V1R0 = V1R0,
+      V2E10 = V2E10, V2E20 = V2E20,
+      V2I1_Q0 = V2I1_Q0, V2I1_U0 = V2I1_U0, V2I2_Q0 = V2I2_Q0, V2I2_U0 = V2I2_U0, V2R0 = V2R0
+    )
+    for (nm in names(restore_vals)) config_list[[nm]] <- restore_vals[[nm]]
+  } else {
+    for (nm in names(init_values)) config_list[[nm]] <- init_values[[nm]]
   }
+  for (pnm in names(param_values)) config_list[[pnm]] <- param_values[[pnm]]
   config_list
 }
 
@@ -460,15 +605,13 @@ parse_config_flu_internal <- function(yaml_data, config_file, disease,
     category_names <- character(0)
   }
 
-  if(!is.null(yaml_data$population_data$vaccination)){
-    vac_file <- yaml_data$population_data$vaccination
-    vac_dt <- data.table::fread(vac_file, header = TRUE)
-    processed_vac <- process_vac_data(vac_dt,
-                                      sim_start_date = start_date,
-                                      sim_length = sim_length,
-                                      delta_t = delta_t)
-    vac_time_id <- processed_vac[, c("t")]
-    vac_counts <- as.matrix(processed_vac[, -1])
+  flu_entry <- get_metarvm_disease_entry("flu")
+  vac_result <- metarvm_parse_vaccination(
+    yaml_data, flu_entry$vaccination_mechanism, start_date, sim_length, delta_t
+  )
+  if (!is.null(vac_result)) {
+    vac_time_id <- vac_result$vac_time_id
+    vac_counts  <- vac_result$vac_counts
   }
 
   mixing <- metarvm_read_mixing_matrices(yaml_data, require_all = TRUE)
@@ -539,6 +682,7 @@ parse_config_flu_internal <- function(yaml_data, config_file, disease,
   config_list
 }
 
+#' @keywords internal
 metarvm_parse_simulation_config <- function(yaml_data,
                                             default_delta_t = 0.5) {
   # Maintainer Notes:
@@ -602,6 +746,7 @@ metarvm_parse_simulation_config <- function(yaml_data,
   )
 }
 
+#' @keywords internal
 metarvm_validate_population_table <- function(pop_init,
                                               reserved_cols,
                                               required_cols = NULL,
@@ -670,6 +815,7 @@ metarvm_validate_population_table <- function(pop_init,
   )
 }
 
+#' @keywords internal
 metarvm_read_mixing_matrices <- function(yaml_data, require_all = TRUE) {
   # Maintainer Notes:
   # Shared loader/validator for mixing matrices.
@@ -803,6 +949,25 @@ draw_sample <- function(config_list, N_pop, seed = NULL){
   } else return(config_list)
 }
 
+#' @keywords internal
+metarvm_parse_vaccination <- function(yaml_data, mechanism, start_date, sim_length, delta_t) {
+  if (mechanism == "initial") return(NULL)
+  if (mechanism == "file") {
+    if (is.null(yaml_data$population_data$vaccination)) return(NULL)
+    vac_dt <- data.table::fread(yaml_data$population_data$vaccination, header = TRUE)
+    processed_vac <- process_vac_data(vac_dt,
+                                      sim_start_date = start_date,
+                                      sim_length     = sim_length,
+                                      delta_t        = delta_t)
+    return(list(
+      vac_time_id = processed_vac[, c("t")],
+      vac_counts  = as.matrix(processed_vac[, -1])
+    ))
+  }
+  stop(sprintf("Unknown vaccination_mechanism '%s' in disease registry.", mechanism))
+}
+
+#' @keywords internal
 metarvm_expand_disease_params <- function(raw_params, param_names, N_pop, nsim) {
   # Builds a named list of nsim x N_pop matrices from raw YAML values or
   # checkpoint vectors.  Handles scalar literals, per-pop vectors, and
@@ -821,6 +986,7 @@ metarvm_expand_disease_params <- function(raw_params, param_names, N_pop, nsim) 
   param_values
 }
 
+#' @keywords internal
 metarvm_apply_sub_disease_params <- function(param_values, sub_disease_params,
                                              pop_map, category_names) {
   # Applies per-category-value overrides from the sub_disease_params YAML section

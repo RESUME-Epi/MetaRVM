@@ -17,6 +17,20 @@ meta_measles_sim(
   I2_Q0 = rep(0, N_pop),
   I2_U0 = rep(0, N_pop),
   R0 = rep(0, N_pop),
+  V1E10 = rep(0, N_pop),
+  V1E20 = rep(0, N_pop),
+  V1I1_Q0 = rep(0, N_pop),
+  V1I1_U0 = rep(0, N_pop),
+  V1I2_Q0 = rep(0, N_pop),
+  V1I2_U0 = rep(0, N_pop),
+  V1R0 = rep(0, N_pop),
+  V2E10 = rep(0, N_pop),
+  V2E20 = rep(0, N_pop),
+  V2I1_Q0 = rep(0, N_pop),
+  V2I1_U0 = rep(0, N_pop),
+  V2I2_Q0 = rep(0, N_pop),
+  V2I2_U0 = rep(0, N_pop),
+  V2R0 = rep(0, N_pop),
   m_weekday_day,
   m_weekday_night,
   m_weekend_day,
@@ -46,6 +60,10 @@ meta_measles_sim(
 
 \item{S0}{Numeric vector of length \code{N_pop}. Initial susceptible counts.}
 
+\item{V10}{Numeric vector of length \code{N_pop}. Initial dose-1 vaccinated counts.}
+
+\item{V20}{Numeric vector of length \code{N_pop}. Initial dose-2 vaccinated counts.}
+
 \item{E10}{Numeric vector of length \code{N_pop}. Initial first exposed stage counts.}
 
 \item{E20}{Numeric vector of length \code{N_pop}. Initial second exposed stage counts.}
@@ -59,6 +77,34 @@ meta_measles_sim(
 \item{I2_U0}{Numeric vector of length \code{N_pop}. Initial \code{I2_U} counts.}
 
 \item{R0}{Numeric vector of length \code{N_pop}. Initial recovered counts.}
+
+\item{V1E10}{Numeric vector of length \code{N_pop}. Initial \code{V1E1} counts (dose-1 breakthrough, first latent stage).}
+
+\item{V1E20}{Numeric vector of length \code{N_pop}. Initial \code{V1E2} counts (dose-1 breakthrough, second latent stage).}
+
+\item{V1I1_Q0}{Numeric vector of length \code{N_pop}. Initial \code{V1I1_Q} counts.}
+
+\item{V1I1_U0}{Numeric vector of length \code{N_pop}. Initial \code{V1I1_U} counts.}
+
+\item{V1I2_Q0}{Numeric vector of length \code{N_pop}. Initial \code{V1I2_Q} counts.}
+
+\item{V1I2_U0}{Numeric vector of length \code{N_pop}. Initial \code{V1I2_U} counts.}
+
+\item{V1R0}{Numeric vector of length \code{N_pop}. Initial \code{V1R} counts.}
+
+\item{V2E10}{Numeric vector of length \code{N_pop}. Initial \code{V2E1} counts (dose-2 breakthrough, first latent stage).}
+
+\item{V2E20}{Numeric vector of length \code{N_pop}. Initial \code{V2E2} counts (dose-2 breakthrough, second latent stage).}
+
+\item{V2I1_Q0}{Numeric vector of length \code{N_pop}. Initial \code{V2I1_Q} counts.}
+
+\item{V2I1_U0}{Numeric vector of length \code{N_pop}. Initial \code{V2I1_U} counts.}
+
+\item{V2I2_Q0}{Numeric vector of length \code{N_pop}. Initial \code{V2I2_Q} counts.}
+
+\item{V2I2_U0}{Numeric vector of length \code{N_pop}. Initial \code{V2I2_U} counts.}
+
+\item{V2R0}{Numeric vector of length \code{N_pop}. Initial \code{V2R} counts.}
 
 \item{m_weekday_day}{Numeric matrix (\verb{N_pop x N_pop}). Weekday daytime mixing matrix.}
 
@@ -84,6 +130,10 @@ meta_measles_sim(
 
 \item{prop_I2_Q}{Numeric vector or scalar in \verb{[0, 1]}. Proportion of \code{I1_U -> I2} transitions entering \code{I2_Q}.}
 
+\item{V1_eff}{Numeric vector or scalar in \verb{[0, 1]}. Vaccine efficacy for dose-1 recipients.}
+
+\item{V2_eff}{Numeric vector or scalar in \verb{[0, 1]}. Vaccine efficacy for dose-2 recipients.}
+
 \item{nsteps}{Integer. Number of simulation steps.}
 
 \item{is.stoch}{Logical. Included for API compatibility; this model currently
@@ -91,11 +141,11 @@ uses stochastic binomial transitions.}
 
 \item{seed}{Integer or \code{NULL}. Included for API compatibility.}
 
-\item{do_chk}{Logical. Included for API compatibility (checkpointing not implemented here).}
+\item{do_chk}{Logical. Whether to write checkpoint files at the specified time steps.}
 
-\item{chk_time_steps}{Integer vector or \code{NULL}. Included for API compatibility.}
+\item{chk_time_steps}{Integer vector or \code{NULL}. Simulation steps at which to write checkpoints.}
 
-\item{chk_file_names}{Character vector/list or \code{NULL}. Included for API compatibility.}
+\item{chk_file_names}{Character vector/list or \code{NULL}. File paths for each checkpoint time step.}
 }
 \value{
 A \code{data.table} in long format with columns:
@@ -138,6 +188,7 @@ out <- meta_measles_sim(
   delta_t = 0.5,
   de1 = 3, de2 = 3, di1 = 2, di2 = 3,
   prop_I1_Q = 0.2, prop_I2_Q = 0.4,
+  V1_eff = 0.93, V2_eff = 0.97,
   nsteps = 20
 )
 head(out)

@@ -15,14 +15,24 @@ object for method chaining and enhanced functionality. If \code{FALSE}
 (default), returns a named list for backward compatibility.}
 }
 \value{
-If \code{return_object = FALSE} (default), returns a named list containing:
+If \code{return_object = FALSE} (default), returns a named list containing
+entries common to both diseases plus disease-specific initial compartments and
+parameter matrices:
 \describe{
+\item{disease}{The resolved disease name (\code{"flu"} or \code{"measles"})}
 \item{N_pop}{Number of population groups}
 \item{pop_map}{Data.table with \code{population_id} and user-defined demographic categories}
-\item{S_ini, E_ini, I_asymp_ini, I_presymp_ini, I_symp_ini, H_ini, D_ini, P_ini, V_ini, R_ini}{Initial compartment populations}
-\item{vac_time_id, vac_counts, vac_mat}{Vaccination schedule data}
+\item{Initial compartments}{For flu: \code{S_ini, E_ini, I_asymp_ini, I_presymp_ini,
+    I_symp_ini, H_ini, D_ini, V_ini, R_ini}. For measles: \code{S_ini, E1_ini, E2_ini,
+    I1_Q_ini, I1_U_ini, I2_Q_ini, I2_U_ini, R_ini, V1_ini, V2_ini} plus the
+vaccinated-breakthrough compartment initials.}
+\item{vac_time_id, vac_counts, vac_mat}{Vaccination schedule data (flu only;
+not present for measles, which instead folds vaccination into the initial
+\code{V1_ini}/\code{V2_ini} compartments)}
 \item{m_wd_d, m_wd_n, m_we_d, m_we_n}{Contact mixing matrices}
-\item{ts, ve, dv, de, dp, da, ds, dh, dr, pea, psr, phr}{Disease parameter matrices (nsim × N_pop)}
+\item{Disease parameter matrices (nsim × N_pop)}{For flu: \code{ts, ve, dv, de, dp,
+    da, ds, dh, dr, pea, psr, phr}. For measles: \code{beta, de1, de2, di1, di2,
+    prop_I1_Q, prop_I2_Q, V1_eff, V2_eff}.}
 \item{start_date}{Simulation start date as Date object}
 \item{sim_length}{Simulation length in days}
 \item{nsim}{Number of simulation instances}
@@ -44,13 +54,21 @@ disease parameters, mixing matrices, vaccination schedules, and simulation setti
 The function processes a YAML configuration file with the following
 main sections:
 
+\strong{Model Selection:}
+\itemize{
+\item \code{model.disease}: Required. Selects the disease to simulate;
+supported values are \code{"flu"} and \code{"measles"}. The disease
+choice determines which disease parameters are expected, the
+population initialization CSV column schema, and whether a
+vaccination schedule file is used (flu only; see below).
+}
+
 \strong{Simulation Configuration:}
 \itemize{
 \item \code{random_seed}: Optional random seed for reproducibility in case of stochastic simulations or stochastic parameters
 \item \code{nsim}: Number of simulation instances (default: 1)
 \item \code{nrep}: Number of stochastic replicates per parameter set (default: 1)
-\item \code{simulation_mode}: Ignored. All simulations run in stochastic mode.
-\item \code{start_date}: Simulation start date in MM/DD/YYYY format
+#'   \item \code{start_date}: Simulation start date in MM/DD/YYYY format
 \item \code{length}: Simulation length in days
 \item \code{checkpoint_dir}: Optional checkpoint directory for saving intermediate results
 \item \code{checkpoint_dates}: Optional list of dates to save checkpoints.
@@ -58,14 +76,23 @@ main sections:
 }
 
 \strong{Population Data:}
+The required \code{initialization} CSV columns are disease-specific; any
+additional columns are treated as demographic categories.
 \itemize{
-\item \code{initialization}: CSV file with initial population states and optional
-user-defined category columns. The file must contain columns
-\code{population_id}, \code{N}, \code{S0}, \code{I0}, \code{V0}, \code{R0}.
-Any additional columns are treated as demographic categories.
-\item \code{vaccination}: CSV file with vaccination schedule over time. The first column must be dates
-in MM/DD/YYYY format. The rest of the columns must corresponds to respective
-subpopulations in the numeric order of population_id.
+\item \strong{Flu}: \code{population_id}, \code{N}, \code{S0}, \code{I0}, \code{V0}, \code{R0}
+(optional: \code{E0}, \code{Ia0}, \code{Ip0}, \code{H0}, \code{D0}, defaulted to 0 when absent).
+\item \strong{Measles}: \code{population_id}, \code{N}, \code{S0}, and at least one of
+\code{I1_U0}, \code{I2_U0} (optional: \code{E10}, \code{E20}, \code{I1_Q0}, \code{I2_Q0},
+\code{R0}, \code{V10}, \code{V20}, and the vaccinated-breakthrough compartment columns,
+all defaulted to 0 when absent). Measles has no \code{I0} column.
+}
+\itemize{
+\item \code{vaccination}: CSV file with a time-varying vaccination schedule. \strong{Flu only} —
+the first column must be dates in MM/DD/YYYY format, and the rest of the
+columns must correspond to respective subpopulations in the numeric order
+of population_id. Measles vaccination is specified instead via the initial
+\code{V10}/\code{V20} compartment counts in the initialization file; no
+separate vaccination file is used.
 }
 
 \strong{Mixing Matrices:}
@@ -77,12 +104,13 @@ N_pop is the number of subpopulations. It is assumed that the i-th row and j-th 
 }
 
 \strong{Disease Parameters:}
-Epidemiological parameters (can be scalars or distributions):
+Epidemiological parameters (can be scalars or distributions). The exact
+parameter names are disease-specific:
 \itemize{
-\item \code{ts}: Transmission rate for symptomatic individuals
-\item \code{ve}: Vaccine effectiveness
-\item \code{de, dp, da, ds, dh, dr}: Duration parameters for different disease states
-\item \code{pea, psr, phr}: Probability parameters for disease transitions
+\item \strong{Flu}: \code{ts}, \code{ve}, \code{dv}, \code{de}, \code{dp},
+\code{da}, \code{ds}, \code{dh}, \code{dr}, \code{pea}, \code{psr}, \code{phr}
+\item \strong{Measles}: \code{beta}, \code{de1}, \code{de2}, \code{di1},
+\code{di2}, \code{prop_I1_Q}, \code{prop_I2_Q}, \code{V1_eff}, \code{V2_eff}
 }
 
 \strong{Sub-population Parameters:}
@@ -106,17 +134,20 @@ Disease parameters can be specified as distributions for stochastic modeling:
 
 \section{File Requirements}{
 
-\strong{Population initialization file} must contain columns:
+\strong{Population initialization file} must contain columns (see Population Data
+above for the full disease-specific list):
 \itemize{
 \item \code{population_id}: Unique identifier for each population group, natural numbers
 \item \code{N}: Total population size of the subpopulation
-\item \code{S0}, \code{I0}, \code{V0}, \code{R0}: Initial compartment counts
+\item \strong{Flu}: \code{S0}, \code{I0}, \code{V0}, \code{R0}
+\item \strong{Measles}: \code{S0}, and at least one of \code{I1_U0}, \code{I2_U0}
 \item Optional user-defined category columns (e.g., \code{age}, \code{race},
 \code{zone}, \code{income_level}, \code{occupation})
 }
 
-\strong{Vaccination file} must contain:
-\code{date} (MM/DD/YYYY format) and vaccination counts for each population group
+\strong{Vaccination file (flu only)} must contain:
+\code{date} (MM/DD/YYYY format) and vaccination counts for each population group.
+Not used for measles.
 }
 
 \examples{

@@ -30,7 +30,10 @@ build_config(
 }
 \arguments{
 \item{disease}{Character. Disease to simulate. Supported values:
-\code{"flu"}, \code{"measles"}.}
+\code{"flu"}, \code{"measles"}. The vaccination mechanism differs by disease:
+flu reads a time-varying schedule from the \code{vaccination} CSV argument;
+measles encodes vaccination as initial compartment counts (\code{V10}, \code{V20})
+directly in the population CSV — no separate vaccination file is used.}
 
 \item{population_init}{Character. Path to the population initialization CSV.}
 
@@ -54,8 +57,9 @@ date.}
 \item{run_id}{Optional character identifier stored in run metadata.
 Auto-generated from the current timestamp when \code{NULL}.}
 
-\item{vaccination}{Optional character. Path to the vaccination schedule CSV
-(flu only).}
+\item{vaccination}{Optional character. Path to the vaccination schedule CSV.
+Used by flu only; ignored for measles (which encodes vaccination as
+\code{V10}/\code{V20} columns in the population CSV).}
 
 \item{sub_disease_params}{Optional named list of per-category parameter
 overrides. Structure mirrors the \verb{sub_disease_params:} YAML section, e.g.
@@ -71,14 +75,15 @@ backend. Default \code{FALSE}. Set to \code{TRUE} only at the top-level call; le
 \code{FALSE} when the config will be used inside a parallel worker to prevent
 nested-parallel conflicts.}
 
-\item{checkpoint_dir}{Optional character. Directory for checkpoint files
-(flu only).}
+\item{checkpoint_dir}{Optional character. Directory for checkpoint files.
+Supported for both flu and measles.}
 
 \item{checkpoint_dates}{Optional character vector of dates
-(\code{"MM/DD/YYYY"}) at which to write checkpoints (flu only).}
+(\code{"MM/DD/YYYY"}) at which to write checkpoints. Supported for both
+flu and measles.}
 
 \item{restore_from}{Optional character. Path to a checkpoint \code{.Rda} file to
-restore from (flu only).}
+restore from. Supported for both flu and measles.}
 
 \item{output_file}{Optional character. When provided the configuration is
 written to this path as a YAML file. Paths inside the config are stored

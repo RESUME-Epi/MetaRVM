@@ -23,3 +23,4 @@ simulation_config:
   length: 30
   nsim: 1
   nrep: 10
+  random_seed: 42

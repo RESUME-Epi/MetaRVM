@@ -6,7 +6,10 @@
 #' [MetaRVMConfig] object — or any combination of the three.
 #'
 #' @param disease Character. Disease to simulate. Supported values:
-#'   `"flu"`, `"measles"`.
+#'   `"flu"`, `"measles"`. The vaccination mechanism differs by disease:
+#'   flu reads a time-varying schedule from the `vaccination` CSV argument;
+#'   measles encodes vaccination as initial compartment counts (`V10`, `V20`)
+#'   directly in the population CSV — no separate vaccination file is used.
 #' @param population_init Character. Path to the population initialization CSV.
 #' @param mixing_matrices Named list of paths to mixing-matrix CSV files.
 #'   Required keys: `weekday_day`, `weekday_night`, `weekend_day`,
@@ -21,8 +24,9 @@
 #' @param nrep Positive integer. Replicates per parameter draw (default `1`).
 #' @param run_id Optional character identifier stored in run metadata.
 #'   Auto-generated from the current timestamp when `NULL`.
-#' @param vaccination Optional character. Path to the vaccination schedule CSV
-#'   (flu only).
+#' @param vaccination Optional character. Path to the vaccination schedule CSV.
+#'   Used by flu only; ignored for measles (which encodes vaccination as
+#'   `V10`/`V20` columns in the population CSV).
 #' @param sub_disease_params Optional named list of per-category parameter
 #'   overrides. Structure mirrors the `sub_disease_params:` YAML section, e.g.
 #'   `list(age = list(child = list(ts = 0.6)))`.
@@ -33,12 +37,13 @@
 #'   backend. Default `FALSE`. Set to `TRUE` only at the top-level call; leave
 #'   `FALSE` when the config will be used inside a parallel worker to prevent
 #'   nested-parallel conflicts.
-#' @param checkpoint_dir Optional character. Directory for checkpoint files
-#'   (flu only).
+#' @param checkpoint_dir Optional character. Directory for checkpoint files.
+#'   Supported for both flu and measles.
 #' @param checkpoint_dates Optional character vector of dates
-#'   (`"MM/DD/YYYY"`) at which to write checkpoints (flu only).
+#'   (`"MM/DD/YYYY"`) at which to write checkpoints. Supported for both
+#'   flu and measles.
 #' @param restore_from Optional character. Path to a checkpoint `.Rda` file to
-#'   restore from (flu only).
+#'   restore from. Supported for both flu and measles.
 #' @param output_file Optional character. When provided the configuration is
 #'   written to this path as a YAML file. Paths inside the config are stored
 #'   as absolute paths so the file is self-contained regardless of working

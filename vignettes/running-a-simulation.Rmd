@@ -32,6 +32,8 @@ The `yaml_file` variable now holds the full path to the example configuration fi
 
 ```yaml
 run_id: ExampleRun
+model:
+  disease: flu
 population_data:
   initialization: population_init_n24.csv
   vaccination: vaccination_n24.csv
@@ -58,7 +60,6 @@ simulation_config:
   length: 150
   nsim: 1
   nrep: 1
-
   random_seed: 42
 ```
 
@@ -133,6 +134,24 @@ sim_out <- metaRVM(config_obj)
 # Method 3: From parsed configuration list
 config_list <- parse_config(yaml_file)
 sim_out <- metaRVM(config_list)
+
+# Method 4: Programmatic config with build_config() — no YAML file needed
+ext <- function(x) system.file("extdata", x, package = "MetaRVM")
+# sim_out <- metaRVM(build_config(
+#   disease         = "flu",
+#   population_init = ext("population_init_n24.csv"),
+#   vaccination     = ext("vaccination_n24.csv"),
+#   mixing_matrices = list(
+#     weekday_day   = ext("m_weekday_day.csv"),
+#     weekday_night = ext("m_weekday_night.csv"),
+#     weekend_day   = ext("m_weekend_day.csv"),
+#     weekend_night = ext("m_weekend_night.csv")
+#   ),
+#   disease_params  = list(ts = 0.5, ve = 0.4, dv = 180, dp = 1, de = 3,
+#                          da = 5, ds = 6, dh = 8, dr = 180,
+#                          pea = 0.3, psr = 0.95, phr = 0.97),
+#   start_date = "01/01/2023", sim_length = 150, nsim = 1, nrep = 1
+# ))
 ```
 
 
@@ -187,6 +206,8 @@ yaml_file_dist <- system.file("extdata", "example_config_dist.yaml", package = "
 
 ```yaml
 run_id: ExampleRun_Dist
+model:
+  disease: flu
 population_data:
   initialization: population_init_n24.csv
   vaccination: vaccination_n24.csv
@@ -197,22 +218,22 @@ mixing_matrix:
   weekend_night: m_weekend_night.csv
 disease_params:
   ts: 0.5
-  ve: 
+  ve:
     dist: uniform
     min: 0.3
     max: 0.5
   dv: 180
   dp: 1
   de: 3
-  da: 
+  da:
     dist: uniform
     min: 4
     max: 6
-  ds: 
+  ds:
     dist: uniform
     min: 5
     max: 7
-  dh: 
+  dh:
     dist: lognormal
     mu: 2
     sd: 0.5
@@ -225,7 +246,6 @@ simulation_config:
   length: 150
   nsim: 20 # Increased nsim for meaningful summary statistics
   nrep: 1
-
   random_seed: 42
 ```
 
@@ -270,6 +290,8 @@ yaml_file_stoch <- system.file("extdata", "example_config_stochastic.yaml", pack
 
 ```yaml
 run_id: ExampleRun_Stochastic_Static
+model:
+  disease: flu
 population_data:
   initialization: population_init_n24.csv
   vaccination: vaccination_n24.csv
@@ -314,6 +336,8 @@ yaml_file_subgroup <- system.file("extdata", "example_config_subgroup_dist.yaml"
 
 ```yaml
 run_id: ExampleRun_Subgroup_Dist
+model:
+  disease: flu
 population_data:
   initialization: population_init_n24.csv
   vaccination: vaccination_n24.csv
@@ -324,7 +348,7 @@ mixing_matrix:
   weekend_night: m_weekend_night.csv
 disease_params:
   ts: 0.5
-  ve: 
+  ve:
     dist: uniform
     min: 0.3
     max: 0.5
@@ -333,7 +357,7 @@ disease_params:
   de: 3
   da: 5
   ds: 6
-  dh: 
+  dh:
     dist: lognormal
     mu: 2
     sd: 0.5
@@ -349,14 +373,13 @@ sub_disease_params:
         ts: 0.6
       65+:
         # This fixed value will override the global lognormal distribution for dh
-        dh: 10 
+        dh: 10
         phr: 0.9227
 simulation_config:
   start_date: 01/01/2023 # m/d/Y
   length: 150
   nsim: 20
   nrep: 1
-
   random_seed: 42
 ```
 
@@ -380,4 +403,34 @@ hospital_summary_subgroup <- sim_out_subgroup$summarize(
 
 # Plot the summary
 hospital_summary_subgroup$plot() + ggtitle("Daily Hospitalizations by Age Group (Subgroup Parameters)") + theme_bw()
+```
+
+# Running a Measles Simulation
+
+MetaRVM supports measles alongside flu. The key differences in configuration are:
+
+- **`model: disease: measles`** — selects the measles engine.
+- **No vaccination file** — vaccinated individuals are seeded via `V10` (one-dose) and `V20` (two-dose) columns in the population CSV. There is no time-varying vaccination schedule.
+- **Different disease parameters** — `beta`, `de1`, `de2`, `di1`, `di2`, `prop_I1_Q`, `prop_I2_Q`, `V1_eff`, `V2_eff`.
+- **Different compartments** — two-stage latent (E1→E2), two-stage infectious (I1→I2) with quarantined/unquarantined splits, plus vaccinated and breakthrough chains (V1, V2, V1E1, …).
+
+A packaged measles example can be run directly:
+
+```{r, results='hide', message=FALSE, warning=FALSE}
+yaml_file_measles <- system.file("extdata", "example_config_measles_min.yaml", package = "MetaRVM")
+sim_out_measles <- metaRVM(yaml_file_measles)
+```
+
+```{r}
+# Inspect measles compartment names — note two-stage E1/E2 and I1_U/I2_U
+head(sim_out_measles$results)
+cat("Disease states:", paste(unique(sim_out_measles$results$disease_state), collapse = ", "), "\n")
+```
+
+The `subset_data()` method works the same way for measles. Use the `"incidence"` alias to retrieve the combined new-infection flows across unvaccinated and vaccinated individuals:
+
+```{r}
+# Daily incidence across all populations
+incidence <- sim_out_measles$subset_data(disease_states = "incidence")
+head(incidence$results)
 ```

@@ -1032,13 +1032,8 @@ MetaRVMSummary <- R6::R6Class(
       state_col <- output_spec$state_col
       value_col <- output_spec$value_col
       time_col <- output_spec$time_col
-      required_plot_cols <- c(time_col, value_col)
-      missing_plot_cols <- setdiff(required_plot_cols, columns)
-      if (length(missing_plot_cols) > 0) {
-        stop(sprintf(
-          "Plot data are missing required columns: %s",
-          paste(missing_plot_cols, collapse = ", ")
-        ))
+      if (!time_col %in% columns) {
+        stop(sprintf("Plot data are missing required column: %s", time_col))
       }
 
       # Detect grouping variables dynamically
@@ -1051,6 +1046,9 @@ MetaRVMSummary <- R6::R6Class(
 
       # Instance trajectory plotting mode
       if (identical(self$type, "instances")) {
+        if (!value_col %in% columns) {
+          stop(sprintf("Plot data are missing required column: %s", value_col))
+        }
         if (!"instance" %in% columns) {
           stop("Instance trajectory plotting requires column 'instance'")
         }

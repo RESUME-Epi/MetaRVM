@@ -71,6 +71,48 @@ normalize_disease_name <- function(disease) {
 }
 
 metarvm_disease_registry <- function() {
+  # -----------------------------------------------------------------------
+  # Registry contract — every disease entry must define these fields:
+  #
+  #   parser / config_builder / runner / engine_fn
+  #     Function names for the parse, build, orchestrate, and simulate steps.
+  #
+  #   always_stochastic
+  #     TRUE  → engine ignores `is_stoch` and always runs stochastic.
+  #     FALSE → caller may request deterministic mode.
+  #
+  #   checkpointing_from_config
+  #     TRUE  → `do_chk` / checkpoint params come from the YAML config.
+  #     FALSE → checkpointing not supported; `do_chk` is always FALSE.
+  #
+  #   vaccination_mechanism
+  #     "file"    → vaccination is a time-varying schedule loaded from a CSV
+  #                 specified under population_data$vaccination in the YAML.
+  #                 metarvm_parse_vaccination() reads and processes this file.
+  #     "initial" → vaccination state is encoded directly as initial compartment
+  #                 counts in the population CSV (e.g. V10, V20 for measles).
+  #                 No separate vaccination file is read or needed.
+  #
+  #   Population CSV init column contract (enforced by metarvm_validate_population_table):
+  #
+  #     init_reserved_cols    All column names that have a special meaning
+  #                           (not treated as demographic categories).
+  #     init_required_cols    Columns that MUST be present in a fresh run.
+  #     init_require_any_of   At least one of these must be present (or NULL).
+  #     init_optional_defaults Named list of columns defaulted to 0 when absent.
+  #
+  #   Disease-specific init schema:
+  #
+  #     flu     Required: population_id, N, S0, I0, R0, V0
+  #             Optional: E0, Ia0, Ip0, H0, D0 (default 0)
+  #             Vaccination: separate time-series file (vaccination_mechanism = "file")
+  #
+  #     measles Required: population_id, N, S0
+  #             Require any of: I1_U0, I2_U0 (must seed at least one infectious compartment)
+  #             Optional: all other compartments default to 0
+  #             Vaccination: V10 / V20 initial counts in the population CSV
+  #                          (vaccination_mechanism = "initial"); no separate file
+  # -----------------------------------------------------------------------
   list(
     flu = list(
       parser = "parse_config",
@@ -79,6 +121,7 @@ metarvm_disease_registry <- function() {
       engine_fn = "meta_sim",
       always_stochastic = FALSE,
       checkpointing_from_config = TRUE,
+      vaccination_mechanism = "file",
       build_sim_args = function(config_data, ii, run_idx, nsteps, start_day, is_stoch) {
         # ii       = parameter-set index (1..nsim); selects which row of each
         #            nsim × N_pop disease-parameter matrix to use for this draw.
@@ -150,7 +193,21 @@ metarvm_disease_registry <- function() {
         "chk_time_step"
       ),
       disease_param_required = c(
-        "ts", "ve", "dv", "de", "dp", "da", "ds", "dh", "dr", "pea", "psr", "phr"
+        # Transmission / vaccine
+        "ts",   # transmission probability per contact
+        "ve",   # vaccine efficacy (fraction of V that can't be infected)
+        "dv",   # duration of vaccine-conferred immunity (days)
+        # Progression durations
+        "de",   # mean duration in exposed (E) compartment (days)
+        "dp",   # mean duration in pre-symptomatic (Ip) compartment (days)
+        "da",   # mean duration in asymptomatic (Ia) compartment (days)
+        "ds",   # mean duration in symptomatic (Is) compartment (days)
+        "dh",   # mean duration in hospital (H) compartment (days)
+        "dr",   # mean duration in recovered (R) before returning to S (days)
+        # Branching probabilities
+        "pea",  # proportion of exposed → asymptomatic (vs pre-symptomatic)
+        "psr",  # proportion of symptomatic → recovery (vs hospital)
+        "phr"   # proportion of hospitalized → recovery (vs death)
       ),
       init_reserved_cols = c(
         "population_id", "N", "S0", "I0", "R0", "V0",
@@ -166,7 +223,8 @@ metarvm_disease_registry <- function() {
       runner = "metaRVM",
       engine_fn = "meta_measles_sim",
       always_stochastic = TRUE,
-      checkpointing_from_config = FALSE,
+      checkpointing_from_config = TRUE,
+      vaccination_mechanism = "initial",
       build_sim_args = function(config_data, ii, run_idx, nsteps, start_day, is_stoch) {
         # ii = parameter-set index; selects the row of each nsim × N_pop matrix.
         # Measles has no deterministic mode, so is.stoch is hard-coded TRUE
@@ -175,15 +233,34 @@ metarvm_disease_registry <- function() {
           is.stoch = TRUE,
           nsteps = nsteps,
           N_pop = config_data$N_pop,
-          # Initial compartment counts (vectors of length N_pop)
+          # Unvaccinated initial compartment counts
           S0 = config_data$S0,
-          E10 = config_data$E10,   # first latent stage
-          E20 = config_data$E20,   # second latent stage
-          I1_Q0 = config_data$I1_Q0,  # quarantined dose-1 infectious
-          I1_U0 = config_data$I1_U0,  # unquarantined dose-1 infectious
-          I2_Q0 = config_data$I2_Q0,  # quarantined dose-2 infectious
-          I2_U0 = config_data$I2_U0,  # unquarantined dose-2 infectious
+          E10 = config_data$E10,
+          E20 = config_data$E20,
+          I1_Q0 = config_data$I1_Q0,
+          I1_U0 = config_data$I1_U0,
+          I2_Q0 = config_data$I2_Q0,
+          I2_U0 = config_data$I2_U0,
           R0 = config_data$R0,
+          # Vaccinated initial compartment counts
+          V10 = config_data$V10,
+          V20 = config_data$V20,
+          # V1 breakthrough compartment initials
+          V1E10   = config_data$V1E10,
+          V1E20   = config_data$V1E20,
+          V1I1_Q0 = config_data$V1I1_Q0,
+          V1I1_U0 = config_data$V1I1_U0,
+          V1I2_Q0 = config_data$V1I2_Q0,
+          V1I2_U0 = config_data$V1I2_U0,
+          V1R0    = config_data$V1R0,
+          # V2 breakthrough compartment initials
+          V2E10   = config_data$V2E10,
+          V2E20   = config_data$V2E20,
+          V2I1_Q0 = config_data$V2I1_Q0,
+          V2I1_U0 = config_data$V2I1_U0,
+          V2I2_Q0 = config_data$V2I2_Q0,
+          V2I2_U0 = config_data$V2I2_U0,
+          V2R0    = config_data$V2R0,
           # Time-varying contact matrices (N_pop × N_pop each)
           m_weekday_day = config_data$m_wd_d,
           m_weekday_night = config_data$m_wd_n,
@@ -201,12 +278,7 @@ metarvm_disease_registry <- function() {
           prop_I2_Q = config_data$prop_I2_Q[ii, ]
         )
 
-        # V10/V20 are optional: configs without vaccination history omit them
-        if ("V10" %in% names(config_data)) args$V10 <- config_data$V10
-        if ("V20" %in% names(config_data)) args$V20 <- config_data$V20
-
-        # V1_eff/V2_eff can be either a scalar (shared across pops) stored as a
-        # plain vector, or an nsim × N_pop matrix when sampled per parameter set.
+        # V1_eff/V2_eff can be a scalar vector or nsim × N_pop matrix when sampled.
         # Default to 1 (no vaccine effect) when absent from config.
         if ("V1_eff" %in% names(config_data)) {
           args$V1_eff <- if (is.matrix(config_data$V1_eff)) config_data$V1_eff[ii, ] else config_data$V1_eff
@@ -218,6 +290,10 @@ metarvm_disease_registry <- function() {
         } else {
           args$V2_eff <- rep(1, config_data$N_pop)
         }
+        # Checkpointing: run_idx (not ii) keeps replicate files distinct
+        args$do_chk         <- config_data$do_chk
+        args$chk_time_steps <- config_data$chk_time_steps
+        args$chk_file_names <- config_data$chk_file_names[run_idx, ]
         args
       },
       output_spec = list(
@@ -226,39 +302,58 @@ metarvm_disease_registry <- function() {
         time_col = "date",
         default_exclude_patterns = c("^p_"),
         state_groups = list(
-          incidence = c("n_E2I1")
+          incidence = c("n_SE1", "n_V1E1", "n_V2E1")
         )
       ),
       required_config_fields = c(
         "disease", "N_pop", "pop_map", "start_date",
         "sim_length", "delta_t", "nsim", "nrep",
         "S0", "E10", "E20", "I1_Q0", "I1_U0", "I2_Q0", "I2_U0", "R0",
+        "V10", "V20",
+        "V1E10", "V1E20", "V1I1_Q0", "V1I1_U0", "V1I2_Q0", "V1I2_U0", "V1R0",
+        "V2E10", "V2E20", "V2I1_Q0", "V2I1_U0", "V2I2_Q0", "V2I2_U0", "V2R0",
         "beta", "de1", "de2", "di1", "di2", "prop_I1_Q", "prop_I2_Q", "V1_eff", "V2_eff"
       ),
       required_checkpoint_fields = c(
         "disease", "N_pop", "delta_t",
         "m_weekday_day", "m_weekday_night", "m_weekend_day", "m_weekend_night",
-        "beta", "de1", "de2", "di1", "di2", "prop_I1_Q", "prop_I2_Q",
-        "S", "E1", "E2", "I1_Q", "I1_U", "I2_Q", "I2_U", "R", "V1_eff", "V2_eff",
+        "beta", "de1", "de2", "di1", "di2", "prop_I1_Q", "prop_I2_Q", "V1_eff", "V2_eff",
+        "S", "V1", "V2", "E1", "E2", "I1_Q", "I1_U", "I2_Q", "I2_U", "R",
+        "V1E1", "V1E2", "V1I1_Q", "V1I1_U", "V1I2_Q", "V1I2_U", "V1R",
+        "V2E1", "V2E2", "V2I1_Q", "V2I1_U", "V2I2_Q", "V2I2_U", "V2R",
         "chk_time_step"
       ),
       init_reserved_cols = c(
         "population_id", "N", "S0", "E10", "E20",
-        "I1_Q0", "I1_U0", "I2_Q0", "I2_U0", "R0", "V10", "V20"
+        "I1_Q0", "I1_U0", "I2_Q0", "I2_U0", "R0",
+        "V10", "V20",
+        "V1E10", "V1E20", "V1I1_Q0", "V1I1_U0", "V1I2_Q0", "V1I2_U0", "V1R0",
+        "V2E10", "V2E20", "V2I1_Q0", "V2I1_U0", "V2I2_Q0", "V2I2_U0", "V2R0"
       ),
       init_required_cols = c("population_id", "N", "S0"),
       init_require_any_of = c("I1_U0", "I2_U0"),
       init_optional_defaults = list(
-        E10 = 0,
-        E20 = 0,
-        I1_Q0 = 0,
-        I1_U0 = 0,
-        I2_Q0 = 0,
-        I2_U0 = 0,
-        R0 = 0
+        E10 = 0, E20 = 0,
+        I1_Q0 = 0, I1_U0 = 0, I2_Q0 = 0, I2_U0 = 0, R0 = 0,
+        V10 = 0, V20 = 0,
+        V1E10 = 0, V1E20 = 0, V1I1_Q0 = 0, V1I1_U0 = 0, V1I2_Q0 = 0, V1I2_U0 = 0, V1R0 = 0,
+        V2E10 = 0, V2E20 = 0, V2I1_Q0 = 0, V2I1_U0 = 0, V2I2_Q0 = 0, V2I2_U0 = 0, V2R0 = 0
       ),
       disease_param_required = c(
-        "beta", "de1", "de2", "di1", "di2", "prop_I1_Q", "prop_I2_Q", "V1_eff", "V2_eff"
+        # Transmission
+        "beta",      # per-contact transmission rate (S → E1 force of infection)
+        # Exposed stage durations (two-stage latent period)
+        "de1",       # mean duration in E1 (first exposed stage, days)
+        "de2",       # mean duration in E2 (second exposed stage, days)
+        # Infectious stage durations (two-stage infectious period)
+        "di1",       # mean duration in I1 (first infectious stage, days)
+        "di2",       # mean duration in I2 (second infectious stage, days)
+        # Quarantine fractions
+        "prop_I1_Q", # proportion of E2→I1 transitions entering quarantined I1_Q
+        "prop_I2_Q", # proportion of I1_U→I2 transitions entering quarantined I2_Q
+        # Vaccine efficacy (reduce force of infection on V1/V2 compartments)
+        "V1_eff",    # efficacy of one-dose vaccine (fraction reduction in susceptibility)
+        "V2_eff"     # efficacy of two-dose vaccine (fraction reduction in susceptibility)
       )
     )
   )
@@ -349,7 +444,7 @@ resolve_metarvm_state_selection <- function(disease, states) {
   }
   spec <- get_metarvm_output_spec(disease)
   state_groups <- spec$state_groups
-  # Expand named groups (e.g. "incidence" → c("n_E2I1")) while passing through
+  # Expand named groups (e.g. flu "incidence" → c("n_SE", "n_VE")) while passing through
   # literal state names unchanged.  unlist flattens so the result is a plain
   # character vector regardless of group size.
   resolved <- unlist(lapply(states, function(x) {

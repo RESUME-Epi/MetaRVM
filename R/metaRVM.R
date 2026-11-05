@@ -11,10 +11,11 @@
 #' The configuration input controls:
 #'
 #' - **Population structure** (user-defined categories and the initial compartment counts from the initialization file)
-#' - **Disease parameters** (`ts`, `ve`, `de`, `dp`, `da`, `ds`,
-#'   `dh`, `dr`, `pea`, `psr`, `phr`, `dv`, etc.)
+#' - **Disease parameters** (disease-specific; see `?parse_config` and the
+#'   disease registry for per-disease parameter lists)
 #' - **Mixing matrices** (weekday/weekend, day/night contact patterns)
-#' - **Vaccination schedule** and immunity waning
+#' - **Vaccination** (time-varying schedule for flu; initial compartment counts
+#'   for measles)
 #' - **Simulation settings** (start date, length, number of instances,
 #'   checkpointing)
 #'

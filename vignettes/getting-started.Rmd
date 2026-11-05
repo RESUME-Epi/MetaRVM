@@ -18,7 +18,7 @@ knitr::opts_chunk$set(
 
 ## Introduction
 
-MetaRVM is a comprehensive R package for simulating respiratory virus epidemics using meta-population compartmental models. This vignette describes the basic usage of the package.
+MetaRVM is a comprehensive R package for simulating respiratory virus epidemics using metapopulation compartmental models. It supports multiple disease types — currently **flu** and **measles** — each with its own compartment structure, parameters, and initialization schema. This vignette describes the basic usage of the package using a flu example; for measles and advanced configuration options see the `yaml-configuration` and `running-a-simulation` vignettes.
 
 ## Installation
 
@@ -53,6 +53,8 @@ The `yaml_file` variable now holds the full path to the example configuration fi
 
 ```yaml
 run_id: ExampleRun
+model:
+  disease: flu
 population_data:
   initialization: population_init_n24.csv
   vaccination: vaccination_n24.csv
@@ -79,9 +81,10 @@ simulation_config:
   length: 150
   nsim: 1
   nrep: 1
-
   random_seed: 42
 ```
+
+The `model: disease:` field is required and selects the simulation engine. Supported values: `"flu"` and `"measles"`. Disease-specific parameters and population CSV schemas differ between diseases — see `vignette("yaml-configuration")` for full details.
 
 For a detailed explanation of all the configuration options, please see the `yaml-configuration.html` vignette.
 

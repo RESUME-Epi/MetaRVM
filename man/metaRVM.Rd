@@ -57,10 +57,11 @@ and returns a \code{\link{MetaRVMResults}} object for downstream analysis and pl
 The configuration input controls:
 \itemize{
 \item \strong{Population structure} (user-defined categories and the initial compartment counts from the initialization file)
-\item \strong{Disease parameters} (\code{ts}, \code{ve}, \code{de}, \code{dp}, \code{da}, \code{ds},
-\code{dh}, \code{dr}, \code{pea}, \code{psr}, \code{phr}, \code{dv}, etc.)
+\item \strong{Disease parameters} (disease-specific; see \code{?parse_config} and the
+disease registry for per-disease parameter lists)
 \item \strong{Mixing matrices} (weekday/weekend, day/night contact patterns)
-\item \strong{Vaccination schedule} and immunity waning
+\item \strong{Vaccination} (time-varying schedule for flu; initial compartment counts
+for measles)
 \item \strong{Simulation settings} (start date, length, number of instances,
 checkpointing)
 }

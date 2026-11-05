@@ -143,9 +143,9 @@ For simulation control:
 |-------|-----------|-------------|
 | Population initialization (`population_init.csv`) | Yes | Defines demographic strata with user-defined category columns (e.g., age, zone, race, income_level) and initial population states. Categories are automatically detected from column names. |
 | Mixing matrices (`mixing_matrix_*.csv`) | Yes | Four contact matrices, consistent with the population strata. These typically represent weekday/weekend and day/night mixing patterns. |
-| Vaccination schedule (`vaccination.csv`) | Flu only | Time-varying vaccination counts or rates by stratum, used to move individuals from `S` to `V`. Not required for measles. |
-| Disease parameters | Yes | Scalar values or distribution specs (lognormal, gamma, etc.) for each disease-specific parameter. See the pkgdown reference for per-disease parameter lists. |
-| Checkpoint files | Optional (flu) | Internal model state snapshots used to resume or branch simulations (e.g., for phased calibration). |
+| Vaccination schedule (`vaccination.csv`) | Flu only | Time-varying vaccination counts or rates by stratum, used to move individuals from `S` to `V`. Measles instead uses `V10`/`V20` columns in the population CSV to seed one- and two-dose vaccinated compartments — no separate file needed. |
+| Disease parameters | Yes | Scalar values or distribution specs (lognormal, gamma, etc.) for each disease-specific parameter. Flu uses `ts`, `ve`, `dv`, `de`, `dp`, `da`, `ds`, `dh`, `dr`, `pea`, `psr`, `phr`. Measles uses `beta`, `de1`, `de2`, `di1`, `di2`, `prop_I1_Q`, `prop_I2_Q`, `V1_eff`, `V2_eff`. |
+| Checkpoint files | Optional | Internal model state snapshots used to resume or branch simulations (e.g., for phased calibration). Supported for both flu and measles. |
 
 ### Model output structure
 
@@ -175,8 +175,8 @@ List of vignettes:
 - **Model Configurations**  
   A detailed walkthrough of the YAML structure, required fields, parameter blocks, optional modules, and how to define population strata and mixing patterns.
 
-- **Running Simulation**
-  Full example using a complete set of input files, showing how MetaRVM reads population initialization data, mixing matrices, and vaccination schedules.
+- **Running a Simulation with metaRVM**
+  Full example using a complete set of input files, showing how MetaRVM reads population initialization data, mixing matrices, and vaccination schedules. Includes flu and measles examples.
 
 <!-- - **Understanding Outputs**  
   Explains the structure of `sim$results`, the meaning of disease states and flow variables, and how to compute aggregated quantities. -->
