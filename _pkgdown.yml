@@ -73,14 +73,17 @@ reference:
     contents:
       - metaRVM
       - meta_sim
-      
+      - meta_measles_sim
+
   - title: "Configuration and Parsing"
     desc: "Functions for configuration management"
     contents:
       - parse_config
+      - build_config
+      - copy_config
       - MetaRVMConfig
       - MetaRVMCheck
-      
+
   - title: "Results and Output"
     desc: "Functions for handling and formatting results"
     contents:

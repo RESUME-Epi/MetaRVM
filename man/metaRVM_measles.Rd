@@ -2,36 +2,15 @@
 % Please edit documentation in R/metaRVM_measles.R
 \name{metaRVM_measles}
 \alias{metaRVM_measles}
-\title{Run a MetaRVM Measles Simulation}
+\title{Type-safe wrapper that validates \code{model.disease = "measles"} before
+delegating to \code{\link[=metaRVM]{metaRVM()}}. Use \code{\link[=metaRVM]{metaRVM()}} directly instead; it dispatches
+on disease automatically via the disease registry.}
 \usage{
 metaRVM_measles(config_input)
 }
-\arguments{
-\item{config_input}{Configuration specification as one of: a character path
-to a YAML file, a \code{\link{MetaRVMConfig}} object, or a parsed config list.
-The config must include \code{model.disease = "measles"} or the function will
-stop with an informative error.}
-}
-\value{
-A \code{\link{MetaRVMResults}} object. See \code{\link[=metaRVM]{metaRVM()}} for a full description
-of all fields, \code{run_info} metadata, and the results API.
-}
 \description{
-Type-safe wrapper for measles simulations. Validates that the supplied
-configuration specifies \code{model.disease = "measles"} before delegating to
-\code{\link[=metaRVM]{metaRVM()}}. Use \code{\link[=metaRVM]{metaRVM()}} directly when disease-type validation is not
-required.
+Type-safe wrapper that validates \code{model.disease = "measles"} before
+delegating to \code{\link[=metaRVM]{metaRVM()}}. Use \code{\link[=metaRVM]{metaRVM()}} directly instead; it dispatches
+on disease automatically via the disease registry.
 }
-\examples{
-\donttest{
-options(odin.verbose = FALSE)
-cfg <- system.file("extdata", "example_config_measles_min.yaml", package = "MetaRVM")
-results <- metaRVM_measles(cfg)
-head(results$results)
-}
-
-}
-\seealso{
-\code{\link[=metaRVM]{metaRVM()}} for the primary simulation entry point; \code{\link[=parse_config_measles]{parse_config_measles()}}
-for measles-specific config parsing.
-}
+\keyword{internal}
