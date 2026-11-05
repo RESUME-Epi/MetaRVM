@@ -1,7 +1,7 @@
 # Workflow derived from https://github.com/r-lib/actions/tree/v2/examples
 on:
   push:
-    branches: [user-defined-subpopulation]
+    branches: [dev]
   workflow_dispatch:
 
 name: pkgdown-dev
