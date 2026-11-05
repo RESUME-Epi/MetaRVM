@@ -1,0 +1,5 @@
+/* Make pkgdown header logo visible in dark mode */
+html[data-bs-theme="dark"] img.logo,
+body[data-bs-theme="dark"] img.logo {
+  filter: brightness(0) invert(1);
+}
