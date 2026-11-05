@@ -29,7 +29,10 @@
 #'   `V10`/`V20` columns in the population CSV).
 #' @param sub_disease_params Optional named list of per-category parameter
 #'   overrides. Structure mirrors the `sub_disease_params:` YAML section, e.g.
-#'   `list(age = list(child = list(ts = 0.6)))`.
+#'   `list(age = list(child = list(ts = 0.6)))`. Values can also be
+#'   distribution specs, e.g. `list(dist = "lognormal", mu = 2, sd = 0.5)`,
+#'   drawn independently per simulation replicate the same way `disease_params`
+#'   distributions are.
 #' @param random_seed Optional integer seed for reproducibility. Auto-generated
 #'   when `NULL`.
 #' @param delta_t Numeric time-step in days. Defaults to `0.5` when `NULL`.

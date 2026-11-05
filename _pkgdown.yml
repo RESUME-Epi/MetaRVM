@@ -19,9 +19,9 @@ template:
 #     danger: "#A6081A"
 #   logo: man/figures/logo.png
 
-# development:
-#   mode: auto
-  
+development:
+  mode: auto
+
 home:
   title: MetaRVM - Meta-population Respiratory Virus Model
   description: >

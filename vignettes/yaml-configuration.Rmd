@@ -318,6 +318,18 @@ sub_disease_params:
 
 For measles, the same structure applies using measles parameter names (e.g., `beta`, `prop_I1_Q`).
 
+Subgroup parameters can also be specified as a distribution (`lognormal`, `gamma`, `uniform`, `beta`, `gaussian`), the same way top-level `disease_params` are. Each simulation replicate (`nsim`) draws its own independent sample, applied to the targeted subgroup only:
+
+```yaml
+sub_disease_params:
+    age:
+      65+:
+        dh:
+          dist: lognormal
+          mu: 8
+          sd: 8.9
+```
+
 ## Stochastic Simulation with Distributional Parameters
 
 All simulations run stochastically. To combine parameter uncertainty with
