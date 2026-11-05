@@ -63,7 +63,10 @@ Used by flu only; ignored for measles (which encodes vaccination as
 
 \item{sub_disease_params}{Optional named list of per-category parameter
 overrides. Structure mirrors the \verb{sub_disease_params:} YAML section, e.g.
-\code{list(age = list(child = list(ts = 0.6)))}.}
+\code{list(age = list(child = list(ts = 0.6)))}. Values can also be
+distribution specs, e.g. \code{list(dist = "lognormal", mu = 2, sd = 0.5)},
+drawn independently per simulation replicate the same way \code{disease_params}
+distributions are.}
 
 \item{random_seed}{Optional integer seed for reproducibility. Auto-generated
 when \code{NULL}.}

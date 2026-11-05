@@ -48,13 +48,17 @@ Full documentation is available at: https://RESUME-Epi.github.io/MetaRVM/
 
 ### Installation
 
-The current CRAN release is **2.1.0**. Install it with:
+```{r dev-version, include = FALSE}
+dev_version <- sub("\\.9000$", "", read.dcf("DESCRIPTION")[1, "Version"])
+```
+
+Install the current CRAN release with (see the CRAN badge above for the exact released version):
 
 ``` r
 install.packages("MetaRVM")
 ```
 
-The development version (2.2.0, adds measles model and programmatic config builder) is available from GitHub:
+The development version (`r dev_version`) is available from GitHub:
 
 ``` r
 # install.packages("remotes")

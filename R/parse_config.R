@@ -1030,8 +1030,15 @@ metarvm_apply_sub_disease_params <- function(param_values, sub_disease_params,
             param, paste(names(param_values), collapse = ", ")
           ))
         }
-        # Scalar is recycled across all nsim rows and the targeted columns
-        param_values[[param]][, col_ids] <- sub_disease_params[[cat]][[cat_val]][[param]]
+        # Scalar is recycled across all nsim rows and the targeted columns;
+        # distribution specs draw one independent sample per nsim row, matching
+        # the semantics of metarvm_expand_disease_params()
+        override_val <- sub_disease_params[[cat]][[cat_val]][[param]]
+        if (length(override_val) == 1) override_val <- rep(override_val, length(col_ids))
+        nsim <- nrow(param_values[[param]])
+        param_values[[param]][, col_ids] <- do.call(
+          rbind, purrr::map(1:nsim, ~ draw_sample(override_val, length(col_ids)))
+        )
       }
     }
   }

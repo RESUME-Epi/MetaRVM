@@ -317,6 +317,56 @@ test_that("parse_config_measles applies sub_disease_params overrides to param_va
   expect_true(all(parsed$beta[, 2] == 0.65))
 })
 
+test_that("parse_config_measles applies distribution-spec sub_disease_params overrides", {
+  ext <- function(x) system.file("extdata", x, package = "MetaRVM")
+  cfg_path <- tempfile(fileext = ".yaml")
+
+  cfg <- list(
+    run_id = "MeaslesSubDiseaseDist",
+    model = list(disease = "measles"),
+    population_data = list(
+      initialization = ext("population_init_measles_min.csv")
+    ),
+    mixing_matrix = list(
+      weekday_day = ext("m_weekday_day_measles_min.csv"),
+      weekday_night = ext("m_weekday_night_measles_min.csv"),
+      weekend_day = ext("m_weekend_day_measles_min.csv"),
+      weekend_night = ext("m_weekend_night_measles_min.csv")
+    ),
+    disease_params = list(
+      beta = 0.65, de1 = 3, de2 = 3, di1 = 2, di2 = 3,
+      prop_I1_Q = 0.2, prop_I2_Q = 0.5, V1_eff = 0.93, V2_eff = 0.97
+    ),
+    sub_disease_params = list(
+      age_group = list(
+        child = list(beta = list(dist = "uniform", min = 0.7, max = 0.9))
+      )
+    ),
+    simulation_config = list(
+      start_date = "10/01/2023",
+      length = 10,
+      nsim = 5
+    )
+  )
+
+  yaml::write_yaml(cfg, cfg_path)
+  parsed <- parse_config(cfg_path)
+
+  # population_init_measles_min.csv: pop 1 = child/urban, pop 2 = adult/urban, pop 3 = child/rural
+  # child columns: 1 and 3; adult column: 2
+  expect_true(is.matrix(parsed$beta))
+  expect_equal(dim(parsed$beta), c(5L, 3L))
+
+  # child subpopulations (cols 1 and 3) draw within [0.7, 0.9] and are identical
+  # to each other within a given nsim row (one draw per simulation replicate)
+  expect_true(all(parsed$beta[, 1] >= 0.7 & parsed$beta[, 1] <= 0.9))
+  expect_equal(parsed$beta[, 1], parsed$beta[, 3])
+  # draws vary across nsim rows rather than collapsing to a single constant
+  expect_true(length(unique(parsed$beta[, 1])) > 1)
+  # adult subpopulation (col 2) should retain base beta = 0.65, untouched by the override
+  expect_true(all(parsed$beta[, 2] == 0.65))
+})
+
 test_that("parse_config_measles errors on invalid sub_disease_params category value", {
   ext <- function(x) system.file("extdata", x, package = "MetaRVM")
   cfg_path <- tempfile(fileext = ".yaml")
