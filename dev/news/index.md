@@ -1,6 +1,10 @@
 # Changelog
 
+## MetaRVM (development version)
+
 ## MetaRVM 2.2.0
+
+CRAN release: 2026-11-06
 
 - Added measles metapopulation model
   ([`meta_measles_sim()`](https://RESUME-Epi.github.io/MetaRVM/dev/reference/meta_measles_sim.md),
