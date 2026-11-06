@@ -38,8 +38,8 @@ test_that("build_config returns a raw list with correct YAML structure", {
   expect_true(all(c("weekday_day", "weekday_night", "weekend_day", "weekend_night")
                   %in% names(cfg$mixing_matrix)))
   expect_equal(cfg$disease_params$ts, 0.5)
-  # Paths are normalised to absolute
-  expect_true(startsWith(cfg$population_data$initialization, "/"))
+  # Paths are normalised to absolute (leading "/" on Unix, "C:/" on Windows)
+  expect_true(grepl("^(/|[A-Za-z]:[/\\\\])", cfg$population_data$initialization))
 })
 
 test_that("build_config with return_object = TRUE returns a MetaRVMConfig", {
