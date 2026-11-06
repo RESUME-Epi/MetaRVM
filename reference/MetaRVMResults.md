@@ -45,6 +45,10 @@ Arindam Fadikar
 
 - [`MetaRVMResults$summarize()`](#method-MetaRVMResults-summarize)
 
+- [`MetaRVMResults$get_instance_manifest()`](#method-MetaRVMResults-get_instance_manifest)
+
+- [`MetaRVMResults$get_instance_params()`](#method-MetaRVMResults-get_instance_params)
+
 - [`MetaRVMResults$clone()`](#method-MetaRVMResults-clone)
 
 ------------------------------------------------------------------------
@@ -266,6 +270,53 @@ NULL
 
 ------------------------------------------------------------------------
 
+### Method `get_instance_manifest()`
+
+Get per-instance simulation manifest (parameter-set id, replicate id,
+seed, and settings)
+
+#### Usage
+
+    MetaRVMResults$get_instance_manifest(instances = NULL, include_sim_args = TRUE)
+
+#### Arguments
+
+- `instances`:
+
+  Optional vector of instance ids to filter
+
+- `include_sim_args`:
+
+  Logical. If FALSE, omits the `sim_args` list-column for a lighter
+  table
+
+#### Returns
+
+data.table with one row per simulation instance
+
+------------------------------------------------------------------------
+
+### Method `get_instance_params()`
+
+Get per-instance settings table with parameters list-column (`params`)
+
+#### Usage
+
+    MetaRVMResults$get_instance_params(instances = NULL)
+
+#### Arguments
+
+- `instances`:
+
+  Optional vector of instance ids to filter
+
+#### Returns
+
+data.table with instance mapping and exact parameter values used in
+simulation
+
+------------------------------------------------------------------------
+
 ### Method `clone()`
 
 The objects of this class are cloneable with this method.
@@ -291,14 +342,14 @@ results_obj <- metaRVM(example_config)
 #> Loading required namespace: pkgbuild
 # Access formatted results
 head(results_obj$results)
-#>          date    age   race  zone disease_state        value instance
-#>        <Date> <char> <char> <int>        <char>        <num>    <int>
-#> 1: 2023-10-01   0-17      A    11             D 2.252583e-04        1
-#> 2: 2023-10-01   0-17      A    11             E 1.365434e+01        1
-#> 3: 2023-10-01   0-17      A    11             H 2.304447e-01        1
-#> 4: 2023-10-01   0-17      A    11         I_all 2.742619e+01        1
-#> 5: 2023-10-01   0-17      A    11       I_asymp 3.555784e-01        1
-#> 6: 2023-10-01   0-17      A    11         I_eff 2.483657e+01        1
+#>          date    age   race  zone disease_state    value instance
+#>        <Date> <char> <char> <int>        <char>    <num>    <int>
+#> 1: 2023-10-01   0-17      A    11             D  0.00000        1
+#> 2: 2023-10-01   0-17      A    11             E 19.00000        1
+#> 3: 2023-10-01   0-17      A    11             H  1.00000        1
+#> 4: 2023-10-01   0-17      A    11         I_all 24.00000        1
+#> 5: 2023-10-01   0-17      A    11       I_asymp  1.00000        1
+#> 6: 2023-10-01   0-17      A    11         I_eff 22.50998        1
 
 # Subset data with multiple filters
 subset_data <- results_obj$subset_data(

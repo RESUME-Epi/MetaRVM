@@ -2,16 +2,16 @@
 
 `metaRVM()` is the high-level entry point for running a MetaRVM
 metapopulation respiratory virus simulation. It parses the
-configuration, runs one or more simulation instances (deterministic or
-stochastic), formats the ODIN/MetaRVM output into a tidy long table with
-calendar dates and demographic attributes, and returns a
+configuration, runs one or more stochastic simulation instances, formats
+the ODIN/MetaRVM output into a tidy long table with calendar dates and
+demographic attributes, and returns a
 [`MetaRVMResults`](https://RESUME-Epi.github.io/MetaRVM/reference/MetaRVMResults.md)
 object for downstream analysis and plotting.
 
 ## Usage
 
 ``` r
-metaRVM(config_input)
+metaRVM(config_input, verbose = NULL, suppress_odin_messages = NULL)
 ```
 
 ## Arguments
@@ -28,6 +28,19 @@ metaRVM(config_input)
   - **Named list**: output from
     [`parse_config()`](https://RESUME-Epi.github.io/MetaRVM/reference/parse_config.md)
     with `return_object = FALSE`.
+
+- verbose:
+
+  Optional logical. If `TRUE`, prints meaningful run progress messages.
+  If `NULL` (default), uses `simulation_config$verbose` from the parsed
+  config when available; otherwise defaults to `FALSE`.
+
+- suppress_odin_messages:
+
+  Optional logical. If `TRUE`, sets `options(odin.verbose = FALSE)` for
+  this run to suppress ODIN compilation chatter. If `NULL` (default),
+  uses `simulation_config$suppress_odin_messages` from config when
+  available; otherwise defaults to `FALSE`.
 
 ## Value
 
@@ -70,15 +83,17 @@ The configuration input controls:
 - **Population structure** (user-defined categories and the initial
   compartment counts from the initialization file)
 
-- **Disease parameters** (`ts`, `ve`, `de`, `dp`, `da`, `ds`, `dh`,
-  `dr`, `pea`, `psr`, `phr`, `dv`, etc.)
+- **Disease parameters** (disease-specific; see
+  [`?parse_config`](https://RESUME-Epi.github.io/MetaRVM/reference/parse_config.md)
+  and the disease registry for per-disease parameter lists)
 
 - **Mixing matrices** (weekday/weekend, day/night contact patterns)
 
-- **Vaccination schedule** and immunity waning
+- **Vaccination** (time-varying schedule for flu; initial compartment
+  counts for measles)
 
 - **Simulation settings** (start date, length, number of instances,
-  stochastic vs. deterministic mode, checkpointing)
+  checkpointing)
 
 Internally, `metaRVM()`:
 
@@ -139,20 +154,20 @@ results
 #> Date range: 2023-10-01 to 2024-02-27 
 #> Parameter sets (nsim): 1 
 #> Replicates per set (nrep): 1 
-#> Simulation mode: deterministic 
+#> Random seed: 564569281 
 #> Total observations: 388800 
 #> Disease states: D, E, H, I_all, I_asymp, I_eff, I_presymp, I_symp, P, R, S, S_alloc, S_eff_prod, S_src_int, V, V_alloc, V_src_int, cum_V, mob_pop, n_EI, n_EIpresymp, n_HD, n_HR, n_HRD, n_IasympR, n_IsympH, n_IsympR, n_IsympRH, n_RS, n_SE, n_SE_eff, n_SV, n_VE, n_VS, n_preIsymp, p_HRD, p_RS, p_SE, p_VE 
 
 # Access the tidy results table
 head(results$results)
-#>          date    age   race  zone disease_state        value instance
-#>        <Date> <char> <char> <int>        <char>        <num>    <int>
-#> 1: 2023-10-01   0-17      A    11             D 2.252583e-04        1
-#> 2: 2023-10-01   0-17      A    11             E 1.365434e+01        1
-#> 3: 2023-10-01   0-17      A    11             H 2.304447e-01        1
-#> 4: 2023-10-01   0-17      A    11         I_all 2.742619e+01        1
-#> 5: 2023-10-01   0-17      A    11       I_asymp 3.555784e-01        1
-#> 6: 2023-10-01   0-17      A    11         I_eff 2.483657e+01        1
+#>          date    age   race  zone disease_state    value instance
+#>        <Date> <char> <char> <int>        <char>    <num>    <int>
+#> 1: 2023-10-01   0-17      A    11             D  0.00000        1
+#> 2: 2023-10-01   0-17      A    11             E 20.00000        1
+#> 3: 2023-10-01   0-17      A    11             H  0.00000        1
+#> 4: 2023-10-01   0-17      A    11         I_all 26.00000        1
+#> 5: 2023-10-01   0-17      A    11       I_asymp  0.00000        1
+#> 6: 2023-10-01   0-17      A    11         I_eff 23.77197        1
 
 # Summarize and plot hospitalizations and deaths by user-defined categories
 results$summarize(

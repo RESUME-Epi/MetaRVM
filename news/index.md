@@ -1,5 +1,39 @@
 # Changelog
 
+## MetaRVM 2.2.0
+
+CRAN release: 2026-11-06
+
+- Added measles metapopulation model
+  ([`meta_measles_sim()`](https://RESUME-Epi.github.io/MetaRVM/reference/meta_measles_sim.md),
+  [`metaRVM_measles()`](https://RESUME-Epi.github.io/MetaRVM/reference/metaRVM_measles.md),
+  [`parse_config_measles()`](https://RESUME-Epi.github.io/MetaRVM/reference/parse_config_measles.md)).
+  The measles model uses a two-stage latent / two-stage infectious
+  compartmental structure (E1, E2, I1_Q, I1_U, I2_Q, I2_U) with
+  quarantined and unquarantined infectious tracks.
+
+- Introduced disease registry architecture (`disease_registry.R`).
+  Disease-specific parsing, engine selection, and output specification
+  are now declared in a single registry. Adding a new disease requires
+  only a registry entry and builder functions, with no changes to the
+  core orchestration code.
+
+- `model.disease` is now a required field in all configuration YAML
+  files (nested under the `model:` section). Supported values: `"flu"`,
+  `"measles"`. Configs without this field produce an informative error
+  listing valid options.
+
+- Renamed the internal disease identifier from `"rvm"` to `"flu"`.
+  Existing YAML files must add `model:\n disease: flu` to remain valid.
+
+- Removed `simulation_mode`. All simulations run stochastically. The
+  field is silently ignored if present in YAML for backward
+  compatibility.
+
+- Parallel execution falls back to sequential automatically when no
+  registered `foreach` backend is found or when parallel execution
+  fails. Execution mode and worker count are reported in `run_info`.
+
 ## MetaRVM 2.1.0
 
 CRAN release: 2026-03-26

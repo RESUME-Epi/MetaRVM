@@ -43,6 +43,7 @@ configuration file based on a template.
 ### Set Up
 
 ``` r
+
 library(MetaRVM)
 options(odin.verbose = FALSE)
 
@@ -61,6 +62,7 @@ cat("Checkpoint directory:", checkpoint_dir, "\n")
 Now copy the example configuration and modify it to add checkpointing:
 
 ``` r
+
 # Read the example configuration
 yml <- yaml::read_yaml(example_config)
 yml_tmp <- data.table::copy(yml)
@@ -77,6 +79,7 @@ temp_config <- normalizePath(temp_config)
 ### Run Simulation with Checkpoints
 
 ``` r
+
 
 # Run the simulation
 results <- metaRVM(temp_config)
@@ -99,6 +102,7 @@ if (length(checkpoint_files) > 0) {
 ### Examine the Results
 
 ``` r
+
 cat("Number of instances:", results$run_info$n_instances, "\n")
 #> Number of instances: 1
 cat("Date range:", format(results$run_info$date_range[1]), "to", 
@@ -128,6 +132,7 @@ need to provide the checkpoint file name, and a start date which should
 be the next day of the end date in the previous run.
 
 ``` r
+
 # Get the first checkpoint file
 checkpoint_files_full <- list.files(checkpoint_dir, 
                                     pattern = "^chk_.*\\.Rda$",
@@ -168,6 +173,7 @@ if (length(checkpoint_files_full) > 0) {
 ### Plot
 
 ``` r
+
 run1_hosp_sum <- results$results[disease_state == "H", .(total = sum(value)), by = "date"]
 run2_hosp_sum <- results_resumed$results[disease_state == "H", .(total = sum(value)), by = "date"]
 
@@ -181,6 +187,44 @@ ggplot(rbind(run1_hosp_sum, run2_hosp_sum), aes(date, total)) +
 ![](plot-1.png)
 
 plot of chunk plot
+
+## Checkpointing with Other Diseases (e.g., Measles)
+
+The checkpointing mechanism above works the same way for any disease —
+only the example configuration and population file change. The package
+ships `example_config_measles_checkpoint.yaml` as the measles equivalent
+of `example_config_checkpoint.yaml` used above. The setup is analogous
+(not run here):
+
+``` r
+
+measles_config <- system.file("extdata", "example_config_measles_checkpoint.yaml",
+                              package = "MetaRVM")
+
+yml <- yaml::read_yaml(measles_config)
+yml_tmp <- data.table::copy(yml)
+yml_tmp$simulation_config$checkpoint_dir <- tempdir()
+
+temp_config <- tempfile(tmpdir = dirname(measles_config), fileext = ".yaml")
+yaml::write_yaml(yml_tmp, temp_config)
+
+results <- metaRVM(normalizePath(temp_config))
+```
+
+A few differences from the flu example to keep in mind:
+
+- Measles has no separate vaccination schedule file, so there is no
+  `population_data$vaccination` entry to carry over when copying the
+  config.
+- When restoring, the population initialization file for the resumed run
+  must supply measles-specific columns (`S0` and at least one of
+  `I1_U0`/`I2_U0`), not the flu columns (`S0`, `I0`, `V0`, `R0`) used
+  above.
+- `disease_state == "H"` has no measles equivalent — summarize or plot
+  measles results using the `"incidence"` group alias (or the literal
+  flow names, e.g. `"n_SE1"`) instead. See the [YAML
+  Configuration](https://RESUME-Epi.github.io/MetaRVM/articles/yaml-configuration.md)
+  vignette for the full list of state aliases per disease.
 
 ## Understanding Checkpoint Files
 

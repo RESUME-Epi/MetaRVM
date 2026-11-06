@@ -3,14 +3,19 @@
 ## Introduction
 
 MetaRVM is a comprehensive R package for simulating respiratory virus
-epidemics using meta-population compartmental models. This vignette
-describes the basic usage of the package.
+epidemics using metapopulation compartmental models. It supports
+multiple disease types — currently **flu** and **measles** — each with
+its own compartment structure, parameters, and initialization schema.
+This vignette describes the basic usage of the package using a flu
+example; for measles and advanced configuration options see the
+`yaml-configuration` and `running-a-simulation` vignettes.
 
 ## Installation
 
 The development version of MetaRVM can be installed from GitHub:
 
 ``` r
+
 # install.packages("devtools")
 devtools::install_github("RESUME-Epi/MetaRVM")
 ```
@@ -18,6 +23,7 @@ devtools::install_github("RESUME-Epi/MetaRVM")
 ## Loading the Package
 
 ``` r
+
 library(MetaRVM)
 library(ggplot2)
 options(odin.verbose = FALSE)
@@ -34,6 +40,7 @@ is the recommended way to do this, as it finds the files wherever the
 package is installed.
 
 ``` r
+
 # Locate the example YAML configuration file
 yaml_file <- system.file("extdata", "example_config.yaml", package = "MetaRVM")
 print(yaml_file)
@@ -47,6 +54,8 @@ the content of the yaml file.
 
 ``` yaml
 run_id: ExampleRun
+model:
+  disease: flu
 population_data:
   initialization: population_init_n24.csv
   vaccination: vaccination_n24.csv
@@ -73,9 +82,14 @@ simulation_config:
   length: 150
   nsim: 1
   nrep: 1
-  simulation_mode: deterministic
   random_seed: 42
 ```
+
+The `model: disease:` field is required and selects the simulation
+engine. Supported values: `"flu"` and `"measles"`. Disease-specific
+parameters and population CSV schemas differ between diseases — see
+[`vignette("yaml-configuration")`](https://RESUME-Epi.github.io/MetaRVM/articles/yaml-configuration.md)
+for full details.
 
 For a detailed explanation of all the configuration options, please see
 the `yaml-configuration.html` vignette.
@@ -88,6 +102,7 @@ be run using the
 function.
 
 ``` r
+
 # Load the metaRVM library
 library(MetaRVM)
 
@@ -100,6 +115,7 @@ sim_out <- metaRVM(yaml_file)
 ```
 
 ``` r
+
 print(sim_out)
 #> MetaRVM Results Object
 #> =====================
@@ -108,18 +124,18 @@ print(sim_out)
 #> Date range: 2023-10-01 to 2024-02-27 
 #> Parameter sets (nsim): 1 
 #> Replicates per set (nrep): 1 
-#> Simulation mode: deterministic 
+#> Random seed: 346871191 
 #> Total observations: 388800 
 #> Disease states: D, E, H, I_all, I_asymp, I_eff, I_presymp, I_symp, P, R, S, S_alloc, S_eff_prod, S_src_int, V, V_alloc, V_src_int, cum_V, mob_pop, n_EI, n_EIpresymp, n_HD, n_HR, n_HRD, n_IasympR, n_IsympH, n_IsympR, n_IsympRH, n_RS, n_SE, n_SE_eff, n_SV, n_VE, n_VS, n_preIsymp, p_HRD, p_RS, p_SE, p_VE
 head(sim_out$results)
-#>          date    age   race  zone disease_state        value instance
-#>        <Date> <char> <char> <int>        <char>        <num>    <int>
-#> 1: 2023-10-01   0-17      A    11             D 2.252583e-04        1
-#> 2: 2023-10-01   0-17      A    11             E 1.365434e+01        1
-#> 3: 2023-10-01   0-17      A    11             H 2.304447e-01        1
-#> 4: 2023-10-01   0-17      A    11         I_all 2.742619e+01        1
-#> 5: 2023-10-01   0-17      A    11       I_asymp 3.555784e-01        1
-#> 6: 2023-10-01   0-17      A    11         I_eff 2.483657e+01        1
+#>          date    age   race  zone disease_state    value instance
+#>        <Date> <char> <char> <int>        <char>    <num>    <int>
+#> 1: 2023-10-01   0-17      A    11             D  0.00000        1
+#> 2: 2023-10-01   0-17      A    11             E 12.00000        1
+#> 3: 2023-10-01   0-17      A    11             H  0.00000        1
+#> 4: 2023-10-01   0-17      A    11         I_all 25.00000        1
+#> 5: 2023-10-01   0-17      A    11       I_asymp  1.00000        1
+#> 6: 2023-10-01   0-17      A    11         I_eff 23.20081        1
 ```
 
 For more details on running `metaRVM`, refer to the
