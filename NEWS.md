@@ -1,3 +1,5 @@
+# MetaRVM (development version)
+
 # MetaRVM 2.2.0
 
 * Added measles metapopulation model (`meta_measles_sim()`, `metaRVM_measles()`,
